@@ -24,6 +24,8 @@
 
 #include <Arduino.h>
 
+// processe 1 byte from input stream (RS485)
+// output: true = full frame received and processed
 bool comfortzone_receive(byte input_byte);
 
 #endif

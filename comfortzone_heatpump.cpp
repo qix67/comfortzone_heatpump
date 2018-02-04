@@ -1,4 +1,5 @@
 #include "comfortzone_heatpump.h"
+#include "comfortzone_config.h"
 #include "comfortzone_frame.h"
 #include "comfortzone_status.h"
 
@@ -11,16 +12,6 @@ static int cz_frame_type = -1;
 static int cz_full_frame_size = -1;
 
 COMFORTZONE_STATUS comfortzone_status;
-
-typedef struct known_register
-{
-	byte reg_num[9];
-	const char *reg_name;
-	void (*cmd_r)(struct known_register *kr, R_CMD *p);		// FRAME_TYPE_02_CMD_p2, R command
-	void (*cmd_w)(struct known_register *kr, W_CMD *p);		// FRAME_TYPE_02_CMD_p2, W command
-	void (*reply_r)(struct known_register *kr, R_REPLY *p);	// FRAME_TYPE_02_REPLY, r reply
-	void (*reply_w)(struct known_register *kr, W_REPLY *p);	// FRAME_TYPE_P2_REPLY, w reply
-} KNOWN_REGISTER;
 
 static KNOWN_REGISTER kr_decoder[] =
 	{
@@ -91,6 +82,28 @@ static KNOWN_REGISTER kr_decoder[] =
 
 		{ {0}, NULL, NULL, NULL, NULL, NULL}
 	};
+
+static void dump_frame(const char *prefix)
+{
+	int i;
+
+	DPRINTLN("==============================");
+	DPRINT(prefix);
+
+	for(i = 0; i < cz_size; i++)
+	{
+		if(cz_buf[i] < 0x10)
+			DPRINT("0");
+		DPRINT(cz_buf[i], HEX);
+
+		DPRINT(" ");
+	}
+
+	DPRINT(" => ");
+	DPRINT(cz_size, HEX);
+}
+
+
 
 static void comfortzone_process_frame(int frame_type, byte *reg_num)
 {

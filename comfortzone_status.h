@@ -26,9 +26,9 @@ typedef struct
 	int16_t heatpump_current_total_power;			// W = total power produced
 	int16_t heatpump_current_compressor_input_power;	// W = power sent to compressor
 
-	uint32_t compressor_enery;					// kWh, * 100
-	uint32_t add_enery;							// kWh, * 100
-	uint32_t hot_water_enery;					// kWh, * 100
+	uint32_t compressor_energy;				// kWh, * 100
+	uint32_t add_energy;							// kWh, * 100
+	uint32_t hot_water_energy;					// kWh, * 100
 
 	uint32_t compressor_runtime;				// minutes
 	uint32_t total_runtime;						// minutes

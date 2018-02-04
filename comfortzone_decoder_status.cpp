@@ -1,0 +1,1688 @@
+#include "comfortzone_config.h"
+#include "comfortzone_frame.h"
+#include "comfortzone_decoder_basic.h"
+#include "comfortzone_decoder_status.h"
+#include "comfortzone_tools.h"
+#include "comfortzone_status.h"
+
+static void dump_unknown(const char *prefix, byte *start, int length)
+{
+	NPRINT(prefix);
+
+	NPRINT(": ");
+	while(length > 0)
+	{
+		if(*start < 0x10)
+			NPRINT("0");
+		NPRINT(*start, HEX);
+
+		NPRINT(" ");
+
+		start++;
+		length--;
+	}
+
+	NPRINTLN("");
+}
+
+void comfortzone_decoder_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_01 *q = (R_REPLY_STATUS_01 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	// ===
+	dump_unknown("unknown_s01", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = q->extra_hot_water;
+
+	NPRINT("Extra hot water: ");
+	if(reg_v == 0xFF)
+		NPRINT("off");
+	else
+		NPRINT("on - ");			// 0xFF = off mais on = 0x02 ou autre chose
+		NPRINT(reg_v, HEX);
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->hot_water_calculated_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->hot_water_hysteresis);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water - hysteresis: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	for(i = 0; i < STATUS_01_NB_HW_NORMAL_STEPS; i++)
+	{
+		reg_v = get_int16(q->hot_water_normal_steps[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Hot water - Normal step ");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+	}
+
+	// ===
+	for(i = 0; i < STATUS_01_NB_HW_HIGH_STEPS; i++)
+	{
+		reg_v = get_int16(q->hot_water_high_steps[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Hot water - High step ");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+	}
+	
+	// ===
+	for(i = 0; i < STATUS_01_NB_HW_EXTRA_STEPS; i++)
+	{
+		reg_v = get_int16(q->hot_water_extra_steps[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Hot water - Additional step ");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+	}
+	
+	// ===
+	dump_unknown("unknown_s01_5a", q->unknown5a, sizeof(q->unknown5a));
+
+	// ===
+	reg_v = q->hot_water_max_runtime;
+
+	NPRINT("Hot water max runtime: ");
+	NPRINT(reg_v);
+	NPRINTLN("min");
+
+	// ===
+	reg_v = q->hot_water_pause_time;
+
+	NPRINT("Hot water pause duration: ");
+	NPRINT(reg_v);
+	NPRINTLN("min");
+	
+	// ===
+	for(i = 0; i < 8; i++)
+	{
+		reg_v = get_int16(q->unknown5b[i]);
+
+		reg_v_f = reg_v;
+
+		NPRINT("unknown_s01_5b[");
+		NPRINT(i);
+		NPRINT("]: ");
+		NPRINT(reg_v_f);
+		NPRINTLN("?");
+	}
+
+
+	// ===
+	reg_v = get_uint16(q->hot_water_compressor_min_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water - compressor min freq.: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->hot_water_compressor_max_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water - compressor max freq.: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+	
+	// ===
+	dump_unknown("unknown_s01_6", q->unknown6, sizeof(q->unknown6));
+
+	// ===
+	reg_v = get_uint16(q->hot_water_extra_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water - extra setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->hot_water_extra_time);
+
+	NPRINT("Hot water - extra time: ");
+	NPRINT(reg_v);
+	NPRINTLN("min");
+
+	// ===
+	dump_unknown("unknown_s01_7", q->unknown7, sizeof(q->unknown7));
+
+	// ===
+	reg_v = get_uint16(q->normal_fan_speed);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Normal fan speed: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	reg_v = get_int16(q->reduce_fan_speed);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Reduce fan speed: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	reg_v = get_int16(q->fan_boost_increase);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Fan boost increase: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	dump_unknown("unknown_s01_8", q->unknown8, sizeof(q->unknown8));
+
+	// ===
+	reg_v = get_int16(q->supply_fan_t12_adjust);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Supply fan T12 adjust: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	dump_unknown("unknown_s01_8a", q->unknown8a, sizeof(q->unknown8a));
+
+	// ===
+	reg_v = get_uint16(q->fan_time_to_filter_change);
+
+	NPRINT("Fan - Time to filter change: ");
+	NPRINT(reg_v);
+	NPRINTLN("d");
+
+	// ===
+	dump_unknown("unknown_s01_9", q->unknown9, sizeof(q->unknown9));
+
+	// ===
+	reg_v = get_uint16(q->pac_compressor_min_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("PAC compressor min freq.: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->pac_compressor_max_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("PAC compressor max freq.: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown_s01_9a", q->unknown9a, sizeof(q->unknown9a));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_02 *q = (R_REPLY_STATUS_02 *)p;
+
+	comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[0]);
+	comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[1]);
+	comfortzone_status.sensors_te3_indoor_temp= get_int16(q->sensors[2]);
+	comfortzone_status.sensors_te4_hot_gas_temp = get_int16(q->sensors[3]);
+	comfortzone_status.sensors_te5_exchanger_out = get_int16(q->sensors[4]);
+	comfortzone_status.sensors_te6_evaporator_in = get_int16(q->sensors[5]);
+	comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[6]);
+	comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[23]);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	static const char *sensor_names[STATUS_02_NB_SENSORS] =
+						{	"TE1 Flow water",
+							"TE2 Return water",
+							"TE3 Indoor temp. = Heating - Room temperature",
+							"TE4 Hot gas temp.",
+							"TE5 Exchanger out",
+							"TE6 Evaporator in",
+							"TE7 Exhaust air",
+							"TE8 ?",			// no value
+							"TE9 ?",			// no value
+							"TE10 ?",
+							"TE11 ?",		// no value
+							"TE12 ?",		// no value
+							"TE13 ?",		// no value
+							"TE14 ?",		// no value
+							"TE15 ?",		// no value
+							"TE16 ?",		// no value
+							"TE17 ?",		// no value
+							"TE18 ?",		// no value
+							"TE19 ?",		// no value
+							"TE20 ?",		// no value
+							"TE21 ?",		// no value
+							"TE22 ?",		// no value
+							"TE23 ?",		// no value
+							"TE24 Hot water = Hot water Measured temperature",	
+							"TE25 ?",
+							"TE26 ?",
+							"TE27 ?",
+							"TE28 ?",
+							"TE29 ?",		// always 0.0°C
+							"TE30 ?",		// always 100.0°C
+							"TE31 ?",		// always 100.0°C
+							"TE32 ?",		// always 0.0°C
+							"TE33 ?",		// seems to always be close to TE25
+							"TE34 ?",
+							"TE35 ?",
+							"TE36 ?",
+							"TE37 ?",		// always 0.0°C
+							"TE38 ?",		// always 0.0°C
+							"TE39 ?",		// always 0.0°C
+							"TE40 ?",
+							"TE41 ?",		// seems to always be close to TE1
+							"TE42 ?",		// seems to always be close to TE2
+							"TE43 ?",		// seems to always be close to TE3
+							"TE44 ?",		// seems to always be close to TE4
+							"TE45 ?",		// seems to always be close to TE5
+							"TE46 ?",		// seems to always be close to TE6
+							"TE47 ?",
+							"TE48 ?",		// seems to always be close to TE7
+							"TE49 ?",		// no value
+							"TE50 ?",		// no value
+							"TE51 ?",
+							"TE52 ?",		// no value
+							"TE53 ?",		// no value
+							"TE54 ?",		// no value
+							"TE55 ?",		// no value
+							"TE56 ?",		// no value
+							"TE57 ?",		// no value
+							"TE58 ?",		// no value
+							"TE59 ?",		// no value
+							"TE60 ?",		// no value
+							"TE61 ?",		// no value
+							"TE62 ?"			// no value
+						};
+
+	// ===
+	dump_unknown("unknown_s02", q->unknown, sizeof(q->unknown));
+
+	// ===
+	NPRINT("Time1: ");
+	NPRINT(q->hour1);
+	NPRINT(":");
+	NPRINT(q->minute1);
+	NPRINT(":");
+	NPRINT(q->second1);
+	NPRINTLN();
+
+	// ===
+	NPRINT("Day: ");
+	NPRINT(q->day);
+	NPRINT("/");
+	NPRINT(q->month);
+	NPRINT("/");
+	NPRINT(q->year + 2000);
+	NPRINTLN();
+
+	// ===
+	NPRINT("Day of week: ");
+	NPRINTLN(q->day_of_week);
+
+	// ===
+	NPRINT("Time2: ");
+	NPRINT(q->hour2);
+	NPRINT(":");
+	NPRINT(q->minute2);
+	NPRINT(":");
+	NPRINT(q->second2);
+	NPRINTLN();
+
+	// ===
+	dump_unknown("unknown_s02_3", q->unknown3, sizeof(q->unknown3));
+
+	// ===
+	dump_unknown("unknown_s02_3b", q->unknown3b, sizeof(q->unknown3b));
+
+	// ===
+	for(i = 0 ; i < STATUS_02_NB_SENSORS; i++)
+	{
+		reg_v = get_int16(q->sensors[i]);
+
+		if(reg_v == -990)		// pas de valeur pour le sensor ? (= -99.0°=
+			continue;
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Sensor - ");
+		NPRINT(sensor_names[i]);
+		NPRINT(": ");
+
+		NPRINT(reg_v_f);
+		NPRINT("°C (0x");
+		NPRINT(reg_v, HEX);
+		NPRINT(" 0x");
+
+		if(q->sensors[i][0] < 0x10)
+			NPRINT("0");
+		NPRINT(q->sensors[i][0], HEX);
+
+		NPRINT(" ");
+		if(q->sensors[i][1] < 0x10)
+			NPRINT("0");
+		NPRINT(q->sensors[i][1], HEX);
+
+		NPRINTLN(")");
+	}
+
+	// ===
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_03 *q = (R_REPLY_STATUS_03 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	dump_unknown("unknown_s03", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_04 *q = (R_REPLY_STATUS_04 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	dump_unknown("unknown_s04", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->chauffage_puissance_consommee1);
+
+	NPRINT("Chauffage - Puissance consommée 1: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	dump_unknown("unknown_s04_8", q->unknown8, sizeof(q->unknown8));
+
+	// ===
+	reg_v = get_uint16(q->chauffage_puissance_consommee2);
+
+	NPRINT("Chauffage - Puissance consommée 2: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = q->hot_water_production;
+
+	NPRINT("Hot water in progress (s4)?: ");
+	if(reg_v == 0x00)
+		NPRINTLN("no");
+	else if(reg_v == 0x77)
+		NPRINTLN("yes (0x77)");
+	else if(reg_v == 0x78)
+		NPRINTLN("yes (0x78)");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s04_9", q->unknown9, sizeof(q->unknown9));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	int reg_v;
+
+	R_REPLY_STATUS_05 *q = (R_REPLY_STATUS_05 *)p;
+
+	if(q->hot_water_production == 0x00)
+		comfortzone_status.hot_water_production = true;
+	else
+		comfortzone_status.hot_water_production = false;
+
+	reg_v = get_uint16(q->room_heating_in_progress);
+	if(reg_v == 0x012C)
+		comfortzone_status.room_heating_in_progress = false;
+	else
+		comfortzone_status.room_heating_in_progress = true;
+
+#ifdef DEBUG
+	float reg_v_f;
+	int i;
+
+	// ===
+	reg_v = q->hot_water_production;
+
+	NPRINT("Hot water in progress (s5): ");
+	if(reg_v == 0x00)
+		NPRINTLN("no");
+	else if(reg_v == 0x77)
+		NPRINTLN("yes (0x77)");
+	else if(reg_v == 0x78)
+		NPRINTLN("yes (0x78)");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s05a", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->heating_calculated_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating - Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+	
+	// ===
+	dump_unknown("unknown_s05_02", q->unknown0, sizeof(q->unknown0));
+
+	NPRINT("TE3 Indoor temp history (new values first, 1 value = 10seconds): ");
+	// ===
+	for(i = 0; i < STATUS_05_TE3_INDOOR_TEMP_HISTORY_NB; i++)
+	{
+		reg_v = get_int16(q->te3_indoor_temp_history[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT(reg_v_f);
+		NPRINT("°C ");
+	}
+	NPRINTLN("");
+
+	// ===
+	NPRINT("TE2 Return water history (new values first, 1 value = 10seconds): ");
+	for(i = 0; i < STATUS_05_TE2_RETURN_WATER_HISTORY_NB; i++)
+	{
+		reg_v = get_int16(q->te2_return_water_history[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT(reg_v_f);
+		NPRINT("°C ");
+	}
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->room_heating_in_progress);
+
+	NPRINT("Room heating in progress: ");
+	if(reg_v == 0x012C)
+	{
+		NPRINTLN("no (0x012C)");
+	}
+	else
+	{
+		NPRINT("yes (0x");
+		NPRINT(reg_v, HEX);
+		NPRINTLN(")");
+	}
+
+	// ===
+	dump_unknown("unknown_s05_1", q->unknown1, sizeof(q->unknown1));
+
+	// ===
+	reg_v = get_uint16(q->hot_water_calculated_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water Calculated setting (s05): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	dump_unknown("unknown_s05_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	reg_v = get_uint16(q->unknown_count_down);
+
+	NPRINT("s05 - unknown count down (seems to be hot water remaining runtime. 0x00 00 when not running else count down from hotwater max runtime): ");
+	NPRINT(reg_v);
+	NPRINTLN("seconds");
+	
+	// ===
+	dump_unknown("unknown_s05_2b", q->unknown2b, sizeof(q->unknown2b));
+
+	// ===
+	reg_v = q->extra_hot_water;
+
+	NPRINT("Extra hot water (s05): ");
+	if(reg_v == 0x00)
+		NPRINTLN("off");
+	else if(reg_v == 0x0F)
+		NPRINTLN("on");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s05_2c", q->unknown2b, sizeof(q->unknown2b));
+
+	// ===
+	reg_v = q->fan_speed;
+
+	NPRINT("Fan speed: ");
+	if(reg_v == 0x01)
+		NPRINTLN("low");
+	else if(reg_v == 0x02)
+		NPRINTLN("normal");
+	else if(reg_v == 0x03)
+		NPRINTLN("high");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s05_3", q->unknown3, sizeof(q->unknown3));
+
+	// ===
+	reg_v = get_uint16(q->condensing_temperature);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Condensing temperature: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->condensing_pressure);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Condensing pressure: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("bar");
+
+	// ===
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_06 *q = (R_REPLY_STATUS_06 *)p;
+
+	comfortzone_status.heatpump_current_compressor_frequency = get_uint16(q->heatpump_current_compressor_frequency);
+
+	comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
+	comfortzone_status.heatpump_current_add_power = get_uint16(q->heatpump_current_add_power);
+	comfortzone_status.heatpump_current_total_power = get_uint16(q->heatpump_current_total_power1);
+	comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	reg_v = get_uint16(q->evaporator_pressure);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Evaporator pressure: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("bar");
+
+	// ===
+	reg_v = get_uint16(q->pressure_ratio);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Pressure ratio: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_s06_0a", q->unknown0a, sizeof(q->unknown0a));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_compressor_max_frequency1);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	// varie tout seul donc pas le vrai max
+	NPRINT("Heatpump - Compressor max frequency (1) FAUX: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->hot_water_active_max_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	// varie tout seul donc pas le vrai max
+	NPRINT("Hot water - Compressor active max frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	// During defrost, forced to 0Hz else set to heating compressor max frequency
+	reg_v = get_uint16(q->heatpump_active_max_frequency1);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - Compressor active max frequency (during defrost, set to 0Hz else real compressor max frequency) (1): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown_s06_0c", q->unknown0c, sizeof(q->unknown0c));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_active_max_frequency2);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - Compressor active max frequency (during defrost, set to 0Hz else real compressor max frequency) (2): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_active_max_frequency3);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - Compressor active max frequency (during defrost, set to 0Hz else real compressor max frequency) (3): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - current compressor frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->chauffage_compressor_max_frequency3);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Chauffage - Compressor max frequency (3): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown_s06_0d", q->unknown0d, sizeof(q->unknown0d));
+
+	// ===
+	reg_v = get_uint16(q->heating_compressor_min_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating - Compressor min frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->heating_compressor_max_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating - Compressor max frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown_s06_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_compressor_power);
+
+	NPRINT("Heatpump - current compressor power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_add_power);
+
+	NPRINT("Heatpump - current add power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_total_power1);
+
+	NPRINT("Heatpump - current total power 1: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_total_power2);
+
+	NPRINT("Heatpump - current total power 2: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_compressor_input_power);
+
+	NPRINT("Heatpump - Compressor input power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	dump_unknown("unknown_s06_1a", q->unknown1a, sizeof(q->unknown1a));
+
+	// ===
+	reg_v = get_uint16(q->unknown_count_down);
+
+	NPRINT("Heatpump - remaining min runtime (?): ");
+	NPRINT(reg_v);
+	NPRINTLN("seconds");
+
+	// ===
+	dump_unknown("unknown_s06_1b", q->unknown1b, sizeof(q->unknown1b));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_defrost_delay);
+
+	NPRINT("Heatpump - remaining max run time or remaining time to next defrost (?): ");
+	NPRINT(reg_v);
+	NPRINTLN("seconds");
+
+	// ===
+	dump_unknown("unknown_s06_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	reg_v = get_uint16(q->expansion_valve_calculated_setting);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
+	// ===
+	reg_v = get_int16(q->vanne_expansion_xxx);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Vanne expansion - xxx?: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
+	// ===
+	reg_v = get_int16(q->expansion_valve_temperature_difference1);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Temperature difference 1: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
+	// ===
+	reg_v = get_int16(q->expansion_valve_temperature_difference2);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Temperature difference 2: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
+	// ===
+	dump_unknown("unknown_s06_2a", q->unknown2a, sizeof(q->unknown2a));
+
+	// ===
+	reg_v = get_uint16(q->expansion_valve_valve_position1);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Valve position 1: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	reg_v = get_uint16(q->expansion_valve_valve_position1);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Valve position 2: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	dump_unknown("unknown_s06_2a", q->unknown2a, sizeof(q->unknown2a));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_07 *q = (R_REPLY_STATUS_07 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	dump_unknown("unknown_s07", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->input_power_limit);
+
+	NPRINT("Input power limit: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	dump_unknown("unknown_s07_2", q->unknown2, sizeof(q->unknown2));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_08 *q = (R_REPLY_STATUS_08 *)p;
+
+	comfortzone_status.compressor_energy = get_uint32(q->compressor_energy);
+	comfortzone_status.add_energy = get_uint32(q->add_energy);
+	comfortzone_status.hot_water_energy = get_uint32(q->hot_water_energy);
+
+	comfortzone_status.compressor_runtime = get_uint32(q->compressor_runtime);
+	comfortzone_status.total_runtime = get_uint32(q->total_runtime);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	reg_v = q->bcd_second;
+
+	NPRINT("Second (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_minute;
+
+	NPRINT("Minute (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_hour;
+
+	NPRINT("Hour (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s08_0 (augmente de 1 chaque jour mais c'est pas day of week)", &(q->unknown0), sizeof(q->unknown0));
+
+	// ===
+	reg_v = q->bcd_day;
+
+	NPRINT("Day (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_month;
+
+	NPRINT("Month (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_year;
+
+	NPRINT("Year (BCD)(20xx): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s08_0a", q->unknown0a, sizeof(q->unknown0a));
+
+	// ===
+	dump_unknown("unknown_s08_", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint32(q->compressor_energy);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 100.0;
+
+	NPRINT("Compressor energy: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("kWh");
+
+	// ===
+	reg_v = get_uint32(q->add_energy);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 100.0;
+
+	NPRINT("Add energy: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("kWh");
+
+	// ===
+	reg_v = get_uint32(q->hot_water_energy);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 100.0;
+
+	NPRINT("Hot water energy: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("kWh");
+
+	// ===
+	reg_v = get_uint32(q->compressor_runtime);
+
+	NPRINT("Compressor runtime: ");
+	NPRINT(reg_v / 60);
+	NPRINT(":");
+	reg_v = reg_v % 60;
+	if(reg_v < 10)
+		NPRINT("0");
+	NPRINT(reg_v);
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint32(q->total_runtime);
+
+	NPRINT("Total runtime: ");
+	NPRINT(reg_v / 60);
+	NPRINT(":");
+	reg_v = reg_v % 60;
+	if(reg_v < 10)
+		NPRINT("0");
+	NPRINT(reg_v);
+	NPRINTLN("");
+
+	// ===
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_09 *q = (R_REPLY_STATUS_09 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	// ===
+	dump_unknown("unknown_s09", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->hotwater_priority);
+
+	NPRINT("Hot water priority: ");
+	if(reg_v == 0x4151)
+		NPRINTLN("low");
+	else if(reg_v == 0x4152)
+		NPRINTLN("normal");
+	else if(reg_v == 0x4153)
+		NPRINTLN("high");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s09_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	for(i = 0; i < STATUS_09_NB_AJUSTMENT; i++)
+	{
+		reg_v = q->hardware_settings_adjustments_teX_adjust[i];
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Hardware settings - Adjustments - TE");
+		NPRINT(i);
+		NPRINT(" Adjust: ");
+
+		NPRINT(reg_v_f);
+		NPRINT("°C (0x");
+
+		if(reg_v < 0x10)
+			NPRINT("0");
+		NPRINT(reg_v, HEX);
+
+		NPRINTLN(")");
+	}
+
+	// ===
+	dump_unknown("unknown_s09_6", q->unknown6, sizeof(q->unknown6));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_10 *q = (R_REPLY_STATUS_10 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s10_", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->holiday_temperature_reduction);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Holiday temperature reduction: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->holiday_minimal_room_temperature);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("CW Minimal room temperature: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->cw_minimal_temperature);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("CW Minimal temperature: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->cw_maximal_temperature);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("CW Maximal temperature: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	reg_v = get_uint16(q->cw_overheat_hysteresis);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("CW overheat hysteresis: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s10_2a", q->unknown2a, sizeof(q->unknown2a));
+
+	// ===
+	reg_v = get_uint16(q->cw_return_maximal_temperature);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("CW return maximal temperature: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s10_2b", q->unknown2b, sizeof(q->unknown2b));
+
+	// ===
+	reg_v = get_uint16(q->cw_pump);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("CW pump: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	dump_unknown("unknown_s10_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	for(i = 0; i < STATUS_10_STEP_WISE_HEATING_NB; i++)
+	{
+		reg_v = get_uint16(q->step_wise_heating_temperature[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Step-wise heating temperature ");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+
+		reg_v_f = q->step_wise_heating_days[i];
+		reg_v_f /= 10.0;
+
+		NPRINT("Step-wise heating days ");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINTLN("day");
+	}
+
+	// ===
+	dump_unknown("unknown_s10_3", q->unknown3, sizeof(q->unknown3));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_11 *q = (R_REPLY_STATUS_11 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s11_", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = q->led_luminosity;
+
+	NPRINT("Led luminosity: ");
+	NPRINTLN(reg_v);
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s11_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	reg_v = get_uint16(q->holiday_reduction);
+
+	NPRINT("Holiday reduction: ");
+	if(reg_v == 0)
+		NPRINTLN("off");
+	else
+	{
+		NPRINT(reg_v);
+		NPRINTLN(" day(s)");
+	}
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s11_3", q->unknown3, sizeof(q->unknown3));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_12 *q = (R_REPLY_STATUS_12 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s12_", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_compressor_blocked_frequency1);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - compressor - blocked frequency 1: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_compressor_blocked_frequency2);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - compressor - blocked frequency 2: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_compressor_blocked_frequency3);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - compressor - blocked frequency 3: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown_s12_3", q->unknown3, sizeof(q->unknown3));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_defrost_delay);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - defrost delay: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("min");
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s12_8", q->unknown8, sizeof(q->unknown8));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_13 *q = (R_REPLY_STATUS_13 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s13", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_14 *q = (R_REPLY_STATUS_14 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s14", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = q->language;
+
+	NPRINT("Language: ");
+	if(reg_v == 0x01)
+		NPRINTLN("English");
+	else if(reg_v == 0x04)
+		NPRINTLN("Français");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s14d", q->unknownd, sizeof(q->unknownd));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_15 *q = (R_REPLY_STATUS_15 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s15", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_16 *q = (R_REPLY_STATUS_16 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s16", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_17 *q = (R_REPLY_STATUS_17 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s17", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_18 *q = (R_REPLY_STATUS_18 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s18", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_19 *q = (R_REPLY_STATUS_19 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to always contain '\0'
+	dump_unknown("unknown_s19", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_20 *q = (R_REPLY_STATUS_20 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to always contain '\0'
+	dump_unknown("unknown_s20", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_22 *q = (R_REPLY_STATUS_22 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	dump_unknown("unknown_s22", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_23 *q = (R_REPLY_STATUS_23 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	// ===
+	// pas de rapport avec le fonctionnement du chauffage à priori car pas de changement entre off=>start=>stop=>off
+	for(i = 0; i < STATUS_23_UNKNOWN1_NB; i++)
+	{
+		reg_v = get_uint16(q->unknown1[i]);
+
+		NPRINT("S23 Unknown1 [");
+		NPRINT(i);
+		NPRINT("]: ");
+		NPRINT(reg_v);
+		NPRINT(" (0x");
+
+		if(((reg_v>>8)&0xFF) < 0x10)
+			NPRINT("0");
+		NPRINT(((reg_v>>8)&0xFF), HEX);
+
+		NPRINT(" ");
+		if((reg_v & 0xFF) < 0x10)
+			NPRINT("0");
+		NPRINT((reg_v & 0xFF), HEX);
+
+		NPRINTLN(")");
+	}
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s23_", q->unknown, sizeof(q->unknown));
+
+	// ===
+	// pas de rapport avec le fonctionnement du chauffage à priori car pas de changement entre off=>start=>stop=>off
+	for(i = 0; i < STATUS_23_UNKNOWN2_NB; i++)
+	{
+		reg_v = get_uint16(q->unknown2[i]);
+
+		NPRINT("S23 Unknown2 [");
+		NPRINT(i);
+		NPRINT("]: ");
+		NPRINT(reg_v);
+		NPRINT(" (0x");
+
+		if(((reg_v>>8)&0xFF) < 0x10)
+			NPRINT("0");
+		NPRINT(((reg_v>>8)&0xFF), HEX);
+
+		NPRINT(" ");
+		if((reg_v & 0xFF) < 0x10)
+			NPRINT("0");
+		NPRINT((reg_v & 0xFF), HEX);
+
+		NPRINTLN(")");
+	}
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s23_3", q->unknown3, sizeof(q->unknown3));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_24 *q = (R_REPLY_STATUS_24 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	dump_unknown("unknown_s24", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void comfortzone_decoder_reply_r_status_25(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_25 *q = (R_REPLY_STATUS_25 *)p;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_s25", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+

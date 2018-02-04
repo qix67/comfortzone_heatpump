@@ -1,5 +1,7 @@
 #include "comfortzone_config.h"
+#include "comfortzone_frame.h"
 #include "comfortzone_decoder_basic.h"
+#include "comfortzone_tools.h"
 
 // this file contains basic decoding function for commands and replies.
 // Unless debug mode is set, nothing is done here
@@ -633,4 +635,7 @@ void comfortzone_decoder_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p)
 #endif
 }
 
-#endif
+void comfortzone_decoder_empty(KNOWN_REGISTER *kr, W_CMD *p)
+{
+}
+
