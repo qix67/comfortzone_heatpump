@@ -119,16 +119,20 @@ static void comfortzone_process_frame(int frame_type, byte *reg_num)
 				case FRAME_TYPE_02_CMD_p2:
 												if(reg_num[0] == 'R')
 												{
+#ifdef DEBUG
 													NPRINT(kr_decoder[i].reg_name);
 													NPRINTLN(" (get): ");
+#endif
 
 													kr_decoder[i].cmd_r(&kr_decoder[i], (R_CMD*)cz_buf);
 													return;
 												}
 												else if(reg_num[0] == 'W')
 												{
+#ifdef DEBUG
 													NPRINT(kr_decoder[i].reg_name);
 													NPRINTLN(" (set): ");
+#endif
 
 													kr_decoder[i].cmd_w(&kr_decoder[i], (W_CMD*)cz_buf);
 													return;
@@ -138,16 +142,20 @@ static void comfortzone_process_frame(int frame_type, byte *reg_num)
 				case FRAME_TYPE_02_REPLY:
 												if(reg_num[0] == 'r')
 												{
+#ifdef DEBUG
 													NPRINT(kr_decoder[i].reg_name);
 													NPRINTLN(" (reply get): ");
+#endif
 
 													kr_decoder[i].reply_r(&kr_decoder[i], (R_REPLY*)cz_buf);
 													return;
 												}
 												else if(reg_num[0] == 'w')
 												{
+#ifdef DEBUG
 													NPRINT(kr_decoder[i].reg_name);
 													NPRINTLN(" (reply set): ");
+#endif
 
 													kr_decoder[i].reply_w(&kr_decoder[i], (W_REPLY*)cz_buf);
 													return;
