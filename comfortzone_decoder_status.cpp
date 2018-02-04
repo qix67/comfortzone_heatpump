@@ -29,6 +29,8 @@ void comfortzone_decoder_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_01 *q = (R_REPLY_STATUS_01 *)p;
 
+	comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
+
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
@@ -522,6 +524,8 @@ void comfortzone_decoder_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 		comfortzone_status.room_heating_in_progress = false;
 	else
 		comfortzone_status.room_heating_in_progress = true;
+
+	comfortzone_status.fan_speed = q->fan_speed;
 
 #ifdef DEBUG
 	float reg_v_f;

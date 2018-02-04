@@ -7,6 +7,8 @@ typedef struct
 {
 	uint16_t fan_time_to_filter_change;		// days
 
+	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
+
 	bool hot_water_production;					// true = on, false = off
 	bool room_heating_in_progress;			// true = on, false = off
 
