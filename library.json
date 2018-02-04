@@ -1,0 +1,19 @@
+{
+  "name": "comfortzone_heatpump",
+  "frameworks": "Arduino",
+  "platforms": "Teensy",
+  "keywords": "comfortzone,EX50,heatpump,RS485",
+  "description": "Control comfortzone heatpump",
+  "url": "",
+  "authors":
+  {
+    "name": "Eric PREVOTEAU",
+    "maintainer": true
+  },
+  "repository":
+  {
+      "type": "git",
+      "url": "https://github.com/qix67/comfortzone_heatpump"
+  },
+  "version": "1.0"
+}
