@@ -515,9 +515,9 @@ void comfortzone_decoder_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 	R_REPLY_STATUS_05 *q = (R_REPLY_STATUS_05 *)p;
 
 	if(q->hot_water_production == 0x00)
-		comfortzone_status.hot_water_production = true;
-	else
 		comfortzone_status.hot_water_production = false;
+	else
+		comfortzone_status.hot_water_production = true;
 
 	reg_v = get_uint16(q->room_heating_in_progress);
 	if(reg_v == 0x012C)

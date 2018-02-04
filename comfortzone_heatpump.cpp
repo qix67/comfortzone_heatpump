@@ -125,6 +125,8 @@ static void comfortzone_process_frame(int frame_type, byte *reg_num)
 #endif
 
 													kr_decoder[i].cmd_r(&kr_decoder[i], (R_CMD*)cz_buf);
+
+													DPRINTLN("====================================================");
 													return;
 												}
 												else if(reg_num[0] == 'W')
@@ -135,6 +137,8 @@ static void comfortzone_process_frame(int frame_type, byte *reg_num)
 #endif
 
 													kr_decoder[i].cmd_w(&kr_decoder[i], (W_CMD*)cz_buf);
+
+													DPRINTLN("====================================================");
 													return;
 												}
 												break;
@@ -148,6 +152,8 @@ static void comfortzone_process_frame(int frame_type, byte *reg_num)
 #endif
 
 													kr_decoder[i].reply_r(&kr_decoder[i], (R_REPLY*)cz_buf);
+
+													DPRINTLN("====================================================");
 													return;
 												}
 												else if(reg_num[0] == 'w')
@@ -158,6 +164,8 @@ static void comfortzone_process_frame(int frame_type, byte *reg_num)
 #endif
 
 													kr_decoder[i].reply_w(&kr_decoder[i], (W_REPLY*)cz_buf);
+
+													DPRINTLN("====================================================");
 													return;
 												}
 												break;
