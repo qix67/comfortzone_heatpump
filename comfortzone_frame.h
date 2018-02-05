@@ -217,8 +217,57 @@ typedef struct __attribute__ ((packed))
 	byte minute2;
 	byte second2;
 
-	byte unknown3[15];
+	byte unknown3[10];
 
+	byte general_status[5];
+								// 0x88 0A 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
+								// 0x88 0E 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
+								// 0x8B 0E 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
+								// 0x88 08 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
+								// 0x88 2E 00 00 10    // heatpump running, no defrost, no heating,    hot water, no add
+								// 0x8B AE 00 00 10    // heatpump running, no defrost, no heating,    hot water, no add
+								// 0xA8 1A 00 00 14    // heatpump stopped,    defrost,    heating or hot water,     add
+								// 0xA8 2A 00 00 10    // heatpump running, no defrost,    heating, no hot water,    add
+								// 0xA8 3A 00 00 10    // heatpump running, no defrost,    heating, no hot water,    add
+								// 0x88 2A 00 00 10    // heatpump running, no defrost,    heating, no hot water, no add
+								// 0x8B 2E 00 00 10    // heatpump running, no defrost, no heating,    hot water, no add
+								// 0x88 AA 00 00 10    // heatpump running, no defrost,    heating, no hot water, no add
+								// 0x80 08 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
+								// 0xA0 08 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
+								// 0x80 2A 00 00 10    // heatpump running, no defrost,    heating, no hot water, no add
+
+								// byte 0:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//           =1 ----------------------------------> always
+								//               =0 ------------------------------> always
+								//                   =x --------------------------> 1 = add energy on, 0 = add energy off
+								//                       =0 ----------------------> always
+								//                           =x ------------------> ?
+								//                               =0 --------------> always
+								//                                    x---y-------> xy = 11 (hot water mode), 00 (heating mode, default when stopped)
+	
+								// byte 1:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//           =0 ----------------------------------> always
+								//               =0 ------------------------------> always
+								//                    x---y-----------------------> xy = 10 (heatpump is running), 11 (heatpump is powering down), 01 (heatpump stopped), 00 ( heatpump stopped?)
+								//                           =1 ------------------> always
+								//                               =x---y-----------> xy = 11 (hot water mode), 00 (idle mode), 01 (heating mode, default mode)
+								//                                       =0 ------> always
+
+								// byte 2:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//            always 0
+
+								// byte 3:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//            always 0 or rarely changing
+
+								// byte 4:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//           =0 ----------------------------------> always
+								//               =0 ------------------------------> always
+								//                   =0 --------------------------> always
+								//                       =0 ----------------------> always
+								//                           =0 ------------------> always
+								//                               =x --------------> x = 1 (defrost in progress), 0 (no defrost in progress)
+								//                                   =0 ----------> always
+								//                                       =0 ------> always
 	byte unknown3b[24];
 
 	// Note: at least 24, not sure above
