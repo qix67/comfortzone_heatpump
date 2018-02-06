@@ -5,6 +5,7 @@
 #include "comfortzone_tools.h"
 #include "comfortzone_status.h"
 
+#ifdef DEBUG
 static void dump_unknown(const char *prefix, byte *start, int length)
 {
 	NPRINT(prefix);
@@ -24,6 +25,7 @@ static void dump_unknown(const char *prefix, byte *start, int length)
 
 	NPRINTLN("");
 }
+#endif
 
 void comfortzone_decoder_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 {
@@ -289,6 +291,40 @@ void comfortzone_decoder_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 	comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[6]);
 	comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[23]);
 
+	comfortzone_status.additional_power_enabled = (q->general_status[0] & 0x20) ? true : false;
+	comfortzone_status.defrost_enabled = (q->general_status[4] & 0x04) ? true : false;
+
+	switch((q->general_status[1]>>4) & 0x3)
+	{
+		case 0:	comfortzone_status.compressor_activity = CZCMP_UNKNOWN;
+					break;
+
+		case 1:	comfortzone_status.compressor_activity = CZCMP_STOPPED;
+					break;
+
+		case 2:	comfortzone_status.compressor_activity = CZCMP_RUNNING;
+					break;
+
+		case 3:	comfortzone_status.compressor_activity = CZCMP_STOPPING;
+					break;
+	}
+
+	switch((q->general_status[1]>>1) & 0x3)
+	{
+		case 0:	comfortzone_status.mode = CZMD_IDLE;
+					break;
+
+		case 1:	comfortzone_status.mode = CZMD_ROOM_HEATING;
+					break;
+
+		case 2:	comfortzone_status.mode = CZMD_UNKNOWN;
+					break;
+
+		case 3:	comfortzone_status.mode = CZMD_HOT_WATER;
+					break;
+	}
+
+
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
@@ -397,6 +433,55 @@ void comfortzone_decoder_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 	dump_unknown("unknown_s02_3", q->unknown3, sizeof(q->unknown3));
 
 	// ===
+	dump_unknown("unknown_general_status", q->general_status, sizeof(q->general_status));
+
+	// ===
+	NPRINT("Add energy: ");
+	NPRINTLN( (q->general_status[0] & 0x20) ? "on" : "off");
+
+	NPRINT("Mode (1): ");
+	switch(q->general_status[0] & 0x3)
+	{
+		case 0:	NPRINTLN("Heating");
+					break;
+		case 1:	NPRINTLN("1?");
+					break;
+		case 2:	NPRINTLN("2?");
+					break;
+		case 3:	NPRINTLN("Hot water");
+					break;
+	}
+
+	NPRINT("Heatpump activity: ");
+	switch((q->general_status[1]>>4) & 0x3)
+	{
+		case 0:	NPRINTLN("Stopped ?");
+					break;
+		case 1:	NPRINTLN("Stopped");
+					break;
+		case 2:	NPRINTLN("Running");
+					break;
+		case 3:	NPRINTLN("Stopping");
+					break;
+	}
+
+	NPRINT("Mode (2): ");
+	switch((q->general_status[1]>>1) & 0x3)
+	{
+		case 0:	NPRINTLN("Idle");
+					break;
+		case 1:	NPRINTLN("Heating");
+					break;
+		case 2:	NPRINTLN("2?");
+					break;
+		case 3:	NPRINTLN("Hot water");
+					break;
+	}
+
+	NPRINT("Defrost: ");
+	NPRINTLN( (q->general_status[4] & 0x04) ? "on" : "off");
+
+	// ===
 	dump_unknown("unknown_s02_3b", q->unknown3b, sizeof(q->unknown3b));
 
 	// ===
@@ -441,9 +526,9 @@ void comfortzone_decoder_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_03 *q = (R_REPLY_STATUS_03 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -459,9 +544,9 @@ void comfortzone_decoder_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_04 *q = (R_REPLY_STATUS_04 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -488,7 +573,7 @@ void comfortzone_decoder_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
 	// ===
 	reg_v = q->hot_water_production;
 
-	NPRINT("Hot water in progress (s4)?: ");
+	NPRINT("Hot water in progress (s4): ");
 	if(reg_v == 0x00)
 		NPRINTLN("no");
 	else if(reg_v == 0x77)
@@ -879,7 +964,7 @@ void comfortzone_decoder_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 	// ===
 	reg_v = get_uint16(q->heatpump_defrost_delay);
 
-	NPRINT("Heatpump - remaining max run time or remaining time to next defrost (?): ");
+	NPRINT("Heatpump - remaining time to next defrost (=remaining max runtime): ");
 	NPRINT(reg_v);
 	NPRINTLN("seconds");
 
@@ -949,9 +1034,9 @@ void comfortzone_decoder_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_07 *q = (R_REPLY_STATUS_07 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1099,9 +1184,9 @@ void comfortzone_decoder_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_09 *q = (R_REPLY_STATUS_09 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 	int i;
@@ -1159,9 +1244,9 @@ void comfortzone_decoder_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_10 *q = (R_REPLY_STATUS_10 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 	int i;
@@ -1287,9 +1372,9 @@ void comfortzone_decoder_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_11 *q = (R_REPLY_STATUS_11 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1332,9 +1417,9 @@ void comfortzone_decoder_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_12 *q = (R_REPLY_STATUS_12 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1398,9 +1483,9 @@ void comfortzone_decoder_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_13 *q = (R_REPLY_STATUS_13 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1417,9 +1502,9 @@ void comfortzone_decoder_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_14 *q = (R_REPLY_STATUS_14 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1451,9 +1536,9 @@ void comfortzone_decoder_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_15 *q = (R_REPLY_STATUS_15 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1470,9 +1555,9 @@ void comfortzone_decoder_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_16 *q = (R_REPLY_STATUS_16 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1489,9 +1574,9 @@ void comfortzone_decoder_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_17 *q = (R_REPLY_STATUS_17 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1508,9 +1593,9 @@ void comfortzone_decoder_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_18 *q = (R_REPLY_STATUS_18 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1527,9 +1612,9 @@ void comfortzone_decoder_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_19 *q = (R_REPLY_STATUS_19 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1546,9 +1631,9 @@ void comfortzone_decoder_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_20 *q = (R_REPLY_STATUS_20 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1565,9 +1650,9 @@ void comfortzone_decoder_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_22 *q = (R_REPLY_STATUS_22 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1583,9 +1668,9 @@ void comfortzone_decoder_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_23 *q = (R_REPLY_STATUS_23 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 	int i;
@@ -1655,9 +1740,9 @@ void comfortzone_decoder_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_24 *q = (R_REPLY_STATUS_24 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
@@ -1673,9 +1758,9 @@ void comfortzone_decoder_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_25(KNOWN_REGISTER *kr, R_REPLY *p)
 {
+#ifdef DEBUG
 	R_REPLY_STATUS_25 *q = (R_REPLY_STATUS_25 *)p;
 
-#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 

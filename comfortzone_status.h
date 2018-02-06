@@ -3,6 +3,22 @@
 
 #include <Arduino.h>
 
+typedef enum
+{
+	CZCMP_STOPPED,			// compressor is stopped
+	CZCMP_STOPPING,		// compressor is shutting down
+	CZCMP_RUNNING,			// compressor is up and running
+	CZCMP_UNKNOWN,			// undefined status (very rare)
+} COMFORTZONE_COMPRESSOR_ACTIVITY;
+
+typedef enum
+{
+	CZMD_IDLE,				// no mode chosen (rare)
+	CZMD_ROOM_HEATING,	// default mode (even when everything is off)
+	CZMD_HOT_WATER,		// hot water production
+	CZMD_UNKNOWN,			// undefined mode	(rarer)
+} COMFORTZONE_MODE;
+
 typedef struct
 {
 	uint16_t fan_time_to_filter_change;		// days
@@ -11,6 +27,13 @@ typedef struct
 
 	bool hot_water_production;					// true = on, false = off
 	bool room_heating_in_progress;			// true = on, false = off
+
+	COMFORTZONE_COMPRESSOR_ACTIVITY compressor_activity;
+	bool additional_power_enabled;			// true = resistor is enabled, false = resistor is disabled
+
+
+	COMFORTZONE_MODE mode;
+	bool defrost_enabled;						// true = defrost in progress, false = no defrost in progress
 
 	int16_t sensors_te1_flow_water;			// °C, * 10
 	int16_t sensors_te2_return_water;		// °C, * 10
