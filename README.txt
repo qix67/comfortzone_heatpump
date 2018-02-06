@@ -48,5 +48,8 @@ The library does not send commands (at least currently) on RS485 bus. Data
 have to be obtain using bus snooping. Heatpump control panel already sends
 periodic status query (every 5 seconds for each status packet).
 
+Example heatpump_dump.ino is a basic example showing how to use the library.
+During the first 5 seconds, output variable "comfortzone_status" is not 
+initialized or partially initialized, it is normal.
 
 
