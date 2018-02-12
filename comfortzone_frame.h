@@ -25,7 +25,7 @@ typedef struct __attribute__ ((packed))
 {
 	byte header[3];		// 65 6F DE
 	byte frame_type	;	// 02
-	byte unkown1[2];		// D3 5E
+	byte unknown1[2];		// D3 5E
 	byte addr1[4];			// 41 44 44 52 (=ADDR)
 	byte packet_size;		// cz_size-6  = 0x17  (BCD?)
 	byte cmd;				// 52 (=r)
@@ -45,7 +45,7 @@ typedef struct __attribute__ ((packed))
 {
 	byte header[3];		// 65 6F DE
 	byte frame_type	;	// 02
-	byte unkown1[2];		// D3 5E
+	byte unknown1[2];		// D3 5E
 	byte addr1[4];			// 41 44 44 52 (=ADDR)
 	byte packet_size;		// cz_size-6  = 0x18  (BCD?)
 	byte cmd;				// 57 (=W)
@@ -65,7 +65,7 @@ typedef struct __attribute__ ((packed))
 {
 	byte header[3];		// 65 6F DE
 	byte frame_type	;	// 02
-	byte unkown1[2];		// D3 5E
+	byte unknown1[2];		// D3 5E
 	byte addr1[4];			// 41 44 44 52 (=ADDR)
 	byte packet_size;		// cz_size-6  = 0x17  (BCD?)
 	byte cmd;				// 57 (=W)

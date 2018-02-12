@@ -27,7 +27,7 @@ static void dump_unknown(const char *prefix, byte *start, int length)
 }
 #endif
 
-void comfortzone_decoder_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_01 *q = (R_REPLY_STATUS_01 *)p;
 
@@ -278,7 +278,7 @@ void comfortzone_decoder_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_02 *q = (R_REPLY_STATUS_02 *)p;
 
@@ -524,7 +524,7 @@ void comfortzone_decoder_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_03 *q = (R_REPLY_STATUS_03 *)p;
@@ -542,7 +542,7 @@ void comfortzone_decoder_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_04 *q = (R_REPLY_STATUS_04 *)p;
@@ -593,7 +593,7 @@ void comfortzone_decoder_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	int reg_v;
 
@@ -778,7 +778,7 @@ void comfortzone_decoder_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_06 *q = (R_REPLY_STATUS_06 *)p;
 
@@ -1037,7 +1037,7 @@ void comfortzone_decoder_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_07 *q = (R_REPLY_STATUS_07 *)p;
@@ -1065,7 +1065,7 @@ void comfortzone_decoder_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_08 *q = (R_REPLY_STATUS_08 *)p;
 
@@ -1187,7 +1187,7 @@ void comfortzone_decoder_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	int reg_v;
 
@@ -1257,7 +1257,7 @@ void comfortzone_decoder_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_10 *q = (R_REPLY_STATUS_10 *)p;
@@ -1385,7 +1385,7 @@ void comfortzone_decoder_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_11 *q = (R_REPLY_STATUS_11 *)p;
 
@@ -1432,7 +1432,7 @@ void comfortzone_decoder_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_12 *q = (R_REPLY_STATUS_12 *)p;
@@ -1498,7 +1498,7 @@ void comfortzone_decoder_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_13 *q = (R_REPLY_STATUS_13 *)p;
@@ -1517,7 +1517,7 @@ void comfortzone_decoder_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_14 *q = (R_REPLY_STATUS_14 *)p;
@@ -1551,7 +1551,7 @@ void comfortzone_decoder_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_15 *q = (R_REPLY_STATUS_15 *)p;
@@ -1570,7 +1570,7 @@ void comfortzone_decoder_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_16 *q = (R_REPLY_STATUS_16 *)p;
@@ -1589,7 +1589,7 @@ void comfortzone_decoder_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_17 *q = (R_REPLY_STATUS_17 *)p;
@@ -1608,7 +1608,7 @@ void comfortzone_decoder_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_18 *q = (R_REPLY_STATUS_18 *)p;
@@ -1627,7 +1627,7 @@ void comfortzone_decoder_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_19 *q = (R_REPLY_STATUS_19 *)p;
@@ -1646,7 +1646,7 @@ void comfortzone_decoder_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_20 *q = (R_REPLY_STATUS_20 *)p;
@@ -1665,7 +1665,7 @@ void comfortzone_decoder_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_22 *q = (R_REPLY_STATUS_22 *)p;
@@ -1683,7 +1683,7 @@ void comfortzone_decoder_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_23 *q = (R_REPLY_STATUS_23 *)p;
@@ -1755,7 +1755,7 @@ void comfortzone_decoder_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_24 *q = (R_REPLY_STATUS_24 *)p;
@@ -1773,7 +1773,7 @@ void comfortzone_decoder_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_status_25(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_status_25(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_25 *q = (R_REPLY_STATUS_25 *)p;

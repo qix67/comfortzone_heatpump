@@ -6,7 +6,7 @@
 // this file contains basic decoding function for commands and replies.
 // Unless debug mode is set, nothing is done here
 
-void comfortzone_decoder_cmd_r_generic(KNOWN_REGISTER *kr, R_CMD *p)
+void czdec_cmd_r_generic(KNOWN_REGISTER *kr, R_CMD *p)
 {
 #ifdef DEBUG
 	NPRINT("Wanted reply size: ");
@@ -22,7 +22,7 @@ void comfortzone_decoder_cmd_r_generic(KNOWN_REGISTER *kr, R_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_generic_2byte(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_generic_2byte(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -49,7 +49,7 @@ void comfortzone_decoder_cmd_w_generic_2byte(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_temp(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_temp(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -71,7 +71,7 @@ void comfortzone_decoder_cmd_w_temp(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_temp_1byte(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_temp_1byte(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -93,7 +93,7 @@ void comfortzone_decoder_cmd_w_temp_1byte(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_freq(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_freq(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -115,7 +115,7 @@ void comfortzone_decoder_cmd_w_freq(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_time(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_time(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -137,7 +137,7 @@ void comfortzone_decoder_cmd_w_time(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_percentage(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_percentage(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -159,7 +159,7 @@ void comfortzone_decoder_cmd_w_percentage(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_extra_hot_water(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_extra_hot_water(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -181,7 +181,7 @@ void comfortzone_decoder_cmd_w_extra_hot_water(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_daylight_saving(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_daylight_saving(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -203,7 +203,7 @@ void comfortzone_decoder_cmd_w_daylight_saving(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_sanitary_priority(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_sanitary_priority(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -227,7 +227,7 @@ void comfortzone_decoder_cmd_w_sanitary_priority(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_day_delay(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_day_delay(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -250,7 +250,7 @@ void comfortzone_decoder_cmd_w_day_delay(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_fan_speed(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_fan_speed(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -274,7 +274,7 @@ void comfortzone_decoder_cmd_w_fan_speed(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_language(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_language(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -296,7 +296,7 @@ void comfortzone_decoder_cmd_w_language(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_cmd_w_digit(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_cmd_w_digit(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -319,7 +319,7 @@ void comfortzone_decoder_cmd_w_digit(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_generic_2byte(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_generic_2byte(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -347,7 +347,7 @@ void comfortzone_decoder_reply_r_generic_2byte(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_temp(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_temp(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -369,7 +369,7 @@ void comfortzone_decoder_reply_r_temp(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_temp_1byte(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_temp_1byte(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -391,7 +391,7 @@ void comfortzone_decoder_reply_r_temp_1byte(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_freq(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_freq(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -413,7 +413,7 @@ void comfortzone_decoder_reply_r_freq(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_time(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_time(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -435,7 +435,7 @@ void comfortzone_decoder_reply_r_time(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_percentage(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_percentage(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -457,7 +457,7 @@ void comfortzone_decoder_reply_r_percentage(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_extra_hot_water(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_extra_hot_water(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -479,7 +479,7 @@ void comfortzone_decoder_reply_r_extra_hot_water(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_daylight_saving(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_daylight_saving(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	// not tested
@@ -502,7 +502,7 @@ void comfortzone_decoder_reply_r_daylight_saving(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_sanitary_priority(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_sanitary_priority(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -526,7 +526,7 @@ void comfortzone_decoder_reply_r_sanitary_priority(KNOWN_REGISTER *kr, R_REPLY *
 #endif
 }
 
-void comfortzone_decoder_reply_r_day_delay(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_day_delay(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -549,7 +549,7 @@ void comfortzone_decoder_reply_r_day_delay(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_fan_speed(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_fan_speed(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -573,7 +573,7 @@ void comfortzone_decoder_reply_r_fan_speed(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_r_language(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_language(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -596,7 +596,7 @@ void comfortzone_decoder_reply_r_language(KNOWN_REGISTER *kr, R_REPLY *p)
 }
 
 
-void comfortzone_decoder_reply_r_digit(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec_reply_r_digit(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -615,7 +615,7 @@ void comfortzone_decoder_reply_r_digit(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p)
+void czdec_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p)
 {
 #ifdef DEBUG
 	NPRINT("Value: ");
@@ -635,7 +635,7 @@ void comfortzone_decoder_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p)
 #endif
 }
 
-void comfortzone_decoder_empty(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec_empty(KNOWN_REGISTER *kr, W_CMD *p)
 {
 }
 
