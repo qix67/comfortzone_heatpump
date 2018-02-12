@@ -23,14 +23,11 @@ typedef struct
 {
 	uint16_t fan_time_to_filter_change;		// days
 
-	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
-
 	bool hot_water_production;					// true = on, false = off
 	bool room_heating_in_progress;			// true = on, false = off
 
 	COMFORTZONE_COMPRESSOR_ACTIVITY compressor_activity;
 	bool additional_power_enabled;			// true = resistor is enabled, false = resistor is disabled
-
 
 	COMFORTZONE_MODE mode;
 	bool defrost_enabled;						// true = defrost in progress, false = no defrost in progress
@@ -57,6 +54,18 @@ typedef struct
 
 	uint32_t compressor_runtime;				// minutes
 	uint32_t total_runtime;						// minutes
+
+	// current user settings
+	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
+
+	int16_t room_heating_setting;				// °C, * 10
+	int16_t hot_water_setting;					// °C, * 10
+	bool extra_hot_water_setting;				// true = on, false = off
+
+	byte hot_water_priority_setting;			// 1 = low, 2 = normal, 3 = fast
+
+	byte led_luminosity_setting;				// 0 = off -> 6 = highest level
+
 } COMFORTZONE_STATUS;
 
 extern COMFORTZONE_STATUS comfortzone_status;

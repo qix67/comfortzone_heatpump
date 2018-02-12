@@ -612,6 +612,11 @@ void comfortzone_decoder_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 
 	comfortzone_status.fan_speed = q->fan_speed;
 
+	comfortzone_status.room_heating_setting = get_uint16(q->hot_water_calculated_setting);
+	comfortzone_status.hot_water_setting = get_uint16(q->hot_water_calculated_setting);
+
+	comfortzone_status.extra_hot_water_setting = ((q->extra_hot_water == 0x0F)? true : false);
+
 #ifdef DEBUG
 	float reg_v_f;
 	int i;
@@ -1184,10 +1189,20 @@ void comfortzone_decoder_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
+	int reg_v;
+
 	R_REPLY_STATUS_09 *q = (R_REPLY_STATUS_09 *)p;
 
-	int reg_v;
+	reg_v = get_uint16(q->hotwater_priority);
+
+	if(reg_v == 0x4151)
+		comfortzone_status.hot_water_priority_setting = 1;
+	else if(reg_v == 0x4152)
+		comfortzone_status.hot_water_priority_setting = 2;
+	else if(reg_v == 0x4153)
+		comfortzone_status.hot_water_priority_setting = 3;
+
+#ifdef DEBUG
 	float reg_v_f;
 	int i;
 
@@ -1372,9 +1387,11 @@ void comfortzone_decoder_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
 
 void comfortzone_decoder_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_11 *q = (R_REPLY_STATUS_11 *)p;
 
+	comfortzone_status.led_luminosity_setting = q->led_luminosity;
+
+#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 
