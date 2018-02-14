@@ -9,9 +9,8 @@
 #include "comfortzone_crafting.h"
 
 static byte cz_buf[256];
-static int cz_size = 0;
-static int cz_frame_type = -1;
-static int cz_full_frame_size = -1;
+static uint16_t cz_size = 0;		// #bytes in cz_buf
+static uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
 
 COMFORTZONE_STATUS comfortzone_status;
 
@@ -128,204 +127,111 @@ static void dump_frame(const char *prefix)
 
 
 
-static void comfortzone_process_frame(int frame_type, byte *reg_num)
+static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 {
 	int i = 0;
 
 	while(kr_decoder[i].reg_name != NULL)
 	{
-		if(!memcmp(reg_num + 1, kr_decoder[i].reg_num, 9))
+		if(!memcmp(czph->reg_num, kr_decoder[i].reg_num, 9))
 		{
-
-			switch(frame_type)
+			switch(czph->cmd)
 			{
-				case FRAME_TYPE_02_CMD_p2:
-												if(reg_num[0] == 'R')
-												{
-#ifdef DEBUG
-													NPRINT(kr_decoder[i].reg_name);
-													NPRINTLN(" (get): ");
-#endif
+				case 'R':
+							DPRINT(kr_decoder[i].reg_name);
+							DPRINTLN(" (get): ");
 
-													kr_decoder[i].cmd_r(&kr_decoder[i], (R_CMD*)cz_buf);
+							kr_decoder[i].cmd_r(&kr_decoder[i], (R_CMD*)czph);
 
-													DPRINTLN("====================================================");
-													return;
-												}
-												else if(reg_num[0] == 'W')
-												{
-#ifdef DEBUG
-													NPRINT(kr_decoder[i].reg_name);
-													NPRINTLN(" (set): ");
-#endif
+							DPRINTLN("====================================================");
+							return;
 
-													kr_decoder[i].cmd_w(&kr_decoder[i], (W_CMD*)cz_buf);
+				case 'W':
+							DPRINT(kr_decoder[i].reg_name);
+							DPRINTLN(" (set): ");
 
-													DPRINTLN("====================================================");
-													return;
-												}
-												break;
+							kr_decoder[i].cmd_w(&kr_decoder[i], (W_CMD*)czph);
+
+							DPRINTLN("====================================================");
+							return;
 												
-				case FRAME_TYPE_02_REPLY:
-												if(reg_num[0] == 'r')
-												{
-#ifdef DEBUG
-													NPRINT(kr_decoder[i].reg_name);
-													NPRINTLN(" (reply get): ");
-#endif
+				case 'r':
+							DPRINT(kr_decoder[i].reg_name);
+							DPRINTLN(" (reply get): ");
 
-													kr_decoder[i].reply_r(&kr_decoder[i], (R_REPLY*)cz_buf);
+							kr_decoder[i].reply_r(&kr_decoder[i], (R_REPLY*)czph);
 
-													DPRINTLN("====================================================");
-													return;
-												}
-												else if(reg_num[0] == 'w')
-												{
-#ifdef DEBUG
-													NPRINT(kr_decoder[i].reg_name);
-													NPRINTLN(" (reply set): ");
-#endif
+							DPRINTLN("====================================================");
+							return;
 
-													kr_decoder[i].reply_w(&kr_decoder[i], (W_REPLY*)cz_buf);
+				case 'w':
+							DPRINT(kr_decoder[i].reg_name);
+							DPRINTLN(" (reply set): ");
 
-													DPRINTLN("====================================================");
-													return;
-												}
-												break;
-												
+							kr_decoder[i].reply_w(&kr_decoder[i], (W_REPLY*)czph);
+
+							DPRINTLN("====================================================");
+							return;
 			}
 		}
 
 		i++;
 	}
 
-	NPRINTLN("unknown register");
+	DPRINTLN("unknown register");
 	dump_frame("UNK:");
-}
-
-static void comfortzone_process_frame15()
-{
-	// une frame de ce type commence toujours par
-	// 65 6F DE 15 FF FF FF FF 00 F4 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 14 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-	// peut-être s'agit-il de la remontée des alarmes
 }
 
 bool comfortzone_receive(byte input_byte)
 {
-	// all frame start by 0x65 0x6F 0xDE
-	switch(cz_size)
+	// there is no frame header. First we must collect 21 bytes (sizeof (CZ_PACKET_HEADER)).
+	// To find start of frame, it is possible to check if the duration between 2 bytes is not too long
+	// (= > 8 bits sent @19.2Kbit/s) which is not possible here as the library does not receive data itself
+	// and moreover receiver may (should) have a buffer hidding data stream pause.
+	// The 2nd solution is to check if 
+	//  - unknown variable (byte[5 & 6]) is either {0xD3, 0x5E} (command) or {0x07, 0x8A} (reply)
+	//  - and if cmd byte is 'R' or 'W' (in command case) or 'r' or 'w' (in reply case)
+	//
+	// if not, first byte is discarded
+
+	cz_buf[cz_size++] = input_byte;
+
+	if(cz_size < sizeof(CZ_PACKET_HEADER))
+		return false;
+
+	if(cz_size == sizeof(CZ_PACKET_HEADER))
 	{
-		case 0:
-					if(input_byte != 0x65)
-						return false;
+		CZ_PACKET_HEADER *czph = (CZ_PACKET_HEADER *)cz_buf;
 
-					cz_buf[cz_size++] = input_byte;
-					return false;
-				
-		case 1:
-					if(input_byte != 0x6F)
-						return false;
-
-					cz_buf[cz_size++] = input_byte;
-					return false;
-
-		case 2:
-					if(input_byte != 0xDE)
-						return false;
-
-					cz_buf[cz_size++] = input_byte;
-					return false;
-
-		case 3:	
-					switch(input_byte)
-					{
-						case FRAME_TYPE_01:		// empty frame ?
-								cz_size = 0;
-								break;
-
-						case FRAME_TYPE_02:		// either a command frame or a command response frame
-								cz_buf[cz_size++] = input_byte;
-								cz_frame_type = FRAME_TYPE_02;
-								break;
-
-						case FRAME_TYPE_15:		// broadcast frame ?
-								cz_buf[cz_size++] = input_byte;
-								cz_frame_type = FRAME_TYPE_15;
-								cz_full_frame_size = 0x74;			// size of frame
-								break;
-					}
-					return false;
-
-		default:
-					switch(cz_frame_type)
-					{
-						case FRAME_TYPE_02:
-								cz_buf[cz_size++] = input_byte;
-
-								if(input_byte == 0xD3)
-								{	// it a type 2 command frame, 6 additionnal bytes are required to have frame size
-									cz_frame_type = FRAME_TYPE_02_CMD_p1;
-								}
-								else
-								{
-									cz_frame_type = FRAME_TYPE_02_REPLY;
-									cz_full_frame_size = input_byte - 6;
-								}
-								return false;
-
-						case FRAME_TYPE_02_CMD_p1:
-								cz_buf[cz_size++] = input_byte;
-
-								if(cz_size == 11)
-								{
-									cz_frame_type = FRAME_TYPE_02_CMD_p2;
-									cz_full_frame_size = input_byte + 6;
-								}
-
-								return false;
-
-						case FRAME_TYPE_02_CMD_p2:
-								cz_buf[cz_size++] = input_byte;
-
-								if(cz_size == cz_full_frame_size)
-								{
-									comfortzone_process_frame(FRAME_TYPE_02_CMD_p2, cz_buf + 11);;
-									cz_size = 0;
-									return true;
-								}
-
-								return false;
-
-							case FRAME_TYPE_02_REPLY:
-								cz_buf[cz_size++] = input_byte;
-
-								if(cz_size == cz_full_frame_size)
-								{
-									comfortzone_process_frame(FRAME_TYPE_02_REPLY, cz_buf + 5);
-									cz_size = 0;
-									return true;
-								}
-
-								return false;
-
-						case FRAME_TYPE_15:
-								cz_buf[cz_size++] = input_byte;
-
-								if(cz_size == cz_full_frame_size)
-								{
-									comfortzone_process_frame15();
-									cz_size = 0;
-									return true;
-								}
-
-								return false;
-
-					}
-
-					// we should never come here
-					cz_size = 0;
-					return false;
+		if(
+				( (czph->unknown[0] == 0xD3) && (czph->unknown[1] == 0x5E) && ((czph->cmd == 'W') || (czph->cmd == 'R')) )
+			||
+				( (czph->unknown[0] == 0x07) && (czph->unknown[1] == 0x8A) && ((czph->cmd == 'w') || (czph->cmd == 'r')) )
+			)
+		{
+			cz_full_frame_size = czph->packet_size;
+		}
+		else
+		{
+			memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
+			cz_size--;
+			return false;
+		}
 	}
+
+	if(cz_size != cz_full_frame_size)
+	{
+		if(cz_size == sizeof(cz_buf))
+		{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
+			cz_size = 0;
+		}
+
+		return false;
+	}
+
+	comfortzone_process_frame((CZ_PACKET_HEADER *)cz_buf);
+	cz_size = 0;
+	return true;
 }
 
 // craft one command frame
@@ -347,6 +253,7 @@ uint16_t comfortzone_craft(byte *output_buffer, KNOWN_REGISTER_CRAFT_NAME reg_cn
 		case KR_UNCRAFTABLE:				// uncraftable packet
 									break;
 
+#if 0
 		case KR_FAN_SPEED:				// set fan speed, parameter => 1=slow, 2=normal, 3=fast
 									switch(parameter)
 									{
@@ -493,6 +400,7 @@ uint16_t comfortzone_craft(byte *output_buffer, KNOWN_REGISTER_CRAFT_NAME reg_cn
 		case KR_EXTRA_HOT_WATER_OFF:	// disable extra hot water, no parameter
 									return cz_craft_w_cmd(output_buffer, kr_decoder[kr_idx].reg_num, 0xFFFE, 0x90);
 
+#endif
 	}
 
 	return 0;

@@ -1,3 +1,4 @@
+#if 0
 #include "comfortzone_heatpump.h"
 #include "comfortzone_config.h"
 #include "comfortzone_frame.h"
@@ -76,3 +77,4 @@ int cz_craft_w_small_cmd(byte *output_buffer, byte *reg_num, byte value, byte cr
 	return sizeof(W_SMALL_CMD);
 }
 
+#endif
