@@ -148,8 +148,8 @@ typedef struct __attribute__ ((packed))
 
 	byte unknown9[6];
 
-	byte pac_compressor_min_frequency[2];		// Hz, LSB, 2 bytes, * 10
-	byte pac_compressor_max_frequency[2];		// Hz, LSB, 2 bytes, * 10
+	byte heating_compressor_min_frequency[2];		// Hz, LSB, 2 bytes, * 10
+	byte heating_compressor_max_frequency[2];		// Hz, LSB, 2 bytes, * 10
 	byte unknown9a[1];
 
 	byte crc;
@@ -347,7 +347,7 @@ typedef struct __attribute__ ((packed))
 
 	byte unknown1b[6];
 
-	byte heatpump_defrost_delay[2];	// minute, 2 bytes, LSB, *10 (FAUX)
+	byte heatpump_defrost_delay[2];	// minute, 2 bytes, LSB, *10 (erroneous)
 
 	byte unknown2[12];
 

@@ -249,22 +249,22 @@ void czdec_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 	dump_unknown("unknown_s01_9", q->unknown9, sizeof(q->unknown9));
 
 	// ===
-	reg_v = get_uint16(q->pac_compressor_min_frequency);
+	reg_v = get_uint16(q->heating_compressor_min_frequency);
 
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	NPRINT("PAC compressor min freq.: ");
+	NPRINT("Heating compressor min freq.: ");
 	NPRINT(reg_v_f);
 	NPRINTLN("Hz");
 
 	// ===
-	reg_v = get_uint16(q->pac_compressor_max_frequency);
+	reg_v = get_uint16(q->heating_compressor_max_frequency);
 
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	NPRINT("PAC compressor max freq.: ");
+	NPRINT("Heating compressor max freq.: ");
 	NPRINT(reg_v_f);
 	NPRINTLN("Hz");
 
@@ -822,8 +822,8 @@ void czdec_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	// varie tout seul donc pas le vrai max
-	NPRINT("Heatpump - Compressor max frequency (1) FAUX: ");
+	// not real max as it changes autonomously
+	NPRINT("Heatpump - Compressor max frequency (1) (erroneous): ");
 	NPRINT(reg_v_f);
 	NPRINTLN("Hz");
 
@@ -833,7 +833,7 @@ void czdec_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	// varie tout seul donc pas le vrai max
+	// not real max as it changes autonomously
 	NPRINT("Hot water - Compressor active max frequency: ");
 	NPRINT(reg_v_f);
 	NPRINTLN("Hz");
@@ -1099,7 +1099,7 @@ void czdec_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
 	NPRINTLN(reg_v, HEX);
 
 	// ===
-	dump_unknown("unknown_s08_0 (augmente de 1 chaque jour mais c'est pas day of week)", &(q->unknown0), sizeof(q->unknown0));
+	dump_unknown("unknown_s08_0 (increase by 1 every day but it is not day of week)", &(q->unknown0), sizeof(q->unknown0));
 
 	// ===
 	reg_v = q->bcd_day;
