@@ -227,7 +227,21 @@ typedef struct __attribute__ ((packed))
 								//                               =x --------------> x = 1 (defrost in progress), 0 (no defrost in progress)
 								//                                   =0 ----------> always
 								//                                       =0 ------> always
-	byte unknown3b[24];
+
+	byte unknown3b[3];
+
+	byte pending_alarm[2];		// bitmask of current alarms
+										// byte 0: | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+										//                                  =1 -----> filter replacement alarm
+
+	byte unknown3c[6];
+
+	byte acknowledged_alarm[2];
+										// bitmask of acknowledged alarms
+										// before the corresponding bits are cleared from pending_alarm[], is it set in acknowledged_alarm[] using
+										// an access to register 0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x29, 0x00. Register value will be loaded in this array
+
+	byte unknown3d[11];
 
 	// Note: at least 24, not sure above
 #define STATUS_02_NB_SENSORS 62

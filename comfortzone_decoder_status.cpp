@@ -281,6 +281,7 @@ void czdec_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 void czdec_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_02 *q = (R_REPLY_STATUS_02 *)p;
+	uint16_t active_alarm;
 
 	comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[0]);
 	comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[1]);
@@ -324,6 +325,9 @@ void czdec_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 					break;
 	}
 
+	active_alarm = get_uint16(q->pending_alarm) ^ get_uint16(q->acknowledged_alarm);
+
+	comfortzone_status.filter_alarm = (active_alarm & 0x0002) ? true : false ;
 
 #ifdef DEBUG
 	int reg_v;
@@ -483,6 +487,46 @@ void czdec_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 
 	// ===
 	dump_unknown("unknown_s02_3b", q->unknown3b, sizeof(q->unknown3b));
+
+	// ===
+	reg_v = get_uint16(q->pending_alarm);
+	NPRINT("Pending alarm: ");
+
+	if(reg_v & 0x0002)
+	{
+		NPRINT("filter ");
+	}
+
+	if(reg_v & ~0x0002)
+	{
+		NPRINT("(0x");
+		NPRINT(reg_v);
+		NPRINT(")");
+	}
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_s02_3c", q->unknown3c, sizeof(q->unknown3c));
+
+	// ===
+	reg_v = get_uint16(q->acknowledged_alarm);
+	NPRINT("Acknowledged alarm: ");
+
+	if(reg_v & 0x0002)
+	{
+		NPRINT("filter ");
+	}
+
+	if(reg_v & ~0x0002)
+	{
+		NPRINT("(0x");
+		NPRINT(reg_v);
+		NPRINT(")");
+	}
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_s02_3d", q->unknown3d, sizeof(q->unknown3d));
 
 	// ===
 	for(i = 0 ; i < STATUS_02_NB_SENSORS; i++)

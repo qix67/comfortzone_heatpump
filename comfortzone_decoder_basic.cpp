@@ -188,9 +188,10 @@ void czdec_cmd_w_clr_alarm(KNOWN_REGISTER *kr, W_CMD *p)
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0x0002)
+	if(reg_v & 0x0002)
 		NPRINTLN("filter alarm");
-	else
+
+	if(reg_v & ~0x0002)
 		NPRINTLN(reg_v, HEX);
 
 	NPRINT("crc: ");
@@ -553,9 +554,10 @@ void czdec_reply_r_clr_alarm(KNOWN_REGISTER *kr, R_REPLY *p)
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0x0002)
+	if(reg_v & 0x0002)
 		NPRINTLN("filter alarm");
-	else
+
+	if(reg_v & ~0x0002)
 		NPRINTLN(reg_v, HEX);
 
 	NPRINT("crc: ");

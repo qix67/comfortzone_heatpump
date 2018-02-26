@@ -23,6 +23,8 @@ typedef struct
 {
 	uint16_t fan_time_to_filter_change;		// days
 
+	bool filter_alarm;							// true = replace/clean filter alarm, false = filter ok
+
 	bool hot_water_production;					// true = on, false = off
 	bool room_heating_in_progress;			// true = on, false = off
 
