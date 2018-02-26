@@ -20,6 +20,8 @@ static KNOWN_REGISTER kr_decoder[] =
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x41, 0x19, 0x00}, KR_EXTRA_HOT_WATER_ON, "Extra hot water - off", czdec_cmd_r_generic, czdec_cmd_w_extra_hot_water, czdec_reply_r_extra_hot_water, czdec_reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x19, 0x00}, KR_EXTRA_HOT_WATER_OFF, "Extra hot water - on", czdec_cmd_r_generic, czdec_cmd_w_extra_hot_water, czdec_reply_r_extra_hot_water, czdec_reply_w_generic},
 
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x29, 0x00}, KR_UNCRAFTABLE, "Clear alarm", czdec_cmd_r_generic, czdec_cmd_w_clr_alarm, czdec_reply_r_clr_alarm, czdec_reply_w_generic},
+
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x40, 0x00, 0x00}, KR_UNCRAFTABLE, "Daylight saving - on", czdec_cmd_r_generic, czdec_cmd_w_daylight_saving, czdec_reply_r_daylight_saving, czdec_reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x00, 0x00}, KR_UNCRAFTABLE, "Daylight saving - off", czdec_cmd_r_generic, czdec_cmd_w_daylight_saving, czdec_reply_r_daylight_saving, czdec_reply_w_generic},
 
@@ -80,6 +82,7 @@ static KNOWN_REGISTER kr_decoder[] =
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x04, 0x9C, 0x3E}, KR_UNCRAFTABLE, "Status 19", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_19, czdec_reply_w_generic},	// 0xC2 bytes
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x05, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 08", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_08, czdec_reply_w_generic},	// 0x50 bytes
+
 
 		{ {0}, KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
 	};

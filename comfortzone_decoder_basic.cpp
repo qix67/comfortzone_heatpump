@@ -181,6 +181,26 @@ void czdec_cmd_w_extra_hot_water(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
+void czdec_cmd_w_clr_alarm(KNOWN_REGISTER *kr, W_CMD *p)
+{
+#ifdef DEBUG
+	int reg_v;
+
+	reg_v = get_uint16(p->reg_value);
+
+	if(reg_v == 0x0002)
+		NPRINTLN("filter alarm");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+	return;
+#endif
+}
+
 void czdec_cmd_w_daylight_saving(KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
@@ -515,6 +535,26 @@ void czdec_reply_r_sanitary_priority(KNOWN_REGISTER *kr, R_REPLY *p)
 		NPRINTLN("normal");
 	else if(reg_v == 0x4153)
 		NPRINTLN("high");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+	return;
+#endif
+}
+
+void czdec_reply_r_clr_alarm(KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	int reg_v;
+
+	reg_v = get_uint16(p->reg_value);
+
+	if(reg_v == 0x0002)
+		NPRINTLN("filter alarm");
 	else
 		NPRINTLN(reg_v, HEX);
 

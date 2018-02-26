@@ -31,6 +31,7 @@ void czdec_cmd_w_day_delay(KNOWN_REGISTER *kr, W_CMD *p);
 void czdec_cmd_w_fan_speed(KNOWN_REGISTER *kr, W_CMD *p);
 void czdec_cmd_w_language(KNOWN_REGISTER *kr, W_CMD *p);
 void czdec_cmd_w_digit(KNOWN_REGISTER *kr, W_CMD *p);
+void czdec_cmd_w_clr_alarm(KNOWN_REGISTER *kr, W_CMD *p);
 
 void czdec_reply_r_generic_2byte(KNOWN_REGISTER *kr, R_REPLY *p);
 void czdec_reply_r_temp(KNOWN_REGISTER *kr, R_REPLY *p);
@@ -45,6 +46,7 @@ void czdec_reply_r_day_delay(KNOWN_REGISTER *kr, R_REPLY *p);
 void czdec_reply_r_fan_speed(KNOWN_REGISTER *kr, R_REPLY *p);
 void czdec_reply_r_language(KNOWN_REGISTER *kr, R_REPLY *p);
 void czdec_reply_r_digit(KNOWN_REGISTER *kr, R_REPLY *p);
+void czdec_reply_r_clr_alarm(KNOWN_REGISTER *kr, R_REPLY *p);
 void czdec_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p);
 
 void czdec_empty(KNOWN_REGISTER *kr, W_CMD *p);
