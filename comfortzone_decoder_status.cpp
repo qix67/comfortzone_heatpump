@@ -656,7 +656,7 @@ void czdec_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 
 	comfortzone_status.fan_speed = q->fan_speed;
 
-	comfortzone_status.room_heating_setting = get_uint16(q->hot_water_calculated_setting);
+	comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
 	comfortzone_status.hot_water_setting = get_uint16(q->hot_water_calculated_setting);
 
 	comfortzone_status.extra_hot_water_setting = ((q->extra_hot_water == 0x0F)? true : false);
