@@ -24,9 +24,27 @@
 
 #include <Arduino.h>
 
+typedef enum processed_frame_type
+{
+	PFT_NONE,		// no full frame received and process
+	PFT_QUERY,		// received frame was a command
+	PFT_REPLY,		// received frame was a reply
+	PFT_UNKNOWN,	// received frame has an unknown type
+} PROCESSED_FRAME_TYPE;
+
 // process 1 byte from input stream (RS485)
-// output: true = full frame received and processed
-bool comfortzone_receive(byte input_byte);
+// output: PROCESSED_FRAME_TYPE
+PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte);
+
+// for debug purpose, it can be useful to get full frame
+// input: pointer on buffer where last full frame will be copied
+//        max size of buffer
+//        size of the last full frame received
+// If buffer is set to NULL, frame grabber is disabled
+// If buffer is not NULL, each time comfortzone_receive() reply is not PFT_NONE, the received frame will
+// be copied into buffer and *frame_size will be updated
+// recommended buffer_size is 256 bytes
+void comfortzone_set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size);
 
 // list of craftable command packets
 typedef enum known_register_craft_name

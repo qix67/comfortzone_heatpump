@@ -12,6 +12,10 @@ static byte cz_buf[256];
 static uint16_t cz_size = 0;		// #bytes in cz_buf
 static uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
 
+static byte *grab_buffer = NULL;
+static uint16_t grab_buffer_size = 0;
+static uint16_t *grab_buffer_frame_size = NULL;
+
 COMFORTZONE_STATUS comfortzone_status;
 
 static KNOWN_REGISTER kr_decoder[] =
@@ -129,8 +133,7 @@ static void dump_frame(const char *prefix)
 }
 
 
-
-static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
+static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 {
 	int i = 0;
 
@@ -147,7 +150,7 @@ static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							kr_decoder[i].cmd_r(&kr_decoder[i], (R_CMD*)czph);
 
 							DPRINTLN("====================================================");
-							return;
+							return PFT_QUERY;
 
 				case 'W':
 							DPRINT(kr_decoder[i].reg_name);
@@ -156,7 +159,7 @@ static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							kr_decoder[i].cmd_w(&kr_decoder[i], (W_CMD*)czph);
 
 							DPRINTLN("====================================================");
-							return;
+							return PFT_QUERY;
 												
 				case 'r':
 							DPRINT(kr_decoder[i].reg_name);
@@ -165,7 +168,7 @@ static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							kr_decoder[i].reply_r(&kr_decoder[i], (R_REPLY*)czph);
 
 							DPRINTLN("====================================================");
-							return;
+							return PFT_REPLY;
 
 				case 'w':
 							DPRINT(kr_decoder[i].reg_name);
@@ -174,7 +177,7 @@ static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							kr_decoder[i].reply_w(&kr_decoder[i], (W_REPLY*)czph);
 
 							DPRINTLN("====================================================");
-							return;
+							return PFT_REPLY;
 			}
 		}
 
@@ -183,10 +186,13 @@ static void comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 
 	DPRINTLN("unknown register");
 	dump_frame("UNK:");
+	return PFT_UNKNOWN;
 }
 
-bool comfortzone_receive(byte input_byte)
+PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte)
 {
+	PROCESSED_FRAME_TYPE pft;
+
 	// there is no frame header. First we must collect 21 bytes (sizeof (CZ_PACKET_HEADER)).
 	// To find start of frame, it is possible to check if the duration between 2 bytes is not too long
 	// (= > 8 bits sent @19.2Kbit/s) which is not possible here as the library does not receive data itself
@@ -200,7 +206,7 @@ bool comfortzone_receive(byte input_byte)
 	cz_buf[cz_size++] = input_byte;
 
 	if(cz_size < sizeof(CZ_PACKET_HEADER))
-		return false;
+		return PFT_NONE;
 
 	if(cz_size == sizeof(CZ_PACKET_HEADER))
 	{
@@ -218,7 +224,7 @@ bool comfortzone_receive(byte input_byte)
 		{
 			memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
 			cz_size--;
-			return false;
+			return PFT_NONE;
 		}
 	}
 
@@ -229,12 +235,51 @@ bool comfortzone_receive(byte input_byte)
 			cz_size = 0;
 		}
 
-		return false;
+		return PFT_NONE;
 	}
 
-	comfortzone_process_frame((CZ_PACKET_HEADER *)cz_buf);
+	pft = comfortzone_process_frame((CZ_PACKET_HEADER *)cz_buf);
+
+	if(grab_buffer)
+	{
+		if(cz_size > grab_buffer_size)
+		{
+			// frame is too big for grab buffer => notify empty frame
+			*grab_buffer_frame_size = 0;
+		}
+		else
+		{
+			memcpy(grab_buffer, cz_buf, cz_size);
+			*grab_buffer_frame_size = cz_size;
+		}
+	}
+
 	cz_size = 0;
-	return true;
+	return pft;
+}
+
+// for debug purpose, it can be useful to get full frame
+// input: pointer on buffer where last full frame will be copied
+//        max size of buffer
+//        size of the last full frame received
+// If buffer is set to NULL, frame grabber is disabled
+// If buffer is not NULL, each time comfortzone_receive() reply is not PFT_NONE, the received frame will
+// be copied into buffer and *frame_size will be updated
+// recommended buffer_size is 256 bytes
+void comfortzone_set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size)
+{
+	if(buffer == NULL)
+	{
+		grab_buffer = NULL;
+		grab_buffer_size = 0;
+		grab_buffer_frame_size = NULL;
+	}
+	else
+	{
+		grab_buffer = buffer;
+		grab_buffer_size = buffer_size;
+		grab_buffer_frame_size = frame_size;
+	}
 }
 
 // craft one command frame

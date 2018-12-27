@@ -4,9 +4,9 @@
 #undef DEBUG
 
 // Serial console
-#define OUTSER Serial
+//#define OUTSER Serial1
 
-#if defined(DEBUG)
+#if defined(DEBUG) && defined(OUTSER)
 #define DPRINT(args...)    OUTSER.print(args)
 #define DPRINTLN(args...)  OUTSER.println(args)
 #else
@@ -15,7 +15,13 @@
 #endif
 
 // normal print
+#if defined(OUTSER)
 #define NPRINT(args...)    OUTSER.print(args)
 #define NPRINTLN(args...)  OUTSER.println(args)
+#else
+#define NPRINT(args...)
+#define NPRINTLN(args...)
+#endif
+
 
 #endif
