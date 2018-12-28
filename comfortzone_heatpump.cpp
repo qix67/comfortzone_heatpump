@@ -1,3 +1,5 @@
+#include <FastCRC.h>
+
 #include "comfortzone_heatpump.h"
 #include "comfortzone_config.h"
 #include "comfortzone_frame.h"
@@ -7,6 +9,8 @@
 #include "comfortzone_decoder_status.h"
 
 #include "comfortzone_crafting.h"
+
+FastCRC8 CRC8;
 
 static byte cz_buf[256];
 static uint16_t cz_size = 0;		// #bytes in cz_buf
@@ -238,7 +242,15 @@ PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte)
 		return PFT_NONE;
 	}
 
-	pft = comfortzone_process_frame((CZ_PACKET_HEADER *)cz_buf);
+	// check frame CRC (last byte of buffer is CRC
+	if(CRC8.maxim(cz_buf, cz_size - 1) == cz_buf[cz_size - 1])
+	{
+		pft = comfortzone_process_frame((CZ_PACKET_HEADER *)cz_buf);
+	}
+	else
+	{
+		pft = PFT_CORRUPTED;
+	}
 
 	if(grab_buffer)
 	{

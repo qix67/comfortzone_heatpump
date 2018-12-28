@@ -4,8 +4,12 @@ by Eric PREVOTEAU
 1) Quick start
 ==============
 
-Place this folder in your libraries directory
-Start or restart the Arduino IDE
+- Place this folder in your libraries directory
+
+- Install FrankBoesing's FastCRC library (https://github.com/FrankBoesing/FastCRC)
+  in your libraries directory
+
+- Start or restart the Arduino IDE
 
 2) Wiring
 =========

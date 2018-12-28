@@ -27,6 +27,7 @@
 typedef enum processed_frame_type
 {
 	PFT_NONE,		// no full frame received and process
+	PFT_CORRUPTED,	// received frame was corrupted (CRC error)
 	PFT_QUERY,		// received frame was a command
 	PFT_REPLY,		// received frame was a reply
 	PFT_UNKNOWN,	// received frame has an unknown type
