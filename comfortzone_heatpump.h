@@ -71,6 +71,7 @@ class comfortzone_heatpump
 
 	private:
 	friend class czdec;
+	friend class czcraft;
 
 	HardwareSerial &rs485;
 	int rs485_de_pin;
@@ -92,26 +93,12 @@ class comfortzone_heatpump
 	// WARNING: if this flag is set to true, due to the buffer not being cleared on frame completion
 	// all following frames until cz_buf overflow will be corrupted
 	bool disable_cz_buf_clear_on_completion = false;
+
+	// RS485 "address of heatpump"
+	byte heatpump_addr[4] = { 0x41, 0x44, 0x44, 0x52 };		// or 0x65, 0x6F, 0xDE, 0x02
+	
+	// RS485 "address of this controller"
+	byte controller_addr[4] = { 0x45, 0x72, 0x69, 0x63 };		// can be anything but must be uniq on this RS485 bus
 };
-
-// list of craftable command packets
-typedef enum known_register_craft_name
-{
-	KR_UNCRAFTABLE = 0,		// uncraftable packet
-	KR_FAN_SPEED,				// set fan speed, parameter => 1=slow, 2=normal, 3=fast
-	KR_LED_LUMINOSITY,		// set led luminosity, parameter => 0=off to 6=full power
-	KR_ROOM_HEATING_TEMP,	// set room heating temperature, parameter => 120 (=12.0°) to 240 (=24.0°)
-	KR_HOT_WATER_TEMP,		// set hot water temperature, parameter => 120 (=12.0°) to 800 (=80.0°)
-	KR_EXTRA_HOT_WATER_ON,	// enable extra hot water, no parameter
-	KR_EXTRA_HOT_WATER_OFF,	// disable extra hot water, no parameter
-} KNOWN_REGISTER_CRAFT_NAME;
-
-
-// craft one command frame
-// input: pointer to output buffer, min size is sizeof(W_CMD) = 30 bytes
-//        name of the command to craft
-//        parameter of the command (depend on crafted command, see KNOWN_REGISTER_CRAFT_NAME enum)
-// output: 0 = uncraftable packet or crafting error else number of bytes used in buffer
-uint16_t comfortzone_craft(byte *output_buffer, KNOWN_REGISTER_CRAFT_NAME reg_cname, uint16_t parameter);
 
 #endif

@@ -345,6 +345,24 @@ bool comfortzone_heatpump::set_hot_water_temperature(float room_temp, int timeou
 // led level: 0 = off -> 6 = highest level
 bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 {
+	byte cmd[256];
+	byte expected_reply[256];
+	czdec::KNOWN_REGISTER *kr;
+
+	if(led_level > 6)
+	{
+		DPRINTLN("comfortzone_heatpump::set_led_luminosity - Invalid led level, must be between 0 and 6");
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_LED_LUMINOSITY);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("comfortzone_heatpump::set_led_luminosity - czcraft::KR_LED_LUMINOSITY not found");
+		return false;
+	}
+
+	czcraft::craft_w_small_cmd(this, cmd, kr->reg_num, led_level);
 }
 
 

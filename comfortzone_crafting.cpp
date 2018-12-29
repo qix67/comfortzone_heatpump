@@ -1,80 +1,55 @@
-#if 0
 #include "comfortzone_heatpump.h"
 #include "comfortzone_config.h"
 #include "comfortzone_frame.h"
 
 #include "comfortzone_crafting.h"
 
-extern "C"
-{
-	static W_CMD empty_w_cmd_packet =
-										{
-											.header = { 0x65, 0x6F, 0xDE },
-											.frame_type = 0x02,
-											.unknown1 = { 0xD3, 0x5E },
-											.addr1 = { 0x41, 0x44, 0x44, 0x52 },
-											.packet_size = 0x18,
-											.cmd = 'W',
-											.reg_num = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-											.reg_value = { 0x00, 0x00 }, 
-											.crc = 0x00,
-											.addr2 = { 0x41, 0x44, 0x44, 0x52 },
-											.unknown2 = { 0x07, 0x8A }
-										};
-}
-
 // craft a W_CMD paquet
 // input: pointer to output buffer
-//        9 byte array contaning register number
-//       16bit value (it will be automatically stored into little endian)
-//        1 CRC byte
-int cz_craft_w_cmd(byte *output_buffer, byte *reg_num, uint16_t value, byte crc)
+//		  9 byte array contaning register number
+//		 16bit value (it will be automatically stored into little endian)
+//		  1 CRC byte
+int czcraft::craft_w_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, uint16_t value)
 {
 	W_CMD *q = (W_CMD*)output_buffer;
 
-	memcpy(output_buffer, (byte*)&empty_w_cmd_packet, sizeof(W_CMD));
-
-	memcpy(q->reg_num, reg_num, 9);
+	memcpy(q->cz_head.source, czhp->controller_addr, 4);
+	q->cz_head.unknown[0] = 0xD3;
+	q->cz_head.unknown[1] = 0x5E;
+	memcpy(q->cz_head.destination, czhp->heatpump_addr, 4);
+	q->cz_head.packet_size = 0x18,
+	q->cz_head.cmd = 'W';
+	memcpy(q->cz_head.reg_num, reg_num, 9);
+	
 	q->reg_value[0] = value & 0xFF;
 	q->reg_value[1] = (value >> 8) & 0xFF;
-	q->crc = crc;
+
+	q->crc = czhp->CRC8.maxim(output_buffer, sizeof(W_CMD) - 1);
+
 	return sizeof(W_CMD);
-}
-
-
-extern "C"
-{
-	static W_SMALL_CMD empty_w_small_cmd_packet =
-										{
-											.header = { 0x65, 0x6F, 0xDE },
-											.frame_type = 0x02,
-											.unknown1 = { 0xD3, 0x5E },
-											.addr1 = { 0x41, 0x44, 0x44, 0x52 },
-											.packet_size = 0x17,
-											.cmd = 'W',
-											.reg_num = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-											.reg_value = 0x00,
-											.crc = 0x00,
-											.addr2 = { 0x41, 0x44, 0x44, 0x52 },
-											.unknown2 = { 0x07, 0x8A }
-										};
 }
 
 // craft a W_SMALL_CMD paquet
 // input: pointer to output buffer
-//        9 byte array contaning register number
-//        8bit value
-//        1 CRC byte
-int cz_craft_w_small_cmd(byte *output_buffer, byte *reg_num, byte value, byte crc)
+//		  9 byte array contaning register number
+//		  8bit value
+//		  1 CRC byte
+int czcraft::craft_w_small_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value)
 {
 	W_SMALL_CMD *q = (W_SMALL_CMD*)output_buffer;
 
-	memcpy(output_buffer, (byte*)&empty_w_small_cmd_packet, sizeof(W_SMALL_CMD));
+	memcpy(q->cz_head.source, czhp->controller_addr, 4);
+	q->cz_head.unknown[0] = 0xD3;
+	q->cz_head.unknown[1] = 0x5E;
+	memcpy(q->cz_head.destination, czhp->heatpump_addr, 4);
+	q->cz_head.packet_size = 0x17,
+	q->cz_head.cmd = 'W';
+	memcpy(q->cz_head.reg_num, reg_num, 9);
 
-	memcpy(q->reg_num, reg_num, 9);
 	q->reg_value = value;
-	q->crc = crc;
+
+	q->crc = czhp->CRC8.maxim(output_buffer, sizeof(W_SMALL_CMD) - 1);
+
 	return sizeof(W_SMALL_CMD);
 }
 
-#endif

@@ -3,6 +3,7 @@
 
 #include "comfortzone_heatpump.h"
 #include "comfortzone_frame.h"
+#include "comfortzone_crafting.h"
 
 class czdec
 {
@@ -11,7 +12,7 @@ class czdec
 	{
 		byte reg_num[9];
 
-		KNOWN_REGISTER_CRAFT_NAME reg_cname;
+		czcraft::KNOWN_REGISTER_CRAFT_NAME reg_cname;
 		const char *reg_name;
 
 		void (*cmd_r)(comfortzone_heatpump *czhp, struct known_register *kr, R_CMD *p);	  // FRAME_TYPE_02_CMD_p2, R command
@@ -22,6 +23,7 @@ class czdec
 
 	static comfortzone_heatpump::PROCESSED_FRAME_TYPE process_frame(comfortzone_heatpump *cz_class, CZ_PACKET_HEADER *czph);
 	static void dump_frame(comfortzone_heatpump *cz_class, const char *prefix);
+	static czdec::KNOWN_REGISTER *kr_craft_name_to_index(czcraft::KNOWN_REGISTER_CRAFT_NAME reg_cname);
 
 	// command and reply decoder
 	static void cmd_r_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p);
