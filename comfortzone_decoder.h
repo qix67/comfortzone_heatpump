@@ -20,6 +20,10 @@ class czdec
 		void (*reply_w)(comfortzone_heatpump *czhp, struct known_register *kr, W_REPLY *p); // FRAME_TYPE_P2_REPLY, w reply
 	} KNOWN_REGISTER;
 
+	static comfortzone_heatpump::PROCESSED_FRAME_TYPE process_frame(comfortzone_heatpump *cz_class, CZ_PACKET_HEADER *czph);
+	static void dump_frame(comfortzone_heatpump *cz_class, const char *prefix);
+
+	// command and reply decoder
 	static void cmd_r_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p);
 	static void cmd_w_generic_2byte(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p);
 	static void cmd_w_temp(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p);

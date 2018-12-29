@@ -58,9 +58,20 @@ class comfortzone_heatpump
 	// recommended buffer_size is 256 bytes
 	void set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size);
 
+	// Functions to modify heatpump settings
+	// timeout (in second) is the maximum duration before giving up (RS485 bus always busy)
+	// output: true = ok, false = failed to process
+	bool set_fan_speed(uint8_t fan_speed, int timeout = 5);					// 1 = low, 2 = normal, 3 = fast
+	bool set_room_temperature(float room_temp, int timeout = 5);			// temperature in °C
+	bool set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C
+	bool set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
+
+	// current status
 	COMFORTZONE_STATUS comfortzone_status;
 
 	private:
+	friend class czdec;
+
 	HardwareSerial &rs485;
 	int rs485_de_pin;
 
@@ -76,9 +87,11 @@ class comfortzone_heatpump
 	uint16_t grab_buffer_size = 0;
 	uint16_t *grab_buffer_frame_size = NULL;
 
-	PROCESSED_FRAME_TYPE comfortzone_process_frame(struct cz_packet_header *czph);
-
-	void dump_frame(const char *prefix);
+	// when a packet is processed, input buffer is automatically cleared at end
+	// however this action must be disabled when sending a command because we must catch the reply internally
+	// WARNING: if this flag is set to true, due to the buffer not being cleared on frame completion
+	// all following frames until cz_buf overflow will be corrupted
+	bool disable_cz_buf_clear_on_completion = false;
 };
 
 // list of craftable command packets
