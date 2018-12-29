@@ -99,6 +99,10 @@ class comfortzone_heatpump
 	
 	// RS485 "address of this controller"
 	byte controller_addr[4] = { 0x45, 0x72, 0x69, 0x63 };		// can be anything but must be uniq on this RS485 bus
+
+	// send a command to the heatpump and wait for the given reply
+	// on error, several retries may occur and the command may take up to "timeout" seconds
+	bool push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout);
 };
 
 #endif

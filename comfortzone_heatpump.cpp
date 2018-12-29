@@ -347,6 +347,8 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 {
 	byte cmd[256];
 	byte expected_reply[256];
+	int cmd_length;
+	int expected_reply_length;
 	czdec::KNOWN_REGISTER *kr;
 
 	if(led_level > 6)
@@ -362,7 +364,16 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 		return false;
 	}
 
-	czcraft::craft_w_small_cmd(this, cmd, kr->reg_num, led_level);
+	cmd_length = czcraft::craft_w_small_cmd(this, cmd, kr->reg_num, led_level);
+	expected_reply_length = czcraft::craft_w_reply(this, expected_reply, kr->reg_num, led_level);
+
+	return push_settings(cmd, cmd_length, expected_reply, expected_reply_length, timeout);
 }
 
+// send a command to the heatpump and wait for the given reply
+// on error, several retries may occur and the command may take up to "timeout" seconds
+bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout)
+{
+	return false;
+}
 

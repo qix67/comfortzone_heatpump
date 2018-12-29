@@ -19,17 +19,23 @@ class czcraft
 		KR_EXTRA_HOT_WATER_OFF, // disable extra hot water, no parameter
 	} KNOWN_REGISTER_CRAFT_NAME;
 
-	// craft a W_CMD paquet
+	// craft a W_CMD packet
 	// input: pointer to output buffer
 	//		  9 byte array contaning register number
 	//		 16bit value (it will be automatically stored into little endian)
 	static int craft_w_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, uint16_t value);
 
-	// craft a W_SMALL_CMD paquet
+	// craft a W_SMALL_CMD packet
 	// input: pointer to output buffer
 	//		  9 byte array contaning register number
 	//		  8bit value
 	static int craft_w_small_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value);
+
+	// craft a W_REPLY packet
+	// input: pointer to output buffer
+	//		  9 byte array contaning register number
+	//		  expected 8bit value
+	static int craft_w_reply(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value);
 };
 
 
