@@ -1,12 +1,12 @@
 #include "comfortzone_config.h"
 #include "comfortzone_frame.h"
-#include "comfortzone_decoder_basic.h"
+#include "comfortzone_decoder.h"
 #include "comfortzone_tools.h"
 
 // this file contains basic decoding function for commands and replies.
 // Unless debug mode is set, nothing is done here
 
-void czdec_cmd_r_generic(KNOWN_REGISTER *kr, R_CMD *p)
+void czdec::cmd_r_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p)
 {
 #ifdef DEBUG
 	NPRINT("Wanted reply size: ");
@@ -22,7 +22,7 @@ void czdec_cmd_r_generic(KNOWN_REGISTER *kr, R_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_generic_2byte(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_generic_2byte(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -49,7 +49,7 @@ void czdec_cmd_w_generic_2byte(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_temp(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_temp(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -71,7 +71,7 @@ void czdec_cmd_w_temp(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_temp_1byte(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_temp_1byte(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -93,7 +93,7 @@ void czdec_cmd_w_temp_1byte(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_freq(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_freq(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -115,7 +115,7 @@ void czdec_cmd_w_freq(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_time(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_time(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -137,7 +137,7 @@ void czdec_cmd_w_time(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_percentage(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_percentage(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -159,7 +159,7 @@ void czdec_cmd_w_percentage(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_extra_hot_water(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_extra_hot_water(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -181,7 +181,7 @@ void czdec_cmd_w_extra_hot_water(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_clr_alarm(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_clr_alarm(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -202,7 +202,7 @@ void czdec_cmd_w_clr_alarm(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_daylight_saving(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_daylight_saving(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -224,7 +224,7 @@ void czdec_cmd_w_daylight_saving(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_sanitary_priority(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_sanitary_priority(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -248,7 +248,7 @@ void czdec_cmd_w_sanitary_priority(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_day_delay(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_day_delay(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -271,7 +271,7 @@ void czdec_cmd_w_day_delay(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_fan_speed(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_fan_speed(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -295,7 +295,7 @@ void czdec_cmd_w_fan_speed(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_language(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_language(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -317,7 +317,7 @@ void czdec_cmd_w_language(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_cmd_w_digit(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::cmd_w_digit(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -340,7 +340,7 @@ void czdec_cmd_w_digit(KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
-void czdec_reply_r_generic_2byte(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_generic_2byte(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -368,7 +368,7 @@ void czdec_reply_r_generic_2byte(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_temp(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_temp(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -390,7 +390,7 @@ void czdec_reply_r_temp(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_temp_1byte(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_temp_1byte(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -412,7 +412,7 @@ void czdec_reply_r_temp_1byte(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_freq(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_freq(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -434,7 +434,7 @@ void czdec_reply_r_freq(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_time(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_time(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -456,7 +456,7 @@ void czdec_reply_r_time(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_percentage(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_percentage(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -478,7 +478,7 @@ void czdec_reply_r_percentage(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_extra_hot_water(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_extra_hot_water(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -500,7 +500,7 @@ void czdec_reply_r_extra_hot_water(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_daylight_saving(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_daylight_saving(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	// not tested
@@ -523,7 +523,7 @@ void czdec_reply_r_daylight_saving(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_sanitary_priority(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_sanitary_priority(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -547,7 +547,7 @@ void czdec_reply_r_sanitary_priority(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_clr_alarm(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_clr_alarm(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -568,7 +568,7 @@ void czdec_reply_r_clr_alarm(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_day_delay(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_day_delay(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -591,7 +591,7 @@ void czdec_reply_r_day_delay(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_fan_speed(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_fan_speed(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -615,7 +615,7 @@ void czdec_reply_r_fan_speed(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_language(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_language(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -638,7 +638,7 @@ void czdec_reply_r_language(KNOWN_REGISTER *kr, R_REPLY *p)
 }
 
 
-void czdec_reply_r_digit(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_digit(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	int reg_v;
@@ -657,7 +657,7 @@ void czdec_reply_r_digit(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p)
+void czdec::reply_w_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p)
 {
 #ifdef DEBUG
 	NPRINT("Value: ");
@@ -677,7 +677,7 @@ void czdec_reply_w_generic(KNOWN_REGISTER *kr, W_REPLY *p)
 #endif
 }
 
-void czdec_empty(KNOWN_REGISTER *kr, W_CMD *p)
+void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 }
 

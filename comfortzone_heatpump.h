@@ -24,28 +24,62 @@
 
 #include <Arduino.h>
 
-typedef enum processed_frame_type
+#include <HardwareSerial.h>
+#include <FastCRC.h>
+
+#include <comfortzone_status.h>
+
+class comfortzone_heatpump
 {
-	PFT_NONE,		// no full frame received and process
-	PFT_CORRUPTED,	// received frame was corrupted (CRC error)
-	PFT_QUERY,		// received frame was a command
-	PFT_REPLY,		// received frame was a reply
-	PFT_UNKNOWN,	// received frame has an unknown type
-} PROCESSED_FRAME_TYPE;
+	public:
+	typedef enum processed_frame_type
+	{
+		PFT_NONE,		// no full frame received and process
+		PFT_CORRUPTED,	// received frame was corrupted (CRC error)
+		PFT_QUERY,		// received frame was a command
+		PFT_REPLY,		// received frame was a reply
+		PFT_UNKNOWN,	// received frame has an unknown type
+	} PROCESSED_FRAME_TYPE;
 
-// process 1 byte from input stream (RS485)
-// output: PROCESSED_FRAME_TYPE
-PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte);
+	comfortzone_heatpump() : rs485(Serial1) {};
 
-// for debug purpose, it can be useful to get full frame
-// input: pointer on buffer where last full frame will be copied
-//        max size of buffer
-//        size of the last full frame received
-// If buffer is set to NULL, frame grabber is disabled
-// If buffer is not NULL, each time comfortzone_receive() reply is not PFT_NONE, the received frame will
-// be copied into buffer and *frame_size will be updated
-// recommended buffer_size is 256 bytes
-void comfortzone_set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size);
+	void begin(HardwareSerial &rs485_serial, int de_pin);
+
+	// Function to call periodically to manage rs485 serial input
+	PROCESSED_FRAME_TYPE process();
+	
+	// for debug purpose, it can be useful to get full frame
+	// input: pointer on buffer where last full frame will be copied
+	//        max size of buffer
+	//        size of the last full frame received
+	// If buffer is set to NULL, frame grabber is disabled
+	// If buffer is not NULL, each time comfortzone_receive() reply is not PFT_NONE, the received frame will
+	// be copied into buffer and *frame_size will be updated
+	// recommended buffer_size is 256 bytes
+	void set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size);
+
+	COMFORTZONE_STATUS comfortzone_status;
+
+	private:
+	HardwareSerial &rs485;
+	int rs485_de_pin;
+
+	FastCRC8 CRC8;
+
+	// incoming buffer
+	byte cz_buf[256];							// incoming RS485 bytes
+	uint16_t cz_size = 0;					// #bytes in cz_buf
+	uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
+
+	// for debug purpose (see set_grab_buffer() )
+	byte *grab_buffer = NULL;
+	uint16_t grab_buffer_size = 0;
+	uint16_t *grab_buffer_frame_size = NULL;
+
+	PROCESSED_FRAME_TYPE comfortzone_process_frame(struct cz_packet_header *czph);
+
+	void dump_frame(const char *prefix);
+};
 
 // list of craftable command packets
 typedef enum known_register_craft_name

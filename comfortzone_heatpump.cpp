@@ -1,95 +1,79 @@
-#include <FastCRC.h>
-
 #include "comfortzone_heatpump.h"
 #include "comfortzone_config.h"
-#include "comfortzone_frame.h"
-#include "comfortzone_status.h"
 
-#include "comfortzone_decoder_basic.h"
-#include "comfortzone_decoder_status.h"
+#include "comfortzone_frame.h"
+#include "comfortzone_decoder.h"
 
 #include "comfortzone_crafting.h"
 
-FastCRC8 CRC8;
-
-static byte cz_buf[256];
-static uint16_t cz_size = 0;		// #bytes in cz_buf
-static uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
-
-static byte *grab_buffer = NULL;
-static uint16_t grab_buffer_size = 0;
-static uint16_t *grab_buffer_frame_size = NULL;
-
-COMFORTZONE_STATUS comfortzone_status;
-
-static KNOWN_REGISTER kr_decoder[] =
+static czdec::KNOWN_REGISTER kr_decoder[] =
 	{
 		// don't know why but extra hot water off does not use the same message as extra hot water on
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x41, 0x19, 0x00}, KR_EXTRA_HOT_WATER_ON, "Extra hot water - off", czdec_cmd_r_generic, czdec_cmd_w_extra_hot_water, czdec_reply_r_extra_hot_water, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x19, 0x00}, KR_EXTRA_HOT_WATER_OFF, "Extra hot water - on", czdec_cmd_r_generic, czdec_cmd_w_extra_hot_water, czdec_reply_r_extra_hot_water, czdec_reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x41, 0x19, 0x00}, KR_EXTRA_HOT_WATER_ON, "Extra hot water - off", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x19, 0x00}, KR_EXTRA_HOT_WATER_OFF, "Extra hot water - on", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x29, 0x00}, KR_UNCRAFTABLE, "Clear alarm", czdec_cmd_r_generic, czdec_cmd_w_clr_alarm, czdec_reply_r_clr_alarm, czdec_reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x29, 0x00}, KR_UNCRAFTABLE, "Clear alarm", czdec::cmd_r_generic, czdec::cmd_w_clr_alarm, czdec::reply_r_clr_alarm, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x40, 0x00, 0x00}, KR_UNCRAFTABLE, "Daylight saving - on", czdec_cmd_r_generic, czdec_cmd_w_daylight_saving, czdec_reply_r_daylight_saving, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x00, 0x00}, KR_UNCRAFTABLE, "Daylight saving - off", czdec_cmd_r_generic, czdec_cmd_w_daylight_saving, czdec_reply_r_daylight_saving, czdec_reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x40, 0x00, 0x00}, KR_UNCRAFTABLE, "Daylight saving - on", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x00, 0x00}, KR_UNCRAFTABLE, "Daylight saving - off", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x0E, 0x00}, KR_UNCRAFTABLE, "Sanitary priority", czdec_cmd_r_generic, czdec_cmd_w_sanitary_priority, czdec_reply_r_sanitary_priority, czdec_reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x0E, 0x00}, KR_UNCRAFTABLE, "Sanitary priority", czdec::cmd_r_generic, czdec::cmd_w_sanitary_priority, czdec::reply_r_sanitary_priority, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 09", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_09, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x00, 0x04}, KR_FAN_SPEED, "Fan speed", czdec_cmd_r_generic, czdec_cmd_w_fan_speed, czdec_reply_r_fan_speed, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x05, 0x04}, KR_UNCRAFTABLE, "Fan boost increase", czdec_cmd_r_generic, czdec_cmd_w_percentage, czdec_reply_r_percentage, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x16, 0x02}, KR_UNCRAFTABLE, "Status 11", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_11, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x17, 0x04}, KR_UNCRAFTABLE, "Supply fan T12 adjust", czdec_cmd_r_generic, czdec_cmd_w_percentage, czdec_reply_r_percentage, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x19, 0x00}, KR_UNCRAFTABLE, "Status 24", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_24, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x2E, 0x03}, KR_UNCRAFTABLE, "Minimal return temperature", czdec_cmd_r_generic, czdec_cmd_w_temp, czdec_reply_r_temp, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x29, 0x04}, KR_UNCRAFTABLE, "Chauffage - compressor max frequency", czdec_cmd_r_generic, czdec_cmd_w_freq, czdec_reply_r_freq, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x2C, 0x04}, KR_UNCRAFTABLE, "Status 12", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_12, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x35, 0x04}, KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 1", czdec_cmd_r_generic, czdec_cmd_w_freq, czdec_reply_r_freq, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x37, 0x04}, KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 2", czdec_cmd_r_generic, czdec_cmd_w_freq, czdec_reply_r_freq, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x39, 0x04}, KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 3", czdec_cmd_r_generic, czdec_cmd_w_freq, czdec_reply_r_freq, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x64, 0x01}, KR_UNCRAFTABLE, "Status 25", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_25, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7A, 0x03}, KR_UNCRAFTABLE, "Status 01", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_01, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7B, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE0 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7C, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE1 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},	// not tested
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7D, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE2 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},	// not tested
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7D, 0x03}, KR_HOT_WATER_TEMP, "Hot water calculated setting", czdec_cmd_r_generic, czdec_cmd_w_temp, czdec_reply_r_temp, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7E, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE3 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},	// not tested
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7F, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE4 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},	// not tested
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x80, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE5 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},	// not tested
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x81, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE6 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},	// not tested
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x82, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE7 Adjust", czdec_cmd_r_generic, czdec_cmd_w_temp_1byte, czdec_reply_r_temp_1byte, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xA6, 0x04}, KR_UNCRAFTABLE, "Heatpump - defrost delay", czdec_cmd_r_generic, czdec_cmd_w_time, czdec_reply_r_time, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xA7, 0x02}, KR_LED_LUMINOSITY, "LED luminosity", czdec_cmd_r_generic, czdec_cmd_w_digit, czdec_reply_r_digit, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xAC, 0x02}, KR_UNCRAFTABLE, "Holiday reduction", czdec_cmd_r_generic, czdec_cmd_w_day_delay, czdec_reply_r_day_delay, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xC8, 0x02}, KR_UNCRAFTABLE, "Status 10", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_10, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xB0, 0x02}, KR_ROOM_HEATING_TEMP, "Heating calculated setting", czdec_cmd_r_generic, czdec_cmd_w_temp, czdec_reply_r_temp, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xB2, 0x00}, KR_UNCRAFTABLE, "Status 23", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_23, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xDE, 0x04}, KR_UNCRAFTABLE, "Status 13", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_13, czdec_reply_w_generic},	// 0x63 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 09", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_09, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x00, 0x04}, KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x05, 0x04}, KR_UNCRAFTABLE, "Fan boost increase", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x16, 0x02}, KR_UNCRAFTABLE, "Status 11", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_11, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x17, 0x04}, KR_UNCRAFTABLE, "Supply fan T12 adjust", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x19, 0x00}, KR_UNCRAFTABLE, "Status 24", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_24, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x2E, 0x03}, KR_UNCRAFTABLE, "Minimal return temperature", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x29, 0x04}, KR_UNCRAFTABLE, "Chauffage - compressor max frequency", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x2C, 0x04}, KR_UNCRAFTABLE, "Status 12", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_12, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x35, 0x04}, KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 1", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x37, 0x04}, KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 2", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x39, 0x04}, KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 3", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x64, 0x01}, KR_UNCRAFTABLE, "Status 25", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_25, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7A, 0x03}, KR_UNCRAFTABLE, "Status 01", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_01, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7B, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE0 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7C, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE1 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7D, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE2 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7D, 0x03}, KR_HOT_WATER_TEMP, "Hot water calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7E, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE3 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x7F, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE4 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x80, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE5 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x81, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE6 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x82, 0x00}, KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE7 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xA6, 0x04}, KR_UNCRAFTABLE, "Heatpump - defrost delay", czdec::cmd_r_generic, czdec::cmd_w_time, czdec::reply_r_time, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xA7, 0x02}, KR_LED_LUMINOSITY, "LED luminosity", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xAC, 0x02}, KR_UNCRAFTABLE, "Holiday reduction", czdec::cmd_r_generic, czdec::cmd_w_day_delay, czdec::reply_r_day_delay, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xC8, 0x02}, KR_UNCRAFTABLE, "Status 10", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_10, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xB0, 0x02}, KR_ROOM_HEATING_TEMP, "Heating calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xB2, 0x00}, KR_UNCRAFTABLE, "Status 23", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_23, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0xDE, 0x04}, KR_UNCRAFTABLE, "Status 13", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_13, czdec::reply_w_generic},	// 0x63 bytes
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 02", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_02, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x04, 0x00}, KR_UNCRAFTABLE, "Hour", czdec_cmd_r_generic, czdec_cmd_w_digit, czdec_reply_r_digit, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x05, 0x00}, KR_UNCRAFTABLE, "Minute", czdec_cmd_r_generic, czdec_cmd_w_digit, czdec_reply_r_digit, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x07, 0x00}, KR_UNCRAFTABLE, "Day of Month", czdec_cmd_r_generic, czdec_cmd_w_digit, czdec_reply_r_digit, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x08, 0x00}, KR_UNCRAFTABLE, "Month (1=Jan)", czdec_cmd_r_generic, czdec_cmd_w_digit, czdec_reply_r_digit, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x09, 0x00}, KR_UNCRAFTABLE, "Year (20xx)", czdec_cmd_r_generic, czdec_cmd_w_digit, czdec_reply_r_digit, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x16, 0x02}, KR_UNCRAFTABLE, "Status 05", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_05, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x19, 0x00}, KR_UNCRAFTABLE, "Status 22", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_22, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x2C, 0x04}, KR_UNCRAFTABLE, "Status 14", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_14, czdec_reply_w_generic},	// 0x48 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x58, 0x04}, KR_UNCRAFTABLE, "Language", czdec_cmd_r_generic, czdec_cmd_w_language, czdec_reply_r_language, czdec_reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x64, 0x01}, KR_UNCRAFTABLE, "Status 04", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_04, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x7A, 0x03}, KR_UNCRAFTABLE, "Status 07", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_07, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0xB2, 0x00}, KR_UNCRAFTABLE, "Status 03", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_03, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0xC8, 0x02}, KR_UNCRAFTABLE, "Status 06", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_06, czdec_reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 02", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_02, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x04, 0x00}, KR_UNCRAFTABLE, "Hour", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x05, 0x00}, KR_UNCRAFTABLE, "Minute", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x07, 0x00}, KR_UNCRAFTABLE, "Day of Month", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x08, 0x00}, KR_UNCRAFTABLE, "Month (1=Jan)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x09, 0x00}, KR_UNCRAFTABLE, "Year (20xx)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x16, 0x02}, KR_UNCRAFTABLE, "Status 05", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_05, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x19, 0x00}, KR_UNCRAFTABLE, "Status 22", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_22, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x2C, 0x04}, KR_UNCRAFTABLE, "Status 14", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_14, czdec::reply_w_generic},	// 0x48 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x58, 0x04}, KR_UNCRAFTABLE, "Language", czdec::cmd_r_generic, czdec::cmd_w_language, czdec::reply_r_language, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x64, 0x01}, KR_UNCRAFTABLE, "Status 04", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_04, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0x7A, 0x03}, KR_UNCRAFTABLE, "Status 07", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_07, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0xB2, 0x00}, KR_UNCRAFTABLE, "Status 03", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_03, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x01, 0xC8, 0x02}, KR_UNCRAFTABLE, "Status 06", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_06, czdec::reply_w_generic},	// 0xC2 bytes
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0x15, 0x0D}, KR_UNCRAFTABLE, "Status 15", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_15, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0x2B, 0x0F}, KR_UNCRAFTABLE, "Status 18", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_18, czdec_reply_w_generic},	// 0x5D bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0x79, 0x0E}, KR_UNCRAFTABLE, "Status 17", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_17, czdec_reply_w_generic},	// 0xC2 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0xC7, 0x0D}, KR_UNCRAFTABLE, "Status 16", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_16, czdec_reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0x15, 0x0D}, KR_UNCRAFTABLE, "Status 15", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_15, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0x2B, 0x0F}, KR_UNCRAFTABLE, "Status 18", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_18, czdec::reply_w_generic},	// 0x5D bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0x79, 0x0E}, KR_UNCRAFTABLE, "Status 17", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_17, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x03, 0xC7, 0x0D}, KR_UNCRAFTABLE, "Status 16", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_16, czdec::reply_w_generic},	// 0xC2 bytes
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x04, 0x4E, 0x3F}, KR_UNCRAFTABLE, "Status 20", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_20, czdec_reply_w_generic},	// 0x26 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x04, 0x9C, 0x3E}, KR_UNCRAFTABLE, "Status 19", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_19, czdec_reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x04, 0x4E, 0x3F}, KR_UNCRAFTABLE, "Status 20", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_20, czdec::reply_w_generic},	// 0x26 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x04, 0x9C, 0x3E}, KR_UNCRAFTABLE, "Status 19", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x05, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 08", czdec_cmd_r_generic, czdec_empty, czdec_reply_r_status_08, czdec_reply_w_generic},	// 0x50 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x05, 0x00, 0x00}, KR_UNCRAFTABLE, "Status 08", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_08, czdec::reply_w_generic},	// 0x50 bytes
 
 
 		{ {0}, KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
@@ -116,7 +100,7 @@ static int kr_craft_name_to_index(KNOWN_REGISTER_CRAFT_NAME reg_cname)
 	return -1;
 }
 
-static void dump_frame(const char *prefix)
+void comfortzone_heatpump::dump_frame(const char *prefix)
 {
 	int i;
 
@@ -136,8 +120,18 @@ static void dump_frame(const char *prefix)
 	DPRINT(cz_size, HEX);
 }
 
+void comfortzone_heatpump::begin(HardwareSerial &rs485_serial, int de_pin)
+{
+	rs485 = rs485_serial;
+	rs485_de_pin = de_pin;
 
-static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
+	rs485.begin(19200, SERIAL_8N1);
+
+	pinMode(rs485_de_pin, OUTPUT);
+	digitalWrite(rs485_de_pin, LOW);		// enable RS485 receive mode
+}
+
+comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 {
 	int i = 0;
 
@@ -151,7 +145,7 @@ static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							DPRINT(kr_decoder[i].reg_name);
 							DPRINTLN(" (get): ");
 
-							kr_decoder[i].cmd_r(&kr_decoder[i], (R_CMD*)czph);
+							kr_decoder[i].cmd_r(this, &kr_decoder[i], (R_CMD*)czph);
 
 							DPRINTLN("====================================================");
 							return PFT_QUERY;
@@ -160,7 +154,7 @@ static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							DPRINT(kr_decoder[i].reg_name);
 							DPRINTLN(" (set): ");
 
-							kr_decoder[i].cmd_w(&kr_decoder[i], (W_CMD*)czph);
+							kr_decoder[i].cmd_w(this, &kr_decoder[i], (W_CMD*)czph);
 
 							DPRINTLN("====================================================");
 							return PFT_QUERY;
@@ -169,7 +163,7 @@ static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							DPRINT(kr_decoder[i].reg_name);
 							DPRINTLN(" (reply get): ");
 
-							kr_decoder[i].reply_r(&kr_decoder[i], (R_REPLY*)czph);
+							kr_decoder[i].reply_r(this, &kr_decoder[i], (R_REPLY*)czph);
 
 							DPRINTLN("====================================================");
 							return PFT_REPLY;
@@ -178,7 +172,7 @@ static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 							DPRINT(kr_decoder[i].reg_name);
 							DPRINTLN(" (reply set): ");
 
-							kr_decoder[i].reply_w(&kr_decoder[i], (W_REPLY*)czph);
+							kr_decoder[i].reply_w(this, &kr_decoder[i], (W_REPLY*)czph);
 
 							DPRINTLN("====================================================");
 							return PFT_REPLY;
@@ -193,7 +187,7 @@ static PROCESSED_FRAME_TYPE comfortzone_process_frame(CZ_PACKET_HEADER *czph)
 	return PFT_UNKNOWN;
 }
 
-PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte)
+comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 {
 	PROCESSED_FRAME_TYPE pft;
 
@@ -207,40 +201,50 @@ PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte)
 	//
 	// if not, first byte is discarded
 
-	cz_buf[cz_size++] = input_byte;
-
-	if(cz_size < sizeof(CZ_PACKET_HEADER))
-		return PFT_NONE;
-
-	if(cz_size == sizeof(CZ_PACKET_HEADER))
+	while(rs485.available())
 	{
-		CZ_PACKET_HEADER *czph = (CZ_PACKET_HEADER *)cz_buf;
+		cz_buf[cz_size++] = rs485.read();
 
-		if(
-				( (czph->unknown[0] == 0xD3) && (czph->unknown[1] == 0x5E) && ((czph->cmd == 'W') || (czph->cmd == 'R')) )
-			||
-				( (czph->unknown[0] == 0x07) && (czph->unknown[1] == 0x8A) && ((czph->cmd == 'w') || (czph->cmd == 'r')) )
-			)
-		{
-			cz_full_frame_size = czph->packet_size;
-		}
-		else
-		{
-			memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
-			cz_size--;
-			return PFT_NONE;
-		}
-	}
-
-	if(cz_size != cz_full_frame_size)
-	{
 		if(cz_size == sizeof(cz_buf))
 		{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
 			cz_size = 0;
+			continue;
 		}
 
-		return PFT_NONE;
+		if(cz_size < sizeof(CZ_PACKET_HEADER))
+			continue;
+
+		if(cz_size == sizeof(CZ_PACKET_HEADER))
+		{
+			CZ_PACKET_HEADER *czph = (CZ_PACKET_HEADER *)cz_buf;
+
+			if(
+					( (czph->unknown[0] == 0xD3) && (czph->unknown[1] == 0x5E) && ((czph->cmd == 'W') || (czph->cmd == 'R')) )
+				||
+					( (czph->unknown[0] == 0x07) && (czph->unknown[1] == 0x8A) && ((czph->cmd == 'w') || (czph->cmd == 'r')) )
+				)
+			{
+				cz_full_frame_size = czph->packet_size;
+			}
+			else
+			{
+				memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
+				cz_size--;
+				continue;
+			}
+		}
+
+		if(cz_size == cz_full_frame_size)
+			break;
 	}
+
+	// not enough data received to be a header
+	if(cz_size < sizeof(CZ_PACKET_HEADER))
+		return PFT_NONE;
+
+	// not enough data received to be a packet (header+data)
+	if(cz_size != cz_full_frame_size)
+		return PFT_NONE;
 
 	// check frame CRC (last byte of buffer is CRC
 	if(CRC8.maxim(cz_buf, cz_size - 1) == cz_buf[cz_size - 1])
@@ -278,7 +282,7 @@ PROCESSED_FRAME_TYPE comfortzone_receive(byte input_byte)
 // If buffer is not NULL, each time comfortzone_receive() reply is not PFT_NONE, the received frame will
 // be copied into buffer and *frame_size will be updated
 // recommended buffer_size is 256 bytes
-void comfortzone_set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size)
+void comfortzone_heatpump::set_grab_buffer(byte *buffer, uint16_t buffer_size, uint16_t *frame_size)
 {
 	if(buffer == NULL)
 	{

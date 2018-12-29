@@ -1,7 +1,6 @@
 #include "comfortzone_config.h"
 #include "comfortzone_frame.h"
-#include "comfortzone_decoder_basic.h"
-#include "comfortzone_decoder_status.h"
+#include "comfortzone_decoder.h"
 #include "comfortzone_tools.h"
 #include "comfortzone_status.h"
 
@@ -27,11 +26,11 @@ static void dump_unknown(const char *prefix, byte *start, int length)
 }
 #endif
 
-void czdec_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_01(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_01 *q = (R_REPLY_STATUS_01 *)p;
 
-	comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
+	czhp->comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
 
 #ifdef DEBUG
 	int reg_v;
@@ -278,56 +277,56 @@ void czdec_reply_r_status_01(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_02 *q = (R_REPLY_STATUS_02 *)p;
 	uint16_t active_alarm;
 
-	comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[0]);
-	comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[1]);
-	comfortzone_status.sensors_te3_indoor_temp= get_int16(q->sensors[2]);
-	comfortzone_status.sensors_te4_hot_gas_temp = get_int16(q->sensors[3]);
-	comfortzone_status.sensors_te5_exchanger_out = get_int16(q->sensors[4]);
-	comfortzone_status.sensors_te6_evaporator_in = get_int16(q->sensors[5]);
-	comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[6]);
-	comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[23]);
+	czhp->comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[0]);
+	czhp->comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[1]);
+	czhp->comfortzone_status.sensors_te3_indoor_temp= get_int16(q->sensors[2]);
+	czhp->comfortzone_status.sensors_te4_hot_gas_temp = get_int16(q->sensors[3]);
+	czhp->comfortzone_status.sensors_te5_exchanger_out = get_int16(q->sensors[4]);
+	czhp->comfortzone_status.sensors_te6_evaporator_in = get_int16(q->sensors[5]);
+	czhp->comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[6]);
+	czhp->comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[23]);
 
-	comfortzone_status.additional_power_enabled = (q->general_status[0] & 0x20) ? true : false;
-	comfortzone_status.defrost_enabled = (q->general_status[4] & 0x04) ? true : false;
+	czhp->comfortzone_status.additional_power_enabled = (q->general_status[0] & 0x20) ? true : false;
+	czhp->comfortzone_status.defrost_enabled = (q->general_status[4] & 0x04) ? true : false;
 
 	switch((q->general_status[1]>>4) & 0x3)
 	{
-		case 0:	comfortzone_status.compressor_activity = CZCMP_UNKNOWN;
+		case 0:	czhp->comfortzone_status.compressor_activity = CZCMP_UNKNOWN;
 					break;
 
-		case 1:	comfortzone_status.compressor_activity = CZCMP_STOPPED;
+		case 1:	czhp->comfortzone_status.compressor_activity = CZCMP_STOPPED;
 					break;
 
-		case 2:	comfortzone_status.compressor_activity = CZCMP_RUNNING;
+		case 2:	czhp->comfortzone_status.compressor_activity = CZCMP_RUNNING;
 					break;
 
-		case 3:	comfortzone_status.compressor_activity = CZCMP_STOPPING;
+		case 3:	czhp->comfortzone_status.compressor_activity = CZCMP_STOPPING;
 					break;
 	}
 
 	switch((q->general_status[1]>>1) & 0x3)
 	{
-		case 0:	comfortzone_status.mode = CZMD_IDLE;
+		case 0:	czhp->comfortzone_status.mode = CZMD_IDLE;
 					break;
 
-		case 1:	comfortzone_status.mode = CZMD_ROOM_HEATING;
+		case 1:	czhp->comfortzone_status.mode = CZMD_ROOM_HEATING;
 					break;
 
-		case 2:	comfortzone_status.mode = CZMD_UNKNOWN;
+		case 2:	czhp->comfortzone_status.mode = CZMD_UNKNOWN;
 					break;
 
-		case 3:	comfortzone_status.mode = CZMD_HOT_WATER;
+		case 3:	czhp->comfortzone_status.mode = CZMD_HOT_WATER;
 					break;
 	}
 
 	active_alarm = get_uint16(q->pending_alarm) ^ get_uint16(q->acknowledged_alarm);
 
-	comfortzone_status.filter_alarm = (active_alarm & 0x0002) ? true : false ;
+	czhp->comfortzone_status.filter_alarm = (active_alarm & 0x0002) ? true : false ;
 
 #ifdef DEBUG
 	int reg_v;
@@ -568,7 +567,7 @@ void czdec_reply_r_status_02(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_03(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_03 *q = (R_REPLY_STATUS_03 *)p;
@@ -586,7 +585,7 @@ void czdec_reply_r_status_03(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_04(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_04 *q = (R_REPLY_STATUS_04 *)p;
@@ -637,29 +636,29 @@ void czdec_reply_r_status_04(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_05(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	int reg_v;
 
 	R_REPLY_STATUS_05 *q = (R_REPLY_STATUS_05 *)p;
 
 	if(q->hot_water_production == 0x00)
-		comfortzone_status.hot_water_production = false;
+		czhp->comfortzone_status.hot_water_production = false;
 	else
-		comfortzone_status.hot_water_production = true;
+		czhp->comfortzone_status.hot_water_production = true;
 
 	reg_v = get_uint16(q->room_heating_in_progress);
 	if(reg_v == 0x012C)
-		comfortzone_status.room_heating_in_progress = false;
+		czhp->comfortzone_status.room_heating_in_progress = false;
 	else
-		comfortzone_status.room_heating_in_progress = true;
+		czhp->comfortzone_status.room_heating_in_progress = true;
 
-	comfortzone_status.fan_speed = q->fan_speed;
+	czhp->comfortzone_status.fan_speed = q->fan_speed;
 
-	comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
-	comfortzone_status.hot_water_setting = get_uint16(q->hot_water_calculated_setting);
+	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
+	czhp->comfortzone_status.hot_water_setting = get_uint16(q->hot_water_calculated_setting);
 
-	comfortzone_status.extra_hot_water_setting = ((q->extra_hot_water == 0x0F)? true : false);
+	czhp->comfortzone_status.extra_hot_water_setting = ((q->extra_hot_water == 0x0F)? true : false);
 
 #ifdef DEBUG
 	float reg_v_f;
@@ -822,16 +821,16 @@ void czdec_reply_r_status_05(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_06(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_06 *q = (R_REPLY_STATUS_06 *)p;
 
-	comfortzone_status.heatpump_current_compressor_frequency = get_uint16(q->heatpump_current_compressor_frequency);
+	czhp->comfortzone_status.heatpump_current_compressor_frequency = get_uint16(q->heatpump_current_compressor_frequency);
 
-	comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
-	comfortzone_status.heatpump_current_add_power = get_uint16(q->heatpump_current_add_power);
-	comfortzone_status.heatpump_current_total_power = get_uint16(q->heatpump_current_total_power1);
-	comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
+	czhp->comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
+	czhp->comfortzone_status.heatpump_current_add_power = get_uint16(q->heatpump_current_add_power);
+	czhp->comfortzone_status.heatpump_current_total_power = get_uint16(q->heatpump_current_total_power1);
+	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
 
 #ifdef DEBUG
 	int reg_v;
@@ -1081,7 +1080,7 @@ void czdec_reply_r_status_06(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_07(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_07 *q = (R_REPLY_STATUS_07 *)p;
@@ -1109,16 +1108,16 @@ void czdec_reply_r_status_07(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_08(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_08 *q = (R_REPLY_STATUS_08 *)p;
 
-	comfortzone_status.compressor_energy = get_uint32(q->compressor_energy);
-	comfortzone_status.add_energy = get_uint32(q->add_energy);
-	comfortzone_status.hot_water_energy = get_uint32(q->hot_water_energy);
+	czhp->comfortzone_status.compressor_energy = get_uint32(q->compressor_energy);
+	czhp->comfortzone_status.add_energy = get_uint32(q->add_energy);
+	czhp->comfortzone_status.hot_water_energy = get_uint32(q->hot_water_energy);
 
-	comfortzone_status.compressor_runtime = get_uint32(q->compressor_runtime);
-	comfortzone_status.total_runtime = get_uint32(q->total_runtime);
+	czhp->comfortzone_status.compressor_runtime = get_uint32(q->compressor_runtime);
+	czhp->comfortzone_status.total_runtime = get_uint32(q->total_runtime);
 
 #ifdef DEBUG
 	int reg_v;
@@ -1231,7 +1230,7 @@ void czdec_reply_r_status_08(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_09(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	int reg_v;
 
@@ -1240,11 +1239,11 @@ void czdec_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 	reg_v = get_uint16(q->hotwater_priority);
 
 	if(reg_v == 0x4151)
-		comfortzone_status.hot_water_priority_setting = 1;
+		czhp->comfortzone_status.hot_water_priority_setting = 1;
 	else if(reg_v == 0x4152)
-		comfortzone_status.hot_water_priority_setting = 2;
+		czhp->comfortzone_status.hot_water_priority_setting = 2;
 	else if(reg_v == 0x4153)
-		comfortzone_status.hot_water_priority_setting = 3;
+		czhp->comfortzone_status.hot_water_priority_setting = 3;
 
 #ifdef DEBUG
 	float reg_v_f;
@@ -1301,7 +1300,7 @@ void czdec_reply_r_status_09(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_10(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_10 *q = (R_REPLY_STATUS_10 *)p;
@@ -1429,11 +1428,11 @@ void czdec_reply_r_status_10(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_11(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_11 *q = (R_REPLY_STATUS_11 *)p;
 
-	comfortzone_status.led_luminosity_setting = q->led_luminosity;
+	czhp->comfortzone_status.led_luminosity_setting = q->led_luminosity;
 
 #ifdef DEBUG
 	int reg_v;
@@ -1476,7 +1475,7 @@ void czdec_reply_r_status_11(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_12(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_12 *q = (R_REPLY_STATUS_12 *)p;
@@ -1542,7 +1541,7 @@ void czdec_reply_r_status_12(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_13(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_13 *q = (R_REPLY_STATUS_13 *)p;
@@ -1561,7 +1560,7 @@ void czdec_reply_r_status_13(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_14(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_14 *q = (R_REPLY_STATUS_14 *)p;
@@ -1595,7 +1594,7 @@ void czdec_reply_r_status_14(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_15(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_15 *q = (R_REPLY_STATUS_15 *)p;
@@ -1614,7 +1613,7 @@ void czdec_reply_r_status_15(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_16(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_16 *q = (R_REPLY_STATUS_16 *)p;
@@ -1633,7 +1632,7 @@ void czdec_reply_r_status_16(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_17(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_17 *q = (R_REPLY_STATUS_17 *)p;
@@ -1652,7 +1651,7 @@ void czdec_reply_r_status_17(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_18(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_18 *q = (R_REPLY_STATUS_18 *)p;
@@ -1671,7 +1670,7 @@ void czdec_reply_r_status_18(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_19(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_19 *q = (R_REPLY_STATUS_19 *)p;
@@ -1690,7 +1689,7 @@ void czdec_reply_r_status_19(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_20 *q = (R_REPLY_STATUS_20 *)p;
@@ -1709,7 +1708,7 @@ void czdec_reply_r_status_20(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_22(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_22 *q = (R_REPLY_STATUS_22 *)p;
@@ -1727,7 +1726,7 @@ void czdec_reply_r_status_22(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_23(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_23 *q = (R_REPLY_STATUS_23 *)p;
@@ -1799,7 +1798,7 @@ void czdec_reply_r_status_23(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_24(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_24 *q = (R_REPLY_STATUS_24 *)p;
@@ -1817,7 +1816,7 @@ void czdec_reply_r_status_24(KNOWN_REGISTER *kr, R_REPLY *p)
 #endif
 }
 
-void czdec_reply_r_status_25(KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_25(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_25 *q = (R_REPLY_STATUS_25 *)p;
