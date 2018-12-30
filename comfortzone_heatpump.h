@@ -61,9 +61,9 @@ class comfortzone_heatpump
 	// Functions to modify heatpump settings
 	// timeout (in second) is the maximum duration before giving up (RS485 bus always busy)
 	// output: true = ok, false = failed to process
-	bool set_fan_speed(uint8_t fan_speed, int timeout = 5);					// 1 = low, 2 = normal, 3 = fast
-	bool set_room_temperature(float room_temp, int timeout = 5);			// temperature in °C
-	bool set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C
+	const char *set_fan_speed(uint8_t fan_speed, int timeout = 5);					// 1 = low, 2 = normal, 3 = fast
+	const char *set_room_temperature(float room_temp, int timeout = 5);			// temperature in °C (10.0° -> 50.0°, step 0.1°)
+	const char *set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C (10.0° -> 60.0°, step 0.1°)
 	const char *set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
 
 	const char *set_hour(uint8_t hour, int timeout = 5);			// 0-23

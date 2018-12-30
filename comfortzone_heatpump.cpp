@@ -341,18 +341,97 @@ uint16_t comfortzone_craft(byte *output_buffer, KNOWN_REGISTER_CRAFT_NAME reg_cn
 // appears once only every 5 seconds
 
 // fan speed: 1 = low, 2 = normal, 3 = fast
-bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
+const char *comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 {
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if((fan_speed < 1) || (fan_speed > 3))
+	{
+		DPRINTLN("Invalid value, must be between 1 and 3");
+		return "Invalid value, must be between 1 and 3";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_SPEED);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_FAN_SPEED not found");
+		return "czcraft::KR_FAN_SPEED not found";
+		//return false;
+	}
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, fan_speed);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, fan_speed);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
 }
 
-// room temperature temperature in °C
-bool comfortzone_heatpump::set_room_temperature(float room_temp, int timeout)
+// room temperature temperature in °C: 10.0°->50.0°, step 0.1°
+const char *comfortzone_heatpump::set_room_temperature(float room_temp, int timeout)
 {
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t int_value;
+
+	if((room_temp < 10.0) || (room_temp > 50.0))
+	{
+		DPRINTLN("Invalid value, must be between 10.0 and 50.0");
+		return "Invalid value, must be between 10.0 and 50.0";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_ROOM_HEATING_TEMP);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_ROOM_HEATING_TEMP not found");
+		return "czcraft::KR_ROOM_HEATING_TEMP not found";
+		//return false;
+	}
+
+	int_value = (room_temp * 10.0 + 0.5);		// +0.5 to round to closest integer number
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, int_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);		// reply value is always 0 on success
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
 }
 
-// hot water temperature in °C
-bool comfortzone_heatpump::set_hot_water_temperature(float room_temp, int timeout)
+// hot water temperature in °C: 10.0°-60.0°, step 0.1°
+const char *comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp, int timeout)
 {
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t int_value;
+
+	// WARNING: technically, heatpump (or at least control panel) accepts 0.0° as minimum value but by security, I limit it to 10.0°
+	if((hot_water_temp < 10.0) || (hot_water_temp > 60.0))
+	{
+		DPRINTLN("Invalid value, must be between 10.0 and 60.0");
+		return "Invalid value, must be between 10.0 and 60.0";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_HOT_WATER_TEMP);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_ROOM_HEATING_TEMP not found");
+		return "czcraft::KR_ROOM_HEATING_TEMP not found";
+		//return false;
+	}
+
+	int_value = (hot_water_temp * 10.0 + 0.5);		// +0.5 to round to closest integer number
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, int_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 1);		// reply value is always 1 on success
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
 }
 
 // led level: 0 = off -> 6 = highest level
