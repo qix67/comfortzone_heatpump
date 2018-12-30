@@ -358,16 +358,14 @@ bool comfortzone_heatpump::set_hot_water_temperature(float room_temp, int timeou
 // led level: 0 = off -> 6 = highest level
 const char *comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 {
-	byte cmd[256];
-	byte expected_reply[256];
-	int cmd_length;
-	int expected_reply_length;
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
 
 	if(led_level > 6)
 	{
-		DPRINTLN("comfortzone_heatpump::set_led_luminosity - Invalid led level, must be between 0 and 6");
-		return "comfortzone_heatpump::set_led_luminosity - Invalid led level, must be between 0 and 6";
+		DPRINTLN("Invalid value, must be between 0 and 6");
+		return "Invalid value, must be between 0 and 6";
 		//return false;
 	}
 
@@ -375,15 +373,162 @@ const char *comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int time
 
 	if(kr == NULL)
 	{
-		DPRINTLN("comfortzone_heatpump::set_led_luminosity - czcraft::KR_LED_LUMINOSITY not found");
-		return "comfortzone_heatpump::set_led_luminosity - czcraft::KR_LED_LUMINOSITY not found";
+		DPRINTLN("czcraft::KR_LED_LUMINOSITY not found");
+		return "czcraft::KR_LED_LUMINOSITY not found";
 		//return false;
 	}
 
-	cmd_length = czcraft::craft_w_small_cmd(this, cmd, kr->reg_num, led_level);
-	expected_reply_length = czcraft::craft_w_reply(this, expected_reply, kr->reg_num, led_level);
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, led_level);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, led_level);
 
-	return push_settings(cmd, cmd_length, expected_reply, expected_reply_length, timeout);
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
+// hour: 0-23
+const char *comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if(hour > 23)
+	{
+		DPRINTLN("Invalid value, must be between 0 and 23");
+		return "Invalid value, must be between 0 and 23";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_HOUR);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_HOUR not found");
+		return "czcraft::KR_HOUR not found";
+		//return false;
+	}
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, hour);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, hour);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
+// minute: 0-59
+const char *comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if(minute > 59)
+	{
+		DPRINTLN("Invalid value, must be between 0 and 59");
+		return "Invalid value, must be between 0 and 59";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_MINUTE);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_MINUTE not found");
+		return "czcraft::KR_MINUTE not found";
+		//return false;
+	}
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, minute);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, minute);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
+// day: 1-31
+const char *comfortzone_heatpump::set_day(uint8_t day, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if((day < 1) || (day > 31))
+	{
+		DPRINTLN("Invalid value, must be between 1 and 31");
+		return "Invalid value, must be between 1 and 31";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_DAY);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_DAY not found");
+		return "czcraft::KR_DAY not found";
+		//return false;
+	}
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, day);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, day);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
+// month: 1-12
+const char *comfortzone_heatpump::set_month(uint8_t month, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if((month < 1) || (month > 12))
+	{
+		DPRINTLN("Invalid value, must be between 1 and 12");
+		return "Invalid value, must be between 1 and 12";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_MONTH);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_MONTH not found");
+		return "czcraft::KR_MONTH not found";
+		//return false;
+	}
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, month);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, month);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
+// year 2000-2255
+const char *comfortzone_heatpump::set_year(uint16_t year, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if((year < 2000) || (year > 2255))
+	{
+		DPRINTLN("Invalid value, must be between 2000 and 2255");
+		return "Invalid value, must be between 2000 and 2255";
+		//return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_YEAR);
+
+	if(kr == NULL)
+	{
+		DPRINTLN("czcraft::KR_YEAR not found");
+		return "czcraft::KR_YEAR not found";
+		//return false;
+	}
+
+	year -= 2000;
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, year);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, year);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
 }
 
 static char debug_buf[512];

@@ -17,25 +17,30 @@ class czcraft
 		KR_HOT_WATER_TEMP,		// set hot water temperature, parameter => 120 (=12.0°) to 800 (=80.0°)
 		KR_EXTRA_HOT_WATER_ON,  // enable extra hot water, no parameter
 		KR_EXTRA_HOT_WATER_OFF, // disable extra hot water, no parameter
+		KR_HOUR,						// set hour, parameter 0-23
+		KR_MINUTE,					// set minute, parameter 0-59
+		KR_DAY,						// set day of month, parameter 1-31
+		KR_MONTH,					// set day of month, parameter 1-12
+		KR_YEAR,						// set day of month, parameter 2000-2255
 	} KNOWN_REGISTER_CRAFT_NAME;
 
 	// craft a W_CMD packet
 	// input: pointer to output buffer
 	//		  9 byte array contaning register number
 	//		 16bit value (it will be automatically stored into little endian)
-	static int craft_w_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, uint16_t value);
+	static void craft_w_cmd(comfortzone_heatpump *czhp, W_CMD *output_buffer, byte *reg_num, uint16_t value);
 
 	// craft a W_SMALL_CMD packet
 	// input: pointer to output buffer
 	//		  9 byte array contaning register number
 	//		  8bit value
-	static int craft_w_small_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value);
+	static void craft_w_small_cmd(comfortzone_heatpump *czhp, W_SMALL_CMD *output_buffer, byte *reg_num, byte value);
 
 	// craft a W_REPLY packet
 	// input: pointer to output buffer
 	//		  9 byte array contaning register number
 	//		  expected 8bit value
-	static int craft_w_reply(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value);
+	static void craft_w_reply(comfortzone_heatpump *czhp, W_REPLY *output_buffer, byte *reg_num, byte value);
 };
 
 

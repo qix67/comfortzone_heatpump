@@ -9,9 +9,8 @@
 //		  9 byte array contaning register number
 //		 16bit value (it will be automatically stored into little endian)
 //		  1 CRC byte
-int czcraft::craft_w_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, uint16_t value)
+void czcraft::craft_w_cmd(comfortzone_heatpump *czhp, W_CMD *q, byte *reg_num, uint16_t value)
 {
-	W_CMD *q = (W_CMD*)output_buffer;
 	byte comp1_dest[4];
 
 	memcpy(q->cz_head.destination, czhp->heatpump_addr, 4);
@@ -32,9 +31,7 @@ int czcraft::craft_w_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *
 	q->reg_value[0] = value & 0xFF;
 	q->reg_value[1] = (value >> 8) & 0xFF;
 
-	q->crc = czhp->CRC8.maxim(output_buffer, sizeof(W_CMD) - 1);
-
-	return sizeof(W_CMD);
+	q->crc = czhp->CRC8.maxim((byte*)q, sizeof(W_CMD) - 1);
 }
 
 // craft a W_SMALL_CMD paquet
@@ -42,9 +39,8 @@ int czcraft::craft_w_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *
 //		  9 byte array contaning register number
 //		  8bit value
 //		  1 CRC byte
-int czcraft::craft_w_small_cmd(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value)
+void czcraft::craft_w_small_cmd(comfortzone_heatpump *czhp, W_SMALL_CMD *q, byte *reg_num, byte value)
 {
-	W_SMALL_CMD *q = (W_SMALL_CMD*)output_buffer;
 	byte comp1_dest[4];
 
 	memcpy(q->cz_head.destination, czhp->heatpump_addr, 4);
@@ -66,18 +62,15 @@ int czcraft::craft_w_small_cmd(comfortzone_heatpump *czhp, byte *output_buffer, 
 
 	q->reg_value = value;
 
-	q->crc = czhp->CRC8.maxim(output_buffer, sizeof(W_SMALL_CMD) - 1);
-
-	return sizeof(W_SMALL_CMD);
+	q->crc = czhp->CRC8.maxim((byte*)q, sizeof(W_SMALL_CMD) - 1);
 }
 
 // craft a W_REPLY packet
 // input: pointer to output buffer
 //		9 byte array contaning register number
 //		expected 8bit value
-int czcraft::craft_w_reply(comfortzone_heatpump *czhp, byte *output_buffer, byte *reg_num, byte value)
+void czcraft::craft_w_reply(comfortzone_heatpump *czhp, W_REPLY *q, byte *reg_num, byte value)
 {
-	W_REPLY *q = (W_REPLY*)output_buffer;
 	byte comp1_dest[4];
 
 	memcpy(q->cz_head.destination, czhp->heatpump_addr, 4);
@@ -99,8 +92,6 @@ int czcraft::craft_w_reply(comfortzone_heatpump *czhp, byte *output_buffer, byte
 
 	q->return_code = value;
 
-	q->crc = czhp->CRC8.maxim(output_buffer, sizeof(W_REPLY) - 1);
-
-	return sizeof(W_REPLY);
+	q->crc = czhp->CRC8.maxim((byte*)q, sizeof(W_REPLY) - 1);
 }
 

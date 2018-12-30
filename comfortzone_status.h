@@ -57,6 +57,18 @@ typedef struct
 	uint32_t compressor_runtime;				// minutes
 	uint32_t total_runtime;						// minutes
 
+	// heatpump current time
+	byte hour;
+	byte minute;
+	byte second;
+
+	// heatpump currant day
+	byte day;
+	byte month;
+	uint16_t year;
+
+	byte day_of_week;								// 1 = monday, 7 = sunday
+
 	// current user settings
 	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
 

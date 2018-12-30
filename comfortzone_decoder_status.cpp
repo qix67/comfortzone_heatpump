@@ -328,6 +328,15 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 	czhp->comfortzone_status.filter_alarm = (active_alarm & 0x0002) ? true : false ;
 
+	czhp->comfortzone_status.hour = q->hour1;
+	czhp->comfortzone_status.minute = q->minute1;
+	czhp->comfortzone_status.second = q->second1;
+
+	czhp->comfortzone_status.day = q->day;
+	czhp->comfortzone_status.month = q->month;
+	czhp->comfortzone_status.year = 2000 + q->year;
+	czhp->comfortzone_status.day_of_week = q->day_of_week;
+
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;

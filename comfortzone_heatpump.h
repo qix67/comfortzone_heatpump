@@ -66,6 +66,13 @@ class comfortzone_heatpump
 	bool set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C
 	const char *set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
 
+	const char *set_hour(uint8_t hour, int timeout = 5);			// 0-23
+	const char *set_minute(uint8_t minute, int timeout = 5);			// 0-59
+
+	const char *set_day(uint8_t day, int timeout = 5);			// 1-31
+	const char *set_month(uint8_t month, int timeout = 5);			// 1-12
+	const char *set_year(uint16_t year, int timeout = 5);			// 2000-2255
+
 	// current status
 	COMFORTZONE_STATUS comfortzone_status;
 
