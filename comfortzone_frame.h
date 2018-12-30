@@ -19,9 +19,10 @@
 */
 typedef struct __attribute__ ((packed)) cz_packet_header
 {
-	byte source[4];
-	byte unknown[2];		// either {0xD3, 0x5E} (command) or {0x07, 0x8A} (reply)
 	byte destination[4];
+	byte destination_crc;		// crc-maxim of source
+	byte comp1_destination_crc;	// crc-maxim of comp1's of byte of source 
+	byte source[4];
 	byte packet_size;		// packet size in byte
 	byte cmd;				// 'W': write command, 'w': write reply, 'R': read command, 'r': read reply)
 	byte reg_num[9];

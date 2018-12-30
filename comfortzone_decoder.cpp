@@ -80,7 +80,7 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 // convert a craftname into index into kr_decoder_array
 czdec::KNOWN_REGISTER *czdec::kr_craft_name_to_index(czcraft::KNOWN_REGISTER_CRAFT_NAME reg_cname)
 {
-	int i;
+	int i = 0;
 
 	while(kr_decoder[i].reg_name != NULL)
 	{

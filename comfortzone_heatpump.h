@@ -64,7 +64,7 @@ class comfortzone_heatpump
 	bool set_fan_speed(uint8_t fan_speed, int timeout = 5);					// 1 = low, 2 = normal, 3 = fast
 	bool set_room_temperature(float room_temp, int timeout = 5);			// temperature in °C
 	bool set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C
-	bool set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
+	const char *set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
 
 	// current status
 	COMFORTZONE_STATUS comfortzone_status;
@@ -83,6 +83,10 @@ class comfortzone_heatpump
 	uint16_t cz_size = 0;					// #bytes in cz_buf
 	uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
 
+	// frame timestamp
+	unsigned long last_frame_timestamp = 0;
+	unsigned long last_reply_frame_timestamp = 0;
+
 	// for debug purpose (see set_grab_buffer() )
 	byte *grab_buffer = NULL;
 	uint16_t grab_buffer_size = 0;
@@ -95,14 +99,14 @@ class comfortzone_heatpump
 	bool disable_cz_buf_clear_on_completion = false;
 
 	// RS485 "address of heatpump"
-	byte heatpump_addr[4] = { 0x41, 0x44, 0x44, 0x52 };		// or 0x65, 0x6F, 0xDE, 0x02
+	byte heatpump_addr[4] = { 0x65, 0x6F, 0xDE, 0x02 };
 	
 	// RS485 "address of this controller"
 	byte controller_addr[4] = { 0x45, 0x72, 0x69, 0x63 };		// can be anything but must be uniq on this RS485 bus
 
 	// send a command to the heatpump and wait for the given reply
 	// on error, several retries may occur and the command may take up to "timeout" seconds
-	bool push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout);
+	const char *push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout);
 };
 
 #endif

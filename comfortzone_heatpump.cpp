@@ -48,11 +48,19 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 		if(cz_size == sizeof(CZ_PACKET_HEADER))
 		{
 			CZ_PACKET_HEADER *czph = (CZ_PACKET_HEADER *)cz_buf;
+			byte comp1_dest[4];
+
+			comp1_dest[0] = czph->destination[0] ^ 0xFF;
+			comp1_dest[1] = czph->destination[1] ^ 0xFF;
+			comp1_dest[2] = czph->destination[2] ^ 0xFF;
+			comp1_dest[3] = czph->destination[3] ^ 0xFF;
 
 			if(
-					( (czph->unknown[0] == 0xD3) && (czph->unknown[1] == 0x5E) && ((czph->cmd == 'W') || (czph->cmd == 'R')) )
-				||
-					( (czph->unknown[0] == 0x07) && (czph->unknown[1] == 0x8A) && ((czph->cmd == 'w') || (czph->cmd == 'r')) )
+				(czph->destination_crc == CRC8.maxim(czph->destination, 4))
+				&& (czph->comp1_destination_crc == CRC8.maxim(comp1_dest, 4))
+				&& (
+						(czph->cmd == 'W') || (czph->cmd == 'R') || (czph->cmd == 'w') || (czph->cmd == 'r')
+					)
 				)
 			{
 				cz_full_frame_size = czph->packet_size;
@@ -110,6 +118,11 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 
 	if(!disable_cz_buf_clear_on_completion)
 		cz_size = 0;
+
+	last_frame_timestamp = millis();
+
+	if(pft == comfortzone_heatpump::PFT_REPLY)
+		last_reply_frame_timestamp = last_frame_timestamp;
 
 	return pft;
 }
@@ -343,7 +356,7 @@ bool comfortzone_heatpump::set_hot_water_temperature(float room_temp, int timeou
 }
 
 // led level: 0 = off -> 6 = highest level
-bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
+const char *comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 {
 	byte cmd[256];
 	byte expected_reply[256];
@@ -354,6 +367,8 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 	if(led_level > 6)
 	{
 		DPRINTLN("comfortzone_heatpump::set_led_luminosity - Invalid led level, must be between 0 and 6");
+		return "comfortzone_heatpump::set_led_luminosity - Invalid led level, must be between 0 and 6";
+		//return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_LED_LUMINOSITY);
@@ -361,7 +376,8 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 	if(kr == NULL)
 	{
 		DPRINTLN("comfortzone_heatpump::set_led_luminosity - czcraft::KR_LED_LUMINOSITY not found");
-		return false;
+		return "comfortzone_heatpump::set_led_luminosity - czcraft::KR_LED_LUMINOSITY not found";
+		//return false;
 	}
 
 	cmd_length = czcraft::craft_w_small_cmd(this, cmd, kr->reg_num, led_level);
@@ -370,10 +386,153 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 	return push_settings(cmd, cmd_length, expected_reply, expected_reply_length, timeout);
 }
 
+static char debug_buf[512];
+static int debug_buf_len = 0;
+
 // send a command to the heatpump and wait for the given reply
 // on error, several retries may occur and the command may take up to "timeout" seconds
-bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout)
+const char *comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout)
 {
-	return false;
+	unsigned long now;
+	unsigned long timeout_time;
+	unsigned long min_time_after_reply;
+	unsigned long reply_frame_time;
+	unsigned long reply_timeout;
+	PROCESSED_FRAME_TYPE pft;
+
+	now = millis();
+	timeout_time = now + timeout * 1000;
+
+	debug_buf[0] = '\0';
+
+#if 1
+	int i;
+
+	for(i=0; i < expected_reply_length; i ++)
+	{
+		if(debug_buf_len >= (sizeof(debug_buf) - 4))
+			break;
+
+		sprintf(debug_buf + debug_buf_len, "%02X ", (int)(expected_reply[i]));
+
+		debug_buf_len = strlen(debug_buf);
+	}
+	//return debug_buf;
+#endif
+
+	while(now < timeout_time)
+	{
+		if(last_frame_timestamp == last_reply_frame_timestamp)
+		{
+			if(debug_buf_len < (sizeof(debug_buf) - 1))
+				debug_buf[debug_buf_len++] = 'a';
+
+			// last received frame was a reply frame
+			min_time_after_reply = now + 40;		// during test, there is always less than 10ms after a reply and controller next command
+			reply_frame_time = last_reply_frame_timestamp;
+
+			// wait a little time to see if the controller has not strated to send a new command
+			while(now < min_time_after_reply)
+			{
+				pft = process();
+
+				if(pft != comfortzone_heatpump::PFT_NONE)
+					break;
+
+				now = millis();
+			}
+
+			// no new frame or reply frame and incoming frame buffer is empty, we have a go
+			if(
+				(last_frame_timestamp == last_reply_frame_timestamp)
+				&& (reply_frame_time == last_reply_frame_timestamp)
+				&& (cz_size == 0))
+			{
+			if(debug_buf_len < (sizeof(debug_buf) - 1))
+				debug_buf[debug_buf_len++] = 'b';
+
+				digitalWrite(rs485_de_pin, HIGH);	// enable send mode
+				disable_cz_buf_clear_on_completion = true;
+				rs485.write(cmd, cmd_length);
+				rs485.flush();
+				digitalWrite(rs485_de_pin, LOW);		// enable receive mode
+
+				// now, wait for a frame at most 100ms
+				now = millis();
+				reply_timeout = now + 200;
+
+				while(now < reply_timeout)
+				{
+					pft = process();
+
+					if(pft != comfortzone_heatpump::PFT_NONE)
+						break;
+
+					now = millis();
+				}
+				
+				// if we have a reply frame with the correct size and content, command was successfully processed
+				if( (pft == comfortzone_heatpump::PFT_REPLY)
+					 && (cz_size == expected_reply_length)
+					 && (!memcmp(cz_buf, expected_reply, expected_reply_length)) )
+				{
+			if(debug_buf_len < (sizeof(debug_buf) - 1))
+				debug_buf[debug_buf_len++] = 'c';
+
+					// clear input buffer and restart normal frame processing
+					disable_cz_buf_clear_on_completion = false;
+					cz_size = 0;
+
+				debug_buf[debug_buf_len] = '\0';
+					return debug_buf;
+					//return true;
+				}
+
+				// no correct reply received, retry
+
+			if(debug_buf_len < (sizeof(debug_buf) - 1))
+				debug_buf[debug_buf_len++] = 'd';
+			if(debug_buf_len < (sizeof(debug_buf) - 32))
+			{
+				sprintf(debug_buf + debug_buf_len, "%d-(%02X) %02X %02X %02X %c-%d=%d ", (int)pft, 
+												((CZ_PACKET_HEADER*)cz_buf)->comp1_destination_crc,
+												((CZ_PACKET_HEADER*)cz_buf)->reg_num[6],
+												((CZ_PACKET_HEADER*)cz_buf)->reg_num[7],
+												((CZ_PACKET_HEADER*)cz_buf)->reg_num[8],
+												((CZ_PACKET_HEADER*)cz_buf)->cmd, cz_size, expected_reply_length);
+				debug_buf_len = strlen(debug_buf);
+			}
+
+				if(pft != comfortzone_heatpump::PFT_NONE)
+				{
+					if(debug_buf_len < (sizeof(debug_buf) - 1))
+						debug_buf[debug_buf_len++] = '\n';
+
+					for(i=0; i < cz_size; i ++)
+					{
+						if(debug_buf_len >= (sizeof(debug_buf) - 4))
+							break;
+				
+						sprintf(debug_buf + debug_buf_len, "%02X ", (int)(cz_buf[i]));
+				
+						debug_buf_len = strlen(debug_buf);
+					}
+				}
+				// clear input buffer and restart normal frame processing
+				disable_cz_buf_clear_on_completion = false;
+				cz_size = 0;
+
+				if(pft != comfortzone_heatpump::PFT_NONE)
+					return debug_buf;
+			}
+		}
+
+		process();
+		now = millis();
+	}
+
+	debug_buf[debug_buf_len] = '\0';
+		return debug_buf;
+	//return false;
 }
 
