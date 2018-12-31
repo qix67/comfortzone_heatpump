@@ -82,6 +82,4 @@ typedef struct
 
 } COMFORTZONE_STATUS;
 
-extern COMFORTZONE_STATUS comfortzone_status;
-
 #endif
