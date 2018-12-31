@@ -24,7 +24,7 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x17, 0x04}, czcraft::KR_UNCRAFTABLE, "Supply fan T12 adjust", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x19, 0x00}, czcraft::KR_UNCRAFTABLE, "Status 24", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_24, czdec::reply_w_generic},	// 0xC2 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x2E, 0x03}, czcraft::KR_UNCRAFTABLE, "Minimal return temperature", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x29, 0x04}, czcraft::KR_UNCRAFTABLE, "Chauffage - compressor max frequency", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x29, 0x04}, czcraft::KR_UNCRAFTABLE, "Room Heating - compressor max frequency", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x2C, 0x04}, czcraft::KR_UNCRAFTABLE, "Status 12", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_12, czdec::reply_w_generic},	// 0xC2 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x35, 0x04}, czcraft::KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 1", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x37, 0x04}, czcraft::KR_UNCRAFTABLE, "Heatpump - compressor - blocked frequency 2", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},
@@ -98,6 +98,7 @@ czdec::KNOWN_REGISTER *czdec::kr_craft_name_to_index(czcraft::KNOWN_REGISTER_CRA
 	return NULL;
 }
 
+// process a received frame and adjust comfortzone_status accordingly
 comfortzone_heatpump::PROCESSED_FRAME_TYPE czdec::process_frame(comfortzone_heatpump *cz_class, CZ_PACKET_HEADER *czph)
 {
 	int i = 0;

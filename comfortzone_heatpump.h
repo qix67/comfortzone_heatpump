@@ -79,6 +79,12 @@ class comfortzone_heatpump
 
 	void enable_debug_mode(bool debug_flag);		// true = debug mode on, false = debug mode off
 
+	// modify default address of heatpump
+	void set_heatpump_addr(byte new_heatpump_addr[4]);
+
+	// try to guess heatpump address (if needed, must be called after begin)
+	bool guess_heatpump_addr(byte guessed_addr[4], int timeout = 5);
+
 	// current status
 	COMFORTZONE_STATUS comfortzone_status;
 
