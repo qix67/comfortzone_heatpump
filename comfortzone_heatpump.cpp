@@ -340,8 +340,10 @@ uint16_t comfortzone_craft(byte *output_buffer, KNOWN_REGISTER_CRAFT_NAME reg_cn
 // Another solution is to wait for status 08 reply and use the large pause. However, the pause
 // appears once only every 5 seconds
 
+#define RETURN_MESSAGE(msg)	{ strcpy(last_message, msg); last_message_size = strlen(last_message); }
+
 // fan speed: 1 = low, 2 = normal, 3 = fast
-const char *comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
+bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -349,18 +351,16 @@ const char *comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 
 	if((fan_speed < 1) || (fan_speed > 3))
 	{
-		DPRINTLN("Invalid value, must be between 1 and 3");
-		return "Invalid value, must be between 1 and 3";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 1 and 3");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_SPEED);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_FAN_SPEED not found");
-		return "czcraft::KR_FAN_SPEED not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_FAN_SPEED not found");
+		return false;
 	}
 
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, fan_speed);
@@ -370,7 +370,7 @@ const char *comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 }
 
 // room temperature temperature in °C: 10.0°->50.0°, step 0.1°
-const char *comfortzone_heatpump::set_room_temperature(float room_temp, int timeout)
+bool comfortzone_heatpump::set_room_temperature(float room_temp, int timeout)
 {
 	W_CMD cmd;
 	W_REPLY expected_reply;
@@ -379,18 +379,16 @@ const char *comfortzone_heatpump::set_room_temperature(float room_temp, int time
 
 	if((room_temp < 10.0) || (room_temp > 50.0))
 	{
-		DPRINTLN("Invalid value, must be between 10.0 and 50.0");
-		return "Invalid value, must be between 10.0 and 50.0";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 10.0 and 50.0");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_ROOM_HEATING_TEMP);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_ROOM_HEATING_TEMP not found");
-		return "czcraft::KR_ROOM_HEATING_TEMP not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_ROOM_HEATING_TEMP not found");
+		return false;
 	}
 
 	int_value = (room_temp * 10.0 + 0.5);		// +0.5 to round to closest integer number
@@ -402,7 +400,7 @@ const char *comfortzone_heatpump::set_room_temperature(float room_temp, int time
 }
 
 // hot water temperature in °C: 10.0°-60.0°, step 0.1°
-const char *comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp, int timeout)
+bool comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp, int timeout)
 {
 	W_CMD cmd;
 	W_REPLY expected_reply;
@@ -412,18 +410,16 @@ const char *comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp
 	// WARNING: technically, heatpump (or at least control panel) accepts 0.0° as minimum value but by security, I limit it to 10.0°
 	if((hot_water_temp < 10.0) || (hot_water_temp > 60.0))
 	{
-		DPRINTLN("Invalid value, must be between 10.0 and 60.0");
-		return "Invalid value, must be between 10.0 and 60.0";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 10.0 and 60.0");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_HOT_WATER_TEMP);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_ROOM_HEATING_TEMP not found");
-		return "czcraft::KR_ROOM_HEATING_TEMP not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_ROOM_HEATING_TEMP not found");
+		return false;
 	}
 
 	int_value = (hot_water_temp * 10.0 + 0.5);		// +0.5 to round to closest integer number
@@ -435,7 +431,7 @@ const char *comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp
 }
 
 // led level: 0 = off -> 6 = highest level
-const char *comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
+bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -443,18 +439,16 @@ const char *comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int time
 
 	if(led_level > 6)
 	{
-		DPRINTLN("Invalid value, must be between 0 and 6");
-		return "Invalid value, must be between 0 and 6";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 0 and 6");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_LED_LUMINOSITY);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_LED_LUMINOSITY not found");
-		return "czcraft::KR_LED_LUMINOSITY not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_LED_LUMINOSITY not found");
+		return false;
 	}
 
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, led_level);
@@ -464,7 +458,7 @@ const char *comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int time
 }
 
 // hour: 0-23
-const char *comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
+bool comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -472,18 +466,16 @@ const char *comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
 
 	if(hour > 23)
 	{
-		DPRINTLN("Invalid value, must be between 0 and 23");
-		return "Invalid value, must be between 0 and 23";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 0 and 23");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_HOUR);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_HOUR not found");
-		return "czcraft::KR_HOUR not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_HOUR not found");
+		return false;
 	}
 
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, hour);
@@ -493,7 +485,7 @@ const char *comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
 }
 
 // minute: 0-59
-const char *comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
+bool comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -501,18 +493,16 @@ const char *comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
 
 	if(minute > 59)
 	{
-		DPRINTLN("Invalid value, must be between 0 and 59");
-		return "Invalid value, must be between 0 and 59";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 0 and 59");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_MINUTE);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_MINUTE not found");
-		return "czcraft::KR_MINUTE not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_MINUTE not found");
+		return false;
 	}
 
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, minute);
@@ -522,7 +512,7 @@ const char *comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
 }
 
 // day: 1-31
-const char *comfortzone_heatpump::set_day(uint8_t day, int timeout)
+bool comfortzone_heatpump::set_day(uint8_t day, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -530,18 +520,16 @@ const char *comfortzone_heatpump::set_day(uint8_t day, int timeout)
 
 	if((day < 1) || (day > 31))
 	{
-		DPRINTLN("Invalid value, must be between 1 and 31");
-		return "Invalid value, must be between 1 and 31";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 1 and 31");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_DAY);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_DAY not found");
-		return "czcraft::KR_DAY not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_DAY not found");
+		return false;
 	}
 
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, day);
@@ -551,7 +539,7 @@ const char *comfortzone_heatpump::set_day(uint8_t day, int timeout)
 }
 
 // month: 1-12
-const char *comfortzone_heatpump::set_month(uint8_t month, int timeout)
+bool comfortzone_heatpump::set_month(uint8_t month, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -559,18 +547,16 @@ const char *comfortzone_heatpump::set_month(uint8_t month, int timeout)
 
 	if((month < 1) || (month > 12))
 	{
-		DPRINTLN("Invalid value, must be between 1 and 12");
-		return "Invalid value, must be between 1 and 12";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 1 and 12");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_MONTH);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_MONTH not found");
-		return "czcraft::KR_MONTH not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_MONTH not found");
+		return false;
 	}
 
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, month);
@@ -580,7 +566,7 @@ const char *comfortzone_heatpump::set_month(uint8_t month, int timeout)
 }
 
 // year 2000-2255
-const char *comfortzone_heatpump::set_year(uint16_t year, int timeout)
+bool comfortzone_heatpump::set_year(uint16_t year, int timeout)
 {
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
@@ -588,18 +574,16 @@ const char *comfortzone_heatpump::set_year(uint16_t year, int timeout)
 
 	if((year < 2000) || (year > 2255))
 	{
-		DPRINTLN("Invalid value, must be between 2000 and 2255");
-		return "Invalid value, must be between 2000 and 2255";
-		//return false;
+		RETURN_MESSAGE("Invalid value, must be between 2000 and 2255");
+		return false;
 	}
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_YEAR);
 
 	if(kr == NULL)
 	{
-		DPRINTLN("czcraft::KR_YEAR not found");
-		return "czcraft::KR_YEAR not found";
-		//return false;
+		RETURN_MESSAGE("czcraft::KR_YEAR not found");
+		return false;
 	}
 
 	year -= 2000;
@@ -610,12 +594,9 @@ const char *comfortzone_heatpump::set_year(uint16_t year, int timeout)
 	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
 }
 
-static char debug_buf[512];
-static int debug_buf_len = 0;
-
 // send a command to the heatpump and wait for the given reply
 // on error, several retries may occur and the command may take up to "timeout" seconds
-const char *comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout)
+bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout)
 {
 	unsigned long now;
 	unsigned long timeout_time;
@@ -623,34 +604,35 @@ const char *comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte 
 	unsigned long reply_frame_time;
 	unsigned long reply_timeout;
 	PROCESSED_FRAME_TYPE pft;
+	int i;
 
 	now = millis();
 	timeout_time = now + timeout * 1000;
 
-	debug_buf[0] = '\0';
+	last_message[0] = '\0';
+	last_message_size = 0;
 
-#if 1
-	int i;
-
-	for(i=0; i < expected_reply_length; i ++)
+	if(debug_mode)
 	{
-		if(debug_buf_len >= (sizeof(debug_buf) - 4))
-			break;
+		for(i=0; i < expected_reply_length; i ++)
+		{
+			if(last_message_size >= (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 4))
+				break;
 
-		sprintf(debug_buf + debug_buf_len, "%02X ", (int)(expected_reply[i]));
-
-		debug_buf_len = strlen(debug_buf);
+			sprintf(last_message + last_message_size, "%02X ", (int)(expected_reply[i]));
+	
+			last_message_size += 3;
+		}
 	}
-	//return debug_buf;
-#endif
+
 
 	while(now < timeout_time)
 	{
 		if(last_frame_timestamp == last_reply_frame_timestamp)
 		{
-			if(debug_buf_len < (sizeof(debug_buf) - 1))
-				debug_buf[debug_buf_len++] = 'a';
-
+			if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
+				last_message[last_message_size++] = 'a';
+			
 			// last received frame was a reply frame
 			min_time_after_reply = now + 40;		// during test, there is always less than 10ms after a reply and controller next command
 			reply_frame_time = last_reply_frame_timestamp;
@@ -672,8 +654,8 @@ const char *comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte 
 				&& (reply_frame_time == last_reply_frame_timestamp)
 				&& (cz_size == 0))
 			{
-			if(debug_buf_len < (sizeof(debug_buf) - 1))
-				debug_buf[debug_buf_len++] = 'b';
+				if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
+					last_message[last_message_size++] = 'b';
 
 				digitalWrite(rs485_de_pin, HIGH);	// enable send mode
 				disable_cz_buf_clear_on_completion = true;
@@ -700,54 +682,55 @@ const char *comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte 
 					 && (cz_size == expected_reply_length)
 					 && (!memcmp(cz_buf, expected_reply, expected_reply_length)) )
 				{
-			if(debug_buf_len < (sizeof(debug_buf) - 1))
-				debug_buf[debug_buf_len++] = 'c';
+					if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
+						last_message[last_message_size++] = 'c';
 
 					// clear input buffer and restart normal frame processing
 					disable_cz_buf_clear_on_completion = false;
 					cz_size = 0;
 
-				debug_buf[debug_buf_len] = '\0';
-					return debug_buf;
-					//return true;
+					last_message[last_message_size] = '\0';
+					return true;
 				}
 
 				// no correct reply received, retry
-
-			if(debug_buf_len < (sizeof(debug_buf) - 1))
-				debug_buf[debug_buf_len++] = 'd';
-			if(debug_buf_len < (sizeof(debug_buf) - 32))
-			{
-				sprintf(debug_buf + debug_buf_len, "%d-(%02X) %02X %02X %02X %c-%d=%d ", (int)pft, 
+				if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 34)) )
+				{
+					last_message[last_message_size++] = 'd';
+					sprintf(last_message + last_message_size, "%d-(%02X) %02X %02X %02X %c-%d=%d ", (int)pft, 
 												((CZ_PACKET_HEADER*)cz_buf)->comp1_destination_crc,
 												((CZ_PACKET_HEADER*)cz_buf)->reg_num[6],
 												((CZ_PACKET_HEADER*)cz_buf)->reg_num[7],
 												((CZ_PACKET_HEADER*)cz_buf)->reg_num[8],
 												((CZ_PACKET_HEADER*)cz_buf)->cmd, cz_size, expected_reply_length);
-				debug_buf_len = strlen(debug_buf);
-			}
+					last_message_size = strlen(last_message);
 
-				if(pft != comfortzone_heatpump::PFT_NONE)
-				{
-					if(debug_buf_len < (sizeof(debug_buf) - 1))
-						debug_buf[debug_buf_len++] = '\n';
-
-					for(i=0; i < cz_size; i ++)
+					if(pft != comfortzone_heatpump::PFT_NONE)
 					{
-						if(debug_buf_len >= (sizeof(debug_buf) - 4))
-							break;
-				
-						sprintf(debug_buf + debug_buf_len, "%02X ", (int)(cz_buf[i]));
-				
-						debug_buf_len = strlen(debug_buf);
+						if(last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2))
+							last_message[last_message_size++] = '\n';
+
+						for(i=0; i < cz_size; i ++)
+						{
+							if(last_message_size >= (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 4))
+								break;
+					
+							sprintf(last_message + last_message_size, "%02X ", (int)(cz_buf[i]));
+					
+							last_message_size = strlen(last_message);
+						}
 					}
 				}
+
 				// clear input buffer and restart normal frame processing
 				disable_cz_buf_clear_on_completion = false;
 				cz_size = 0;
 
 				if(pft != comfortzone_heatpump::PFT_NONE)
-					return debug_buf;
+				{
+					last_message[last_message_size] = '\0';
+					return false;
+				}
 			}
 		}
 
@@ -755,8 +738,15 @@ const char *comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte 
 		now = millis();
 	}
 
-	debug_buf[debug_buf_len] = '\0';
-		return debug_buf;
-	//return false;
+	last_message[last_message_size] = '\0';
+	return false;
+}
+
+void comfortzone_heatpump::enable_debug_mode(bool debug_flag)
+{
+	debug_mode = debug_flag;
+
+	last_message[0] = '\0';
+	last_message_size = 0;
 }
 

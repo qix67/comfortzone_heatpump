@@ -27,6 +27,7 @@
 #include <HardwareSerial.h>
 #include <FastCRC.h>
 
+#include <comfortzone_config.h>
 #include <comfortzone_status.h>
 
 class comfortzone_heatpump
@@ -61,17 +62,22 @@ class comfortzone_heatpump
 	// Functions to modify heatpump settings
 	// timeout (in second) is the maximum duration before giving up (RS485 bus always busy)
 	// output: true = ok, false = failed to process
-	const char *set_fan_speed(uint8_t fan_speed, int timeout = 5);					// 1 = low, 2 = normal, 3 = fast
-	const char *set_room_temperature(float room_temp, int timeout = 5);			// temperature in °C (10.0° -> 50.0°, step 0.1°)
-	const char *set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C (10.0° -> 60.0°, step 0.1°)
-	const char *set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
+	bool set_fan_speed(uint8_t fan_speed, int timeout = 5);					// 1 = low, 2 = normal, 3 = fast
+	bool set_room_temperature(float room_temp, int timeout = 5);			// temperature in °C (10.0° -> 50.0°, step 0.1°)
+	bool set_hot_water_temperature(float room_temp, int timeout = 5);	// temperature in °C (10.0° -> 60.0°, step 0.1°)
+	bool set_led_luminosity(uint8_t led_level, int timeout = 5);			// 0 = off -> 6 = highest level
 
-	const char *set_hour(uint8_t hour, int timeout = 5);			// 0-23
-	const char *set_minute(uint8_t minute, int timeout = 5);			// 0-59
+	bool set_hour(uint8_t hour, int timeout = 5);			// 0-23
+	bool set_minute(uint8_t minute, int timeout = 5);			// 0-59
 
-	const char *set_day(uint8_t day, int timeout = 5);			// 1-31
-	const char *set_month(uint8_t month, int timeout = 5);			// 1-12
-	const char *set_year(uint16_t year, int timeout = 5);			// 2000-2255
+	bool set_day(uint8_t day, int timeout = 5);			// 1-31
+	bool set_month(uint8_t month, int timeout = 5);			// 1-12
+	bool set_year(uint16_t year, int timeout = 5);			// 2000-2255
+
+	// when debug mode is enabled, functions may return messages
+	char last_message[COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE] = {0};
+
+	void enable_debug_mode(bool debug_flag);		// true = debug mode on, false = debug mode off
 
 	// current status
 	COMFORTZONE_STATUS comfortzone_status;
@@ -84,6 +90,11 @@ class comfortzone_heatpump
 	int rs485_de_pin;
 
 	FastCRC8 CRC8;
+
+	bool debug_mode = false;
+
+	// number of bytes in last_message buffer
+	int last_message_size = 0;
 
 	// incoming buffer
 	byte cz_buf[256];							// incoming RS485 bytes
@@ -113,7 +124,7 @@ class comfortzone_heatpump
 
 	// send a command to the heatpump and wait for the given reply
 	// on error, several retries may occur and the command may take up to "timeout" seconds
-	const char *push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout);
+	bool push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout);
 };
 
 #endif
