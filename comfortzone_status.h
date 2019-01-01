@@ -57,19 +57,32 @@ typedef struct
 	uint32_t compressor_runtime;				// minutes
 	uint32_t total_runtime;						// minutes
 
+	// heatpump current time
+	byte hour;
+	byte minute;
+	byte second;
+
+	// heatpump currant day
+	byte day;
+	byte month;
+	uint16_t year;
+
+	byte day_of_week;								// 1 = monday, 7 = sunday
+
 	// current user settings
 	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
 
-	int16_t room_heating_setting;				// °C, * 10
-	int16_t hot_water_setting;					// °C, * 10
+	int16_t room_heating_setting;				// °C, * 10 (user selected)
+	int16_t hot_water_setting;					// °C, * 10 (user selected)
 	bool extra_hot_water_setting;				// true = on, false = off
 
 	byte hot_water_priority_setting;			// 1 = low, 2 = normal, 3 = fast
 
 	byte led_luminosity_setting;				// 0 = off -> 6 = highest level
 
+	// current heatpump calculated setting
+	uint16_t fan_speed_duty;					// %, * 10
+	int16_t hot_water_calculated_setting;	// °C, * 10 (heatpump selected). can be hot_water_setting (no extra hot water) or a different value
 } COMFORTZONE_STATUS;
-
-extern COMFORTZONE_STATUS comfortzone_status;
 
 #endif
