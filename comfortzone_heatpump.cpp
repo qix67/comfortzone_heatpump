@@ -151,19 +151,6 @@ void comfortzone_heatpump::set_grab_buffer(byte *buffer, uint16_t buffer_size, u
 	}
 }
 
-#if 0
-		case KR_EXTRA_HOT_WATER_ON:	// enable extra hot water, no parameter
-									return cz_craft_w_cmd(output_buffer, kr_decoder[kr_idx].reg_num, 0x0001, 0x06);
-
-		case KR_EXTRA_HOT_WATER_OFF:	// disable extra hot water, no parameter
-									return cz_craft_w_cmd(output_buffer, kr_decoder[kr_idx].reg_num, 0xFFFE, 0x90);
-
-	}
-
-	return 0;
-}
-#endif
-
 // Functions to modify heatpump settings
 // timeout (in second) is the maximum duration before giving up (RS485 bus always busy)
 // output: true = ok, false = failed to process
@@ -435,9 +422,81 @@ bool comfortzone_heatpump::set_year(uint16_t year, int timeout)
 	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
 }
 
+// true = enable, false = disable
+bool comfortzone_heatpump::set_extra_hot_water(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	byte reply_value;
+
+	// Don't know why this setting requires 2 register (???)
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_EXTRA_HOT_WATER_ON);
+		cmd_value = 0x0001;
+		reply_value = 0x08;
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_EXTRA_HOT_WATER_OFF);
+		cmd_value = 0xFFFE;
+		reply_value = 0x0C;
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("nczcraft::KR_EXTRA_HOT_WATER_* Not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
+// true = enable, false = disable
+bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	byte reply_value;
+
+	// Don't know why this setting requires 2 register (???)
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_AUTO_DAYLIGHT_SAVING_ON);
+		cmd_value = 0x0040;
+		reply_value = 0x8E;
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_AUTO_DAYLIGHT_SAVING_OFF);
+		cmd_value = 0xFFBF;
+		reply_value = 0x8E;
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("nczcraft::KR_AUTO_DAYLIGHT_SAVING_* Not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+}
+
 // send a command to the heatpump and wait for the given reply
 // on error, several retries may occur and the command may take up to "timeout" seconds
-bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout)
+// if reply_header_check_only is false, reply must be exactly equal to expected_reply
+// if reply_header_check_only is true, only reply header (CZ_PACKET_HEADER) must match expected_reply header
+bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout, bool header_check_only)
 {
 	unsigned long now;
 	unsigned long timeout_time;
@@ -465,7 +524,6 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 			last_message_size += 3;
 		}
 	}
-
 
 	while(now < timeout_time)
 	{
@@ -521,7 +579,12 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 				// if we have a reply frame with the correct size and content, command was successfully processed
 				if( (pft == comfortzone_heatpump::PFT_REPLY)
 					 && (cz_size == expected_reply_length)
-					 && (!memcmp(cz_buf, expected_reply, expected_reply_length)) )
+					 &&	(
+								( (header_check_only == false) && (!memcmp(cz_buf, expected_reply, expected_reply_length)) )
+								||
+								( (header_check_only == true) && (!memcmp(cz_buf, expected_reply, sizeof(CZ_PACKET_HEADER))) )
+							)
+					)
 				{
 					if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
 						last_message[last_message_size++] = 'c';

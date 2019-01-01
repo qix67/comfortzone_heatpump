@@ -59,6 +59,10 @@ class czdec
 	static void reply_w_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p);
 
 	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p);
+	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_SMALL_CMD *p);
+	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p);
+	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p);
 
 	// status decoder
 	static void reply_r_status_01(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);

@@ -7,19 +7,20 @@
 static czdec::KNOWN_REGISTER kr_decoder[] =
 	{
 		// don't know why but extra hot water off does not use the same message as extra hot water on
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x41, 0x19, 0x00}, czcraft::KR_EXTRA_HOT_WATER_ON, "Extra hot water - off", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x19, 0x00}, czcraft::KR_EXTRA_HOT_WATER_OFF, "Extra hot water - on", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x41, 0x19, 0x00}, czcraft::KR_EXTRA_HOT_WATER_OFF, "Extra hot water - off", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x19, 0x00}, czcraft::KR_EXTRA_HOT_WATER_ON, "Extra hot water - on", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x81, 0x29, 0x00}, czcraft::KR_UNCRAFTABLE, "Clear alarm", czdec::cmd_r_generic, czdec::cmd_w_clr_alarm, czdec::reply_r_clr_alarm, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x40, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Daylight saving - on", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Daylight saving - off", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x40, 0x00, 0x00}, czcraft::KR_AUTO_DAYLIGHT_SAVING_OFF, "Daylight saving - off", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x00, 0x00}, czcraft::KR_AUTO_DAYLIGHT_SAVING_ON, "Daylight saving - on", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Sanitary priority", czdec::cmd_r_generic, czdec::cmd_w_sanitary_priority, czdec::reply_r_sanitary_priority, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x80, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Sanitary priority (set)", czdec::empty, czdec::empty, czdec::empty, czdec::reply_w_generic},	// this frame itself is not enough to set priority
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Status 09", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_09, czdec::reply_w_generic},	// 0xC2 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x00, 0x04}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x05, 0x04}, czcraft::KR_UNCRAFTABLE, "Fan boost increase", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Sanitary priority (get)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_sanitary_priority, czdec::empty},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x16, 0x02}, czcraft::KR_UNCRAFTABLE, "Status 11", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_11, czdec::reply_w_generic},	// 0xC2 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x17, 0x04}, czcraft::KR_UNCRAFTABLE, "Supply fan T12 adjust", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x07, 0x00, 0x19, 0x00}, czcraft::KR_UNCRAFTABLE, "Status 24", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_24, czdec::reply_w_generic},	// 0xC2 bytes

@@ -32,6 +32,7 @@ void czdec::reply_r_status_01(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 	czhp->comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
 
+	czhp->comfortzone_status.hot_water_setting = get_uint16(q->hot_water_user_setting);
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
@@ -52,12 +53,12 @@ void czdec::reply_r_status_01(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	NPRINTLN("");
 
 	// ===
-	reg_v = get_uint16(q->hot_water_calculated_setting);
+	reg_v = get_uint16(q->hot_water_user_setting);
 
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	NPRINT("Hot water Calculated setting: ");
+	NPRINT("Hot water User setting: ");
 	NPRINT(reg_v_f);
 	NPRINTLN("°C");
 
@@ -663,9 +664,10 @@ void czdec::reply_r_status_05(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 		czhp->comfortzone_status.room_heating_in_progress = true;
 
 	czhp->comfortzone_status.fan_speed = q->fan_speed;
+	czhp->comfortzone_status.fan_speed_duty = get_uint16(q->fan_speed_duty);
 
 	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
-	czhp->comfortzone_status.hot_water_setting = get_uint16(q->hot_water_calculated_setting);
+	czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
 
 	czhp->comfortzone_status.extra_hot_water_setting = ((q->extra_hot_water == 0x0F)? true : false);
 

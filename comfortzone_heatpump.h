@@ -74,6 +74,9 @@ class comfortzone_heatpump
 	bool set_month(uint8_t month, int timeout = 5);			// 1-12
 	bool set_year(uint16_t year, int timeout = 5);			// 2000-2255
 
+	bool set_extra_hot_water(bool enable, int timeout = 5);	// true = enable, false = disable
+	bool set_automatic_daylight_saving(bool enable, int timeout = 5);	// true = enable, false = disable
+
 	// when debug mode is enabled, functions may return messages
 	char last_message[COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE] = {0};
 
@@ -130,7 +133,7 @@ class comfortzone_heatpump
 
 	// send a command to the heatpump and wait for the given reply
 	// on error, several retries may occur and the command may take up to "timeout" seconds
-	bool push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout);
+	bool push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout, bool reply_header_check_only = false);
 };
 
 #endif

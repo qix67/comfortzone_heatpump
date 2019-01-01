@@ -681,3 +681,19 @@ void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 }
 
+void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_SMALL_CMD *p)
+{
+}
+
+void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p)
+{
+}
+
+void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+}
+
+void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p)
+{
+}
+

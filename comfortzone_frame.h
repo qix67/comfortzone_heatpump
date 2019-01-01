@@ -103,7 +103,7 @@ typedef struct __attribute__ ((packed))
 	byte unknown[2];
 
 	byte extra_hot_water;					// 0x00 = on, 0xFF = off
-	byte hot_water_calculated_setting[2];			// °C, LSB, 2 bytes, * 10
+	byte hot_water_user_setting[2];			// °C, LSB, 2 bytes, * 10 (it is the temperature selected by user)
 	byte hot_water_hysteresis[2];		// °C, LSB, 2 bytes, * 10
 
 	//  +3 comes from 3 non displayed steps
@@ -303,16 +303,18 @@ typedef struct __attribute__ ((packed))
 	byte unknown1[35];							// always seems to be 84 03 84 03 00 00 22 FC 22 FC 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 19 FC FF FF F1 D8 F1 D8 FF
 														// rarely starts by   83 03 83 03
 
-	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes
+	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes (it is the current hot water the heatpump tries to reach)
+																	// it is either the user one or a different one if extra hot water is enabled
 	byte unknown2[2];							// always 0x00 00 (previous field may be 4 bytes length)
 	byte unknown_count_down[2];				// second, LSB, 2 bytes, * 10
 	byte unknown2b[2];						// always 0x00 00 (previous field may be 4 bytes length)
 	byte extra_hot_water;						// 0x00 = off, 0x0F = on
 	byte unknown2c[1];						// always 0x03
 
-	byte fan_speed;
+	byte fan_speed;							// 1 = slow, 2 = normal, 3 = fast
+	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
 
-	byte unknown3[8];
+	byte unknown3[6];
 
 	byte condensing_temperature[2];					// °C, LSB, 2 bytes, * 10
 	byte condensing_pressure[2];						// bar, LSB, 2 bytes, * 10
