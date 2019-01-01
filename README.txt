@@ -165,6 +165,16 @@ comfortzone_heatpump object.
  Update heatpump internal year. Range: [2000:2255]
 
 
+ * bool set_extra_hot_water(bool enable, int timeout = 5);
+
+ Update heatpump extra hot water. True = enable extra hot water. False = disable
+
+
+ * bool set_automatic_daylight_saving(bool enable, int timeout = 5);
+
+ Update heatpump automatic daylight saving. True = automatic. False = manual
+
+
  Special methods
  ---------------
 
