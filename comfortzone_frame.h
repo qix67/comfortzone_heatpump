@@ -17,11 +17,12 @@
     tt can be either (W: write command, w: write reply, R: read command, r: read reply)
 
 */
-typedef struct __attribute__ ((packed))
+typedef struct __attribute__ ((packed)) cz_packet_header
 {
-	byte source[4];
-	byte unknown[2];		// either {0xD3, 0x5E} (command) or {0x07, 0x8A} (reply)
 	byte destination[4];
+	byte destination_crc;		// crc-maxim of source
+	byte comp1_destination_crc;	// crc-maxim of comp1's of byte of source 
+	byte source[4];
 	byte packet_size;		// packet size in byte
 	byte cmd;				// 'W': write command, 'w': write reply, 'R': read command, 'r': read reply)
 	byte reg_num[9];
@@ -102,18 +103,18 @@ typedef struct __attribute__ ((packed))
 	byte unknown[2];
 
 	byte extra_hot_water;					// 0x00 = on, 0xFF = off
-	byte hot_water_calculated_setting[2];			// °C, LSB, 2 bytes, * 10
+	byte hot_water_user_setting[2];			// °C, LSB, 2 bytes, * 10 (it is the temperature selected by user)
 	byte hot_water_hysteresis[2];		// °C, LSB, 2 bytes, * 10
 
-	// le +3 correspond visiblement à 3 steps non affichés
+	//  +3 comes from 3 non displayed steps
 #define STATUS_01_NB_HW_NORMAL_STEPS (12+3)
 	byte hot_water_normal_steps[STATUS_01_NB_HW_NORMAL_STEPS][2];	// °C, LSB, 2 bytes, signed, * 10
 
-	// le +3 correspond visiblement à 3 steps non affichés
+	//  +3 comes from 3 non displayed steps
 #define STATUS_01_NB_HW_HIGH_STEPS (12+3)
 	byte hot_water_high_steps[STATUS_01_NB_HW_HIGH_STEPS][2];	// °C, LSB, 2 bytes, signed, * 10
 
-	// le +3 correspond visiblement à 3 steps non affichés
+	//  +3 comes from 3 non displayed steps
 #define STATUS_01_NB_HW_EXTRA_STEPS (12+3)
 	byte hot_water_extra_steps[STATUS_01_NB_HW_EXTRA_STEPS][2];	// °C, LSB, 2 bytes, signed, * 10
 
@@ -122,7 +123,7 @@ typedef struct __attribute__ ((packed))
 	byte hot_water_max_runtime;								// minute
 	byte hot_water_pause_time;							// minute
 
-	byte unknown5b[8][2];		// visiblement, ce sont 8 int16 signé
+	byte unknown5b[8][2];		// looks like 8 signed int16
 
 	byte hot_water_compressor_min_frequency[2];		// Hz, LSB, 2bytes, * 10
 	byte hot_water_compressor_max_frequency[2];		// Hz, LSB, 2bytes, * 10
@@ -302,16 +303,18 @@ typedef struct __attribute__ ((packed))
 	byte unknown1[35];							// always seems to be 84 03 84 03 00 00 22 FC 22 FC 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 19 FC FF FF F1 D8 F1 D8 FF
 														// rarely starts by   83 03 83 03
 
-	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes
+	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes (it is the current hot water the heatpump tries to reach)
+																	// it is either the user one or a different one if extra hot water is enabled
 	byte unknown2[2];							// always 0x00 00 (previous field may be 4 bytes length)
 	byte unknown_count_down[2];				// second, LSB, 2 bytes, * 10
 	byte unknown2b[2];						// always 0x00 00 (previous field may be 4 bytes length)
 	byte extra_hot_water;						// 0x00 = off, 0x0F = on
 	byte unknown2c[1];						// always 0x03
 
-	byte fan_speed;
+	byte fan_speed;							// 1 = slow, 2 = normal, 3 = fast
+	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
 
-	byte unknown3[8];
+	byte unknown3[6];
 
 	byte condensing_temperature[2];					// °C, LSB, 2 bytes, * 10
 	byte condensing_pressure[2];						// bar, LSB, 2 bytes, * 10
@@ -357,7 +360,7 @@ typedef struct __attribute__ ((packed))
 
 	byte unknown1a[4];
 
-	byte unknown_count_down[2];				// = 00 00 si pac à l'arret, sinon, décompte à partir de~0x0383
+	byte unknown_count_down[2];				// = 00 00 when heatpump is stopped else countdown from approximately 0x0383
 
 	byte unknown1b[6];
 
@@ -366,7 +369,7 @@ typedef struct __attribute__ ((packed))
 	byte unknown2[12];
 
 	byte expansion_valve_calculated_setting[2];	// K, LSB, 2 bytes, * 10
-	byte vanne_expansion_xxx[2];						// nombre négatif. parametre_calculé + xxx = difference de temp1
+	byte vanne_expansion_xxx[2];						// negative number, expansion_valve_calculated_setting + xxx = temperature difference
 	byte expansion_valve_temperature_difference1[2];		// K, LSB, 2 bytes, * 10
 	byte expansion_valve_temperature_difference2[2];		// K, LSB, 2 bytes, * 10
 

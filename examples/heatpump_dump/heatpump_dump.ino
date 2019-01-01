@@ -1,20 +1,21 @@
 #include <Arduino.h>
 
 #include "comfortzone_heatpump.h"
-#include "comfortzone_status.h"
 
 // Basic example showing how to use library to decode message.
 // Code was tested on teensy 3.2 with RS485 module connected to
 // Serial3 and DE/RE pin connected to pin 2.
 
 // Note: during the first 5 seconds, some (all) variables of
-// comfortzone_status variable are not initialized
+// heatpump.comfortzone_status variable are not initialized
 
 // Serial connected to RS485 module
 #define RS485SER Serial3
 
 // pin connected to DE/RE pin of RS485 module
 #define RS485_DE_PIN 2
+
+comfortzone_heatpump heatpump;
 
 // print periodic status every X seconds
 #define PERIODIC_STATUS 5
@@ -31,11 +32,11 @@ void periodic_status()
 	{  // periodically report status to domoticz to avoid red status
 
 		Serial.print("Fan - time to filter change: ");
-		Serial.print(comfortzone_status.fan_time_to_filter_change);
+		Serial.print(heatpump.comfortzone_status.fan_time_to_filter_change);
 		Serial.println(" days");
 
 		Serial.print("Fan speed: ");
-		switch(comfortzone_status.fan_speed)
+		switch(heatpump.comfortzone_status.fan_speed)
 		{
 			case 1:	Serial.println("low");
 						break;
@@ -46,13 +47,13 @@ void periodic_status()
 		}
 
 		Serial.print("Hot water production: ");
-		Serial.println((comfortzone_status.hot_water_production ? "yes" : "no" ));
+		Serial.println((heatpump.comfortzone_status.hot_water_production ? "yes" : "no" ));
 
 		Serial.print("Room heating in progress: ");
-		Serial.println((comfortzone_status.room_heating_in_progress ? "yes" : "no" ));
+		Serial.println((heatpump.comfortzone_status.room_heating_in_progress ? "yes" : "no" ));
 
 		Serial.print("Compressor activity: ");
-		switch(comfortzone_status.compressor_activity)
+		switch(heatpump.comfortzone_status.compressor_activity)
 		{
 			case CZCMP_STOPPED:	Serial.println("stopped");
 										break;
@@ -65,10 +66,10 @@ void periodic_status()
 		}
 
 		Serial.print("Additional power (resistor): ");
-		Serial.println((comfortzone_status.additional_power_enabled ? "yes" : "no" ));
+		Serial.println((heatpump.comfortzone_status.additional_power_enabled ? "yes" : "no" ));
 
 		Serial.print("Mode: ");
-		switch(comfortzone_status.mode)
+		switch(heatpump.comfortzone_status.mode)
 		{
 			case CZMD_IDLE:		Serial.println("idle");
 										break;
@@ -81,78 +82,78 @@ void periodic_status()
 		}
 
 		Serial.print("Defrost enabled: ");
-		Serial.println((comfortzone_status.defrost_enabled ? "yes" : "no" ));
+		Serial.println((heatpump.comfortzone_status.defrost_enabled ? "yes" : "no" ));
 		
 		Serial.print("TE1 - Flow water: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te1_flow_water) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te1_flow_water) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE2 - Return water: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te2_return_water) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te2_return_water) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE3 - Indoor temp: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te3_indoor_temp) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te3_indoor_temp) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE4 - Hot gas temp: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te4_hot_gas_temp) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te4_hot_gas_temp) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE5 - Exchanger out: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te5_exchanger_out) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te5_exchanger_out) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE6 - Evaporator in: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te6_evaporator_in) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te6_evaporator_in) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE7 - Exhaust air: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te7_exhaust_air) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te7_exhaust_air) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("TE24 - Hot water temp: ");
-		Serial.print( ((float)(comfortzone_status.sensors_te24_hot_water_temp) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te24_hot_water_temp) / 10.0) );
 		Serial.println("°C");
 
 		Serial.print("Heatpump - Compressor frequency: ");
-		Serial.print( ((float)(comfortzone_status.heatpump_current_compressor_frequency) / 10.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.heatpump_current_compressor_frequency) / 10.0) );
 		Serial.println("Hz");
 
 		Serial.print("Heatpump - Compressor power: ");
-		Serial.print(comfortzone_status.heatpump_current_compressor_power);
+		Serial.print(heatpump.comfortzone_status.heatpump_current_compressor_power);
 		Serial.println("W");
 
 		Serial.print("Heatpump - Add power: ");
-		Serial.print(comfortzone_status.heatpump_current_add_power);
+		Serial.print(heatpump.comfortzone_status.heatpump_current_add_power);
 		Serial.println("W");
 
 		Serial.print("Heatpump - Total power: ");
-		Serial.print(comfortzone_status.heatpump_current_total_power);
+		Serial.print(heatpump.comfortzone_status.heatpump_current_total_power);
 		Serial.println("W");
 
 		Serial.print("Heatpump - Compressor input power: ");
-		Serial.print(comfortzone_status.heatpump_current_compressor_input_power);
+		Serial.print(heatpump.comfortzone_status.heatpump_current_compressor_input_power);
 		Serial.println("W");
 
 		Serial.print("Compressor energy: ");
-		Serial.print( ((float)(comfortzone_status.compressor_energy) / 100.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.compressor_energy) / 100.0) );
 		Serial.println("kWh");
 
 		Serial.print("Add energy: ");
-		Serial.print( ((float)(comfortzone_status.add_energy) / 100.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.add_energy) / 100.0) );
 		Serial.println("kWh");
 
 		Serial.print("Hot water energy: ");
-		Serial.print( ((float)(comfortzone_status.hot_water_energy) / 100.0) );
+		Serial.print( ((float)(heatpump.comfortzone_status.hot_water_energy) / 100.0) );
 		Serial.println("kWh");
 
 		Serial.print("Compressor runtime: ");
-		Serial.print(comfortzone_status.compressor_runtime);
+		Serial.print(heatpump.comfortzone_status.compressor_runtime);
 		Serial.println(" minutes");
 
 		Serial.print("Total runtime: ");
-		Serial.print(comfortzone_status.total_runtime);
+		Serial.print(heatpump.comfortzone_status.total_runtime);
 		Serial.println(" minutes");
 
 		Serial.println("==================================");
@@ -167,23 +168,12 @@ void setup()
 	// let linux detect the new USB device
 	delay(1000);
 
-	// set RS485 serial to 8N1 19200
-	RS485SER.begin(19200);
-
-	pinMode(RS485_DE_PIN, OUTPUT);
-	digitalWrite(RS485_DE_PIN, LOW);			// enable RS485 receive mode
+	heatpump.begin(RS485SER, RS485_DE_PIN);
 }
 
 void loop()
 {
-	byte b;
-
-	if(RS485SER.available())
-	{
-		b = RS485SER.read();
-
-		comfortzone_receive(b);
-	}
+	heatpump.process();
 
 	periodic_status();
 }

@@ -6,6 +6,8 @@
 // Serial console
 //#define OUTSER Serial1
 
+#define COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE 256
+
 #if defined(DEBUG) && defined(OUTSER)
 #define DPRINT(args...)    OUTSER.print(args)
 #define DPRINTLN(args...)  OUTSER.println(args)
