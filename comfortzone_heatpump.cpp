@@ -176,6 +176,7 @@ bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if((fan_speed < 1) || (fan_speed > 3))
 	{
@@ -194,7 +195,16 @@ bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, fan_speed);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, fan_speed);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.fan_speed = fan_speed;
+	}
+
+	return push_result;
 }
 
 // room temperature temperature in °C: 10.0°->50.0°, step 0.1°
@@ -204,6 +214,7 @@ bool comfortzone_heatpump::set_room_temperature(float room_temp, int timeout)
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
 	uint16_t int_value;
+	bool push_result;
 
 	if((room_temp < 10.0) || (room_temp > 50.0))
 	{
@@ -224,7 +235,16 @@ bool comfortzone_heatpump::set_room_temperature(float room_temp, int timeout)
 	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, int_value);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);		// reply value is always 0 on success
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.room_heating_setting = int_value;
+	}
+
+	return push_result;
 }
 
 // hot water temperature in °C: 10.0°-60.0°, step 0.1°
@@ -234,6 +254,7 @@ bool comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp, int t
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
 	uint16_t int_value;
+	bool push_result;
 
 	// WARNING: technically, heatpump (or at least control panel) accepts 0.0° as minimum value but by security, I limit it to 10.0°
 	if((hot_water_temp < 10.0) || (hot_water_temp > 60.0))
@@ -255,7 +276,16 @@ bool comfortzone_heatpump::set_hot_water_temperature(float hot_water_temp, int t
 	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, int_value);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 1);		// reply value is always 1 on success
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.hot_water_setting = int_value;
+	}
+
+	return push_result;
 }
 
 // led level: 0 = off -> 6 = highest level
@@ -264,6 +294,7 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if(led_level > 6)
 	{
@@ -282,7 +313,16 @@ bool comfortzone_heatpump::set_led_luminosity(uint8_t led_level, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, led_level);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, led_level);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.led_luminosity_setting = led_level;
+	}
+
+	return push_result;
 }
 
 // hour: 0-23
@@ -291,6 +331,7 @@ bool comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if(hour > 23)
 	{
@@ -309,7 +350,16 @@ bool comfortzone_heatpump::set_hour(uint8_t hour, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, hour);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, hour);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.hour = hour;
+	}
+
+	return push_result;
 }
 
 // minute: 0-59
@@ -318,6 +368,7 @@ bool comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if(minute > 59)
 	{
@@ -336,7 +387,16 @@ bool comfortzone_heatpump::set_minute(uint8_t minute, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, minute);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, minute);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.minute = minute;
+	}
+
+	return push_result;
 }
 
 // day: 1-31
@@ -345,6 +405,7 @@ bool comfortzone_heatpump::set_day(uint8_t day, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if((day < 1) || (day > 31))
 	{
@@ -363,7 +424,16 @@ bool comfortzone_heatpump::set_day(uint8_t day, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, day);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, day);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.day = day;
+	}
+
+	return push_result;
 }
 
 // month: 1-12
@@ -372,6 +442,7 @@ bool comfortzone_heatpump::set_month(uint8_t month, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if((month < 1) || (month > 12))
 	{
@@ -390,7 +461,16 @@ bool comfortzone_heatpump::set_month(uint8_t month, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, month);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, month);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.month = month;
+	}
+
+	return push_result;
 }
 
 // year: 2000-2255
@@ -399,6 +479,7 @@ bool comfortzone_heatpump::set_year(uint16_t year, int timeout)
 	W_SMALL_CMD cmd;
 	W_REPLY expected_reply;
 	czdec::KNOWN_REGISTER *kr;
+	bool push_result;
 
 	if((year < 2000) || (year > 2255))
 	{
@@ -419,7 +500,16 @@ bool comfortzone_heatpump::set_year(uint16_t year, int timeout)
 	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, year);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, year);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.year = year;
+	}
+
+	return push_result;
 }
 
 // true = enable, false = disable
@@ -430,6 +520,7 @@ bool comfortzone_heatpump::set_extra_hot_water(bool enable, int timeout)
 	czdec::KNOWN_REGISTER *kr;
 	uint16_t cmd_value;
 	byte reply_value;
+	bool push_result;
 
 	// Don't know why this setting requires 2 register (???)
 	if(enable)
@@ -454,7 +545,16 @@ bool comfortzone_heatpump::set_extra_hot_water(bool enable, int timeout)
 	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		comfortzone_status.extra_hot_water_setting = enable;
+	}
+
+	return push_result;
 }
 
 // true = enable, false = disable
@@ -465,6 +565,7 @@ bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeou
 	czdec::KNOWN_REGISTER *kr;
 	uint16_t cmd_value;
 	byte reply_value;
+	bool push_result;
 
 	// Don't know why this setting requires 2 register (???)
 	if(enable)
@@ -489,7 +590,17 @@ bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeou
 	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
 
-	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		//comfortzone_status.fan_speed = fan_speed;
+		// (never stored in cache)
+	}
+
+	return push_result;
 }
 
 // send a command to the heatpump and wait for the given reply
