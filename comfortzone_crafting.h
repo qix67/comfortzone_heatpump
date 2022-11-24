@@ -25,6 +25,14 @@ class czcraft
 		KR_AUTO_DAYLIGHT_SAVING_ON,  // enable automatic daylight saving, parameter => always 0xFFBF
 		KR_AUTO_DAYLIGHT_SAVING_OFF, // disable automatic daylight saving, parameter => always 0x0040
 		KR_HOT_WATER_PRIORITY,	// set hot water priority, parameter => 1=low, 2=normal, 3=high
+		KR_TEMP_OFFSET_SENSOR0,	// set sensor 0 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR1,	// set sensor 1 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR2,	// set sensor 2 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR3,	// set sensor 3 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR4,	// set sensor 4 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR5,	// set sensor 5 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR6,	// set sensor 6 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
+		KR_TEMP_OFFSET_SENSOR7,	// set sensor 7 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
 	} KNOWN_REGISTER_CRAFT_NAME;
 
 	// craft a W_CMD packet

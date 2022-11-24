@@ -175,6 +175,14 @@ comfortzone_heatpump object.
  Update heatpump automatic daylight saving. True = automatic. False = manual
 
 
+ * bool set_sensor_offset(int16_t sensor_num, float temp_offset, int timeout = 5);
+
+ Set temperature sensor offset.
+ 
+ Possible sensor number goes from 0 to 7.
+ Possible temperature offset goes from -10.0° to 10.0°, with step of 0.1°
+
+
  Special methods
  ---------------
 

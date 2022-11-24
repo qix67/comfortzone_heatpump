@@ -77,6 +77,8 @@ class comfortzone_heatpump
 	bool set_extra_hot_water(bool enable, int timeout = 5);	// true = enable, false = disable
 	bool set_automatic_daylight_saving(bool enable, int timeout = 5);	// true = enable, false = disable
 
+	bool set_sensor_offset(uint16_t sensor_num, float temp_offset, int timeout = 5);	// sensor: [0:7], offset in °C (-10.0° -> 10.0°)
+
 	// when debug mode is enabled, functions may return messages
 	char last_message[COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE] = {0};
 

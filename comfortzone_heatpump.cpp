@@ -603,6 +603,80 @@ bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeou
 	return push_result;
 }
 
+// Sensor num: 0 -> 7
+// Sensor offset: -10.0 -> 10.0
+bool comfortzone_heatpump::set_sensor_offset(uint16_t sensor_num, float temp_offset, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	czcraft::KNOWN_REGISTER_CRAFT_NAME czname;
+	uint16_t int_temp_offset;
+
+	bool push_result;
+
+	switch(sensor_num)
+	{
+		case 0:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR0; break;
+
+		case 1:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR1; break;
+
+		case 2:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR2; break;
+
+		case 3:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR3; break;
+
+		case 4:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR4; break;
+
+		case 5:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR5; break;
+
+		case 6:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR6; break;
+
+		case 7:
+					czname = czcraft::KR_TEMP_OFFSET_SENSOR7; break;
+
+		default:
+					RETURN_MESSAGE("Invalid sensor number, must be between 0 and 7");
+					return false;
+	}
+
+	if((temp_offset < -10.0) || (temp_offset > 10.0))
+	{
+		RETURN_MESSAGE("Invalid value, must be between -10.0 and 10.0");
+		return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czname);
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_TEMP_OFFSET_SENSORx not found");
+		return false;
+	}
+
+	int_temp_offset = (int)(temp_offset * 10.0);
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, int_temp_offset);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, int_temp_offset);
+
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+	{
+		// on success, immediatly update status cache. Without this, if status cache is sent to client
+		// before receiving update from heatpump, an incorrect value is returned
+		//comfortzone_status.xxx = led_level;
+		// (never stored in cache)
+	}
+	return push_result;
+}
+
 // send a command to the heatpump and wait for the given reply
 // on error, several retries may occur and the command may take up to "timeout" seconds
 // if reply_header_check_only is false, reply must be exactly equal to expected_reply
