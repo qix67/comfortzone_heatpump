@@ -1,10 +1,15 @@
 #ifndef _COMFORTZONE_CONFIG_H
 #define _COMFORTZONE_CONFIG_H
 
+#define HP_PROTOCOL_1_6 16
+#define HP_PROTOCOL_1_8 18
+
+#define HP_PROTOCOL HP_PROTOCOL_1_8
+
 #undef DEBUG
 
 // Serial console
-//#define OUTSER Serial1
+//#define OUTSER Serial
 
 #define COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE 256
 
