@@ -284,6 +284,10 @@ void czdec::cmd_w_fan_speed(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CM
 		NPRINTLN("normal");
 	else if(reg_v == 0x03)
 		NPRINTLN("high");
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	else if(reg_v == 0x04)
+		NPRINTLN("on timer");
+#endif
 	else
 		NPRINTLN(reg_v, HEX);
 
