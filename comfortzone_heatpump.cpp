@@ -170,7 +170,7 @@ void comfortzone_heatpump::set_grab_buffer(byte *buffer, uint16_t buffer_size, u
 
 #define RETURN_MESSAGE(msg)	{ strcpy(last_message, msg); last_message_size = strlen(last_message); }
 
-// fan speed: 1 = low, 2 = normal, 3 = fast
+// fan speed: 1 = low, 2 = normal, 3 = fast, 4 = on timer (HP v1.8)
 bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 {
 	W_SMALL_CMD cmd;
@@ -178,11 +178,21 @@ bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 	czdec::KNOWN_REGISTER *kr;
 	bool push_result;
 
+#if HP_PROTOCOL == HP_PROTOCOL_1_6
 	if((fan_speed < 1) || (fan_speed > 3))
 	{
 		RETURN_MESSAGE("Invalid value, must be between 1 and 3");
 		return false;
 	}
+#endif
+
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	if((fan_speed < 1) || (fan_speed > 4))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 1 and 4");
+		return false;
+	}
+#endif
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_SPEED);
 
