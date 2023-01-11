@@ -86,7 +86,8 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 //                                              41 44 44 52 07 8A 65 6F DE 02 2C 72 01 02 03 04 0B 09 00 00 00 CA 8E 72 42 AE 34 06 1F FF 00 00 11 03 C2 51 41 2B 01 40 61 00 00 F8  => 2C
 //                                              41 44 44 52 07 8A 65 6F DE 02 2C 72 01 02 03 04 0B 09 00 00 00 CA 8E 72 42 AE 34 06 1F FF 00 00 11 03 C2 51 41 2B 01 40 61 00 00 F8  => 2C
 //                                              41 44 44 52 07 8A 65 6F DE 02 2C 72 01 02 03 04 0B 09 00 00 00 CA 8E 72 42 AE 34 06 1F FF 00 00 11 03 C2 51 41 2B 01 40 61 00 00 F8  => 2C
-//                                              
+//                                              41 44 44 52 07 8A 65 6F DE 02 2C 72 01 02 03 04 0B 09 00 00 00 CA 8E 72 42 AE 34 06 1F FF 00 00 11 03 C2 51 41 2B 01 40 61 00 00 F8  => 2C
+
 
 
 
@@ -114,7 +115,10 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 // write: 01 02 03 04 0B 09 00 25 01 3C ..  => 17   Reply: 01 02 03 04 0B 09 00 25 01 3C ..  => 17
 
 
+
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x1A, 0x04}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
+
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x39, 0x04}, czcraft::KR_UNCRAFTABLE, "Filter change countdown", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x7D, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR0, "Hardware Settings - Adjustments - TE0 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x7E, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR1, "Hardware Settings - Adjustments - TE1 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},	// not tested
@@ -126,12 +130,12 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x84, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR7, "Hardware Settings - Adjustments - TE7 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x92, 0x03}, czcraft::KR_HOT_WATER_TEMP, "Hot water calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
 
-
-
 // read                                             reply: 01 02 03 04 0B 09 00 92 03 1D 02 ..  => 18 
 
-
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x9F, 0x02}, czcraft::KR_LED_LUMINOSITY, "LED luminosity", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+
+// read:  01 02 03 04 0B 09 00 DE 03 77 3B  => 17 ???
+
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x04, 0x00}, czcraft::KR_HOUR, "Hour", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x05, 0x00}, czcraft::KR_MINUTE, "Minute", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 // 01 02 03 04 0B 09 01 06 00 ?? KR_SECOND ?
@@ -141,6 +145,13 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 // 01 02 03 04 0B 09 01 47 01 ??
 
 // 01 02 03 04 0B 09 03 6F 0E ??
+// read:  01 02 03 04 0B 09 03 BD 0D B2 DB  => 17 ??? no reply
+
+// read:  01 02 03 04 0B 09 00 39 04 00 00 EA  => 18    reply: no reply
+// read:  no query                                      reply: 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 00 39 04 00 00 EA  => 18
+
+
+
 // 01 02 03 04 0B 09 04 9C 3E ??
 
 //  Hot water extra: on/off
@@ -149,7 +160,11 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 // read:  01 02 03 04 0B 09 01 17 00 02 ..  => 17       reply: 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 17 00 08 4A ..  => 18
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x41, 0x17, 0x00}, czcraft::KR_EXTRA_HOT_WATER_OFF, "Extra hot water - off", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
 
+// read:  01 02 04 0B 09 00 2C 03 B2 0C 41  => 17 ??? no reply
+// read:  01 90 01 C8 00 14 00 DE 00 F9 00  => 17 ??? no reply
 
+// status frame ???
+// reply: 41 44 44 52 07 8A 65 6F DE 02 78 72 -- 01 01 01 01 01 01 01 01 01 02 03 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 44 52 17 52 01 02 03 04 0B 09 01 F5 01 2A 56 41 09 01 CC 02 97 6F DE 02 FF 00 3B 01 FE 01 00 00 00 00 00 00 B4 14 00 00 02 03 04 0B 09 01 85 03 52 12 41 44 44 52 07 8A 03 04 0B 09 01 B3 04 0A 6A 41 44 44 52 07 8A 65 0B 09 03 0B 0D 17 1C 0A -- 16  => 78
 
 
 #endif
