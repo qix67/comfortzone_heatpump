@@ -26,7 +26,6 @@ void czdec::cmd_w_generic_2byte(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, 
 {
 #ifdef DEBUG
 	int reg_v;
-	float reg_v_f;
 
 	reg_v = p->reg_value[0];
 
