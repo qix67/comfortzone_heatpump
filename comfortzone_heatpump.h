@@ -42,7 +42,7 @@ class comfortzone_heatpump
 		PFT_UNKNOWN,	// received frame has an unknown type
 	} PROCESSED_FRAME_TYPE;
 
-	comfortzone_heatpump() : rs485(Serial1) {};
+	comfortzone_heatpump() : rs485(&Serial1) {};
 
 	void begin(HardwareSerial &rs485_serial, int de_pin);
 
@@ -97,7 +97,7 @@ class comfortzone_heatpump
 	friend class czdec;
 	friend class czcraft;
 
-	HardwareSerial &rs485;
+	HardwareSerial *rs485;
 	int rs485_de_pin;
 
 	FastCRC8 CRC8;
