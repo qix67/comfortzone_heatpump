@@ -582,8 +582,8 @@ void czdec::reply_r_status_03(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_03 *q = (R_REPLY_STATUS_03 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	dump_unknown("unknown_s03", q->unknown, sizeof(q->unknown));
@@ -601,7 +601,7 @@ void czdec::reply_r_status_04(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	R_REPLY_STATUS_04 *q = (R_REPLY_STATUS_04 *)p;
 
 	int reg_v;
-	float reg_v_f;
+	//float reg_v_f;
 
 	// ===
 	dump_unknown("unknown_s04", q->unknown, sizeof(q->unknown));
@@ -1097,7 +1097,7 @@ void czdec::reply_r_status_07(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	R_REPLY_STATUS_07 *q = (R_REPLY_STATUS_07 *)p;
 
 	int reg_v;
-	float reg_v_f;
+	//float reg_v_f;
 
 	// ===
 	dump_unknown("unknown_s07", q->unknown, sizeof(q->unknown));
@@ -1447,7 +1447,7 @@ void czdec::reply_r_status_11(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 #ifdef DEBUG
 	int reg_v;
-	float reg_v_f;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1557,8 +1557,8 @@ void czdec::reply_r_status_13(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_13 *q = (R_REPLY_STATUS_13 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1577,7 +1577,7 @@ void czdec::reply_r_status_14(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	R_REPLY_STATUS_14 *q = (R_REPLY_STATUS_14 *)p;
 
 	int reg_v;
-	float reg_v_f;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1610,8 +1610,8 @@ void czdec::reply_r_status_15(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_15 *q = (R_REPLY_STATUS_15 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1629,8 +1629,8 @@ void czdec::reply_r_status_16(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_16 *q = (R_REPLY_STATUS_16 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1648,8 +1648,8 @@ void czdec::reply_r_status_17(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_17 *q = (R_REPLY_STATUS_17 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1667,8 +1667,8 @@ void czdec::reply_r_status_18(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_18 *q = (R_REPLY_STATUS_18 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
@@ -1686,8 +1686,8 @@ void czdec::reply_r_status_19(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_19 *q = (R_REPLY_STATUS_19 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to always contain '\0'
@@ -1705,8 +1705,8 @@ void czdec::reply_r_status_20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_20 *q = (R_REPLY_STATUS_20 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to always contain '\0'
@@ -1724,8 +1724,8 @@ void czdec::reply_r_status_22(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_22 *q = (R_REPLY_STATUS_22 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	dump_unknown("unknown_s22", q->unknown, sizeof(q->unknown));
@@ -1743,7 +1743,7 @@ void czdec::reply_r_status_23(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	R_REPLY_STATUS_23 *q = (R_REPLY_STATUS_23 *)p;
 
 	int reg_v;
-	float reg_v_f;
+	//float reg_v_f;
 	int i;
 
 	// ===
@@ -1814,8 +1814,8 @@ void czdec::reply_r_status_24(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_24 *q = (R_REPLY_STATUS_24 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	dump_unknown("unknown_s24", q->unknown, sizeof(q->unknown));
@@ -1832,8 +1832,8 @@ void czdec::reply_r_status_25(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #ifdef DEBUG
 	R_REPLY_STATUS_25 *q = (R_REPLY_STATUS_25 *)p;
 
-	int reg_v;
-	float reg_v_f;
+	//int reg_v;
+	//float reg_v_f;
 
 	// ===
 	// seems to never change
