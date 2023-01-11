@@ -134,6 +134,8 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x9F, 0x02}, czcraft::KR_LED_LUMINOSITY, "LED luminosity", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0xA4, 0x02}, czcraft::KR_UNCRAFTABLE, "Holiday reduction", czdec::cmd_r_generic, czdec::cmd_w_day_delay, czdec::reply_r_day_delay, czdec::reply_w_generic},
+
 // read:  01 02 03 04 0B 09 00 DE 03 77 3B  => 17 ???
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x04, 0x00}, czcraft::KR_HOUR, "Hour", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
