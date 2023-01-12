@@ -2083,4 +2083,85 @@ void czdec::reply_r_status_v180_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 #endif
 }
 
+void czdec::reply_r_status_v180_xa1(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xa1 *q = (R_REPLY_STATUS_V180_STATUS_xa1 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xa1", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_02 *q = (R_REPLY_STATUS_V180_02 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_02a", q->heatpump_status, 1);
+
+	NPRINT("* Alarm: ");
+	if(q->heatpump_status[0] & 0x80)
+		NPRINTLN("yes");
+	else
+		NPRINTLN("no");
+
+	NPRINTLN("* bit 6-0 not decoded");
+
+	dump_unknown("unknown_v180_02b", q->heatpump_status+1, 1);
+
+	NPRINT("* LED mode: ");
+	if(q->heatpump_status[1] & 0x80)
+		NPRINTLN(" error (red)");
+	else
+		NPRINTLN(" normal (green)");
+
+	NPRINT("* Luminosity level: ");
+
+	switch((q->heatpump_status[1] >> 4) & 0x07)
+	{
+		case 0:
+					NPRINT("0");
+					break;
+
+		case 1:
+					NPRINT("UNKNOWN: 1");
+					break;
+
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+					NPRINT(((q->heatpump_status[1] >> 4) & 0x07) - 1);
+					break;
+		case 7:
+					NPRINT("UNKNOWN: 7");
+					break;
+	}
+	NPRINTLN("");
+
+	NPRINTLN("* bit 3-0 not decoded");
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
 

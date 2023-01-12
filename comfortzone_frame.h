@@ -700,5 +700,21 @@ typedef struct __attribute__ ((packed))
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x2e;
 
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[139];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xa1;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte heatpump_status[2];
+	byte crc;
+} R_REPLY_STATUS_V180_02;
+
 
 #endif

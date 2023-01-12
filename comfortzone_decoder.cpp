@@ -123,6 +123,13 @@ except one time:
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x1A, 0x04}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x39, 0x04}, czcraft::KR_UNCRAFTABLE, "Filter change countdown", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},
+
+// read: 01 02 03 04 0B 09 00 62 01 B2 68 => 17
+// reply (always): 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 00 62 01 00 00 00 00 00 00 00 00 00 00 00 00 AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D AC 0D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 E8 03 92 => C8
+// looks like temperature history. AC 0D = 3500 (35.00°?), E8 03 = 1000 (10.00°?)
+
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x62, 0x01}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 4, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
+
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x7D, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR0, "Hardware Settings - Adjustments - TE0 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x7E, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR1, "Hardware Settings - Adjustments - TE1 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x7F, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR2, "Hardware Settings - Adjustments - TE2 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
@@ -135,6 +142,10 @@ except one time:
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x9F, 0x02}, czcraft::KR_LED_LUMINOSITY, "LED luminosity", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0xA4, 0x02}, czcraft::KR_UNCRAFTABLE, "Holiday reduction", czdec::cmd_r_generic, czdec::cmd_w_day_delay, czdec::reply_r_day_delay, czdec::reply_w_generic},
+
+// read:  01 02 03 04 0B 09 00 BF 04 8B 8C  => 17
+// alwyas the same reply: 41 44 44 52 07 8A 65 6F DE 02 A1 72 01 02 03 04 0B 09 00 BF 04 B0 04 F4 01 96 00 58 02 00 00 50 00 19 00 C8 00 07 00 C8 00 40 01 B4 00 5E 01 05 05 F0 0A 09 01 60 09 AA 00 00 00 0A 0A 0A 01 C8 00 E8 03 E8 03 58 02 87 00 64 00 96 00 48 03 32 1E 00 14 14 14 00 E8 03 E8 03 00 05 01 64 00 00 2D 00 BB 03 05 1E 2C 01 0A F4 01 3C 00 05 46 00 FA 00 74 04 26 02 78 00 0A D2 00 F4 01 32 00 A0 00 D0 07 58 02 1A FF 2C 01 DA 02 05 50 00 78 B0 04 78 E8 03 E8 03 14 01 84 03 08 07 08 07 5A 00 D3 => A1
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0xBF, 0x04}, czcraft::KR_UNCRAFTABLE, "Status xx (0xa1 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_xa1, czdec::reply_w_generic},	// 0x9b bytes
 
 // read:  01 02 03 04 0B 09 00 DE 03 77 3B  => 17 
 /* replies:
@@ -163,6 +174,19 @@ except 1 time:
 		// Luminosity = 4 => 21 51
 		// Luminosity = 5 => 21 61
 		// Luminosity = 6 => 21 71 (guessed, packet lost)
+/* replies:
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 20 20 4D
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 01 F4
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 03 48
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 0B 8A
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 21 D7
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 31 4A
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 41 B2
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 51 2F
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 61 91
+41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 A1 87 8A  <== occurs when filter countdown read 0. bit 7 of A1 is related to global alarm or filter alarm
+*/
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x47, 0x01}, czcraft::KR_UNCRAFTABLE, "Status HP (short)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_02, czdec::reply_w_generic},	// 0x18 bytes
 
 // read: 01 02 03 04 0B 09 01 85 03 52 12  => 17
 // reply:
