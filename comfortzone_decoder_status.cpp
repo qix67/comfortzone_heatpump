@@ -1846,3 +1846,241 @@ void czdec::reply_r_status_25(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #endif
 }
 
+void czdec::reply_r_status_v180_x58(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x58 *q = (R_REPLY_STATUS_V180_STATUS_x58 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x58", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x68(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x68 *q = (R_REPLY_STATUS_V180_STATUS_x68 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x68", q->unknown, sizeof(q->unknown));
+	dump_unknown("unknown1_v180_x68", q->unknown1, sizeof(q->unknown1));
+	dump_unknown("unknown2_v180_x68", q->unknown2, sizeof(q->unknown2));
+	dump_unknown("unknown3_v180_x68", q->unknown3, sizeof(q->unknown3));
+	dump_unknown("unknown4_v180_x68", q->unknown4, sizeof(q->unknown4));
+	dump_unknown("unknown5_v180_x68", q->unknown5, sizeof(q->unknown5));
+	dump_unknown("unknown6_v180_x68", q->unknown6, sizeof(q->unknown6));
+	dump_unknown("unknown7_v180_x68", q->unknown7, sizeof(q->unknown7));
+	dump_unknown("unknown8_v180_x68", q->unknown8, sizeof(q->unknown8));
+	dump_unknown("unknown9_v180_x68", q->unknown9, sizeof(q->unknown9));
+	dump_unknown("unknown10_v180_x68", q->unknown10, sizeof(q->unknown10));
+	dump_unknown("unknown11_v180_x68", q->unknown11, sizeof(q->unknown11));
+	dump_unknown("unknown12_v180_x68", q->unknown12, sizeof(q->unknown12));
+	dump_unknown("unknown13_v180_x68", q->unknown13, sizeof(q->unknown13));
+	dump_unknown("unknown14_v180_x68", q->unknown14, sizeof(q->unknown14));
+	dump_unknown("unknown15_v180_x68", q->unknown15, sizeof(q->unknown15));
+	dump_unknown("unknown16_v180_x68", q->unknown16, sizeof(q->unknown16));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x40(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x40 *q = (R_REPLY_STATUS_V180_STATUS_x40 *)p;
+
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	for(i = 0; i < STATUS_V180_x40_NB_TEMP; i++)
+	{
+		reg_v = get_int16(q->temp[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("?Temp #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp[i], 2);
+	}
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x26(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x26 *q = (R_REPLY_STATUS_V180_STATUS_x26 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x26", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x8d *q = (R_REPLY_STATUS_V180_STATUS_x8d *)p;
+
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	for(i = 0; i < STATUS_V180_x8d_NB_TEMP; i++)
+	{
+		reg_v = get_int16(q->temp[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("?Temp #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp[i], 2);
+	}
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x8d", q->unknown, sizeof(q->unknown));
+
+	for(i = 0; i < STATUS_V180_x8d_NB_TEMP1; i++)
+	{
+		reg_v = get_int16(q->temp1[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("?Temp1 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp1[i], 2);
+	}
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown1_v180_x8d", q->unknown1, sizeof(q->unknown1));
+	dump_unknown("unknown2_v180_x8d", q->unknown2, sizeof(q->unknown2));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x2e *q = (R_REPLY_STATUS_V180_STATUS_x2e *)p;
+
+	int reg_v;
+	float reg_v_f;
+
+	reg_v = get_uint32(q->unknown1);
+	NPRINT("unknown1_v180_x2e : ");
+	NPRINT(reg_v);
+	NPRINT(" ");
+	dump_unknown("", q->unknown1, 4);
+
+	// ===
+	reg_v = get_uint32(q->total_runtime);
+
+	NPRINT("Total runtime: ");
+	NPRINT(reg_v / 60);
+	NPRINT(":");
+	reg_v = reg_v % 60;
+	if(reg_v < 10)
+		NPRINT("0");
+	NPRINT(reg_v);
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint32(q->compressor_runtime);
+
+	NPRINT("Compressor runtime: ");
+	NPRINT(reg_v / 60);
+	NPRINT(":");
+	reg_v = reg_v % 60;
+	if(reg_v < 10)
+		NPRINT("0");
+	NPRINT(reg_v);
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint32(q->compressor_energy);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 100.0;
+
+	NPRINT("Compressor energy: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("kWh");
+
+	// ===
+	reg_v = get_uint32(q->add_energy);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 100.0;
+
+	NPRINT("Add energy: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("kWh");
+
+	// ===
+	reg_v = get_uint32(q->hot_water_energy);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 100.0;
+
+	NPRINT("Hot water energy: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("kWh");
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+

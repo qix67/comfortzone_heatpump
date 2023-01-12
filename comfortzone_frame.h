@@ -93,7 +93,7 @@ typedef struct __attribute__ ((packed))
 } W_REPLY;
 
 // =====================================
-// == status frames
+// == status frames (protocol version 1.6)
 // =====================================
 
 typedef struct __attribute__ ((packed))
@@ -619,6 +619,86 @@ typedef struct __attribute__ ((packed))
 	byte unknown[178];
 	byte crc;
 } R_REPLY_STATUS_25;
+
+// =====================================
+// == status frames (protocol version 1.8)
+// =====================================
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[2];
+	byte unknown1[2];
+	byte unknown2[4];
+	byte unknown3[2];
+	byte unknown4[2];
+	byte unknown5[2];
+	byte unknown6[2];
+	byte unknown7[2];
+	byte unknown8[2];
+	byte unknown9[2];
+	byte unknown10[2];
+	byte unknown11[2];
+	byte unknown12[2];
+	byte unknown13[2];
+	byte unknown14[2];
+	byte unknown15[2];
+	byte unknown16[48];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x68;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[66];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x58;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+#define STATUS_V180_x40_NB_TEMP 21
+	byte temp[STATUS_V180_x40_NB_TEMP][2];				// ? °C, LSB, 2 bytes, signed
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x40;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[16];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x26;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+#define STATUS_V180_x8d_NB_TEMP 9
+	byte temp[STATUS_V180_x8d_NB_TEMP][2];				// ? °C, LSB, 2 bytes, signed
+	byte unknown[3];
+#define STATUS_V180_x8d_NB_TEMP1 15
+	byte temp1[STATUS_V180_x8d_NB_TEMP1][2];				// ? °C, LSB, 2 bytes, signed
+	byte unknown1[3];
+	byte unknown2[65];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x8d;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown1[4];
+	byte total_runtime[4];
+	byte compressor_runtime[4];
+	byte compressor_energy[4];
+	byte add_energy[4];
+	byte hot_water_energy[4];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x2e;
 
 
 #endif
