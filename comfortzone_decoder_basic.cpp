@@ -136,6 +136,24 @@ void czdec::cmd_w_time(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 #endif
 }
 
+void czdec::cmd_w_time_minutes(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
+{
+#ifdef DEBUG
+	int reg_v;
+
+	reg_v = get_uint16(p->reg_value);
+
+	NPRINT(reg_v);
+	NPRINTLN("min");
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+	return;
+#endif
+}
+
 void czdec::cmd_w_time_days(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p)
 {
 #ifdef DEBUG
@@ -467,6 +485,24 @@ void czdec::reply_r_time(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY
 	reg_v_f /= 10.0;
 
 	NPRINT(reg_v_f);
+	NPRINTLN("min");
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+	return;
+#endif
+}
+
+void czdec::reply_r_time_minutes(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	int reg_v;
+
+	reg_v = get_uint16(p->reg_value);
+
+	NPRINT(reg_v);
 	NPRINTLN("min");
 
 	NPRINT("crc: ");

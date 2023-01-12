@@ -47,7 +47,7 @@ class comfortzone_heatpump
 	void begin(HardwareSerial &rs485_serial, int de_pin);
 
 	// Function to call periodically to manage rs485 serial input
-	PROCESSED_FRAME_TYPE process();
+	PROCESSED_FRAME_TYPE process(byte c);
 	
 	// for debug purpose, it can be useful to get full frame
 	// input: pointer on buffer where last full frame will be copied
