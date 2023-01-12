@@ -109,6 +109,11 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Sanitary priority (get)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_sanitary_priority, czdec::empty},
 
+// read: 01 02 03 04 0B 09 00 14 02 => 17
+// only 1 reply: 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 00 14 02 E8 03 05 05 05 05 05 05 05 05 05 05 05 05 05 05 05 05 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 05 05 05 0F 0F 05 05 05 05 05 05 00 00 1E 14 A0 0A 0E 01 00 2C 01 14 2C 01 14 05 0F 00 00 0A 00 3C 00 E8 03 0A 00 3C 00 00 00 0A 00 3C 00 E8 03 0A 00 3C 00 00 00 01 01 03 01 04 03 01 00 00 00 01 00 01 00 01 00 B4 00 14 00 0A 00 0A 00 0A 00 01 06 00 00 FF 00 00 FF 46 D2 00 1E 00 32 00 CE FF 00 00 00 05 00 00 19 01 4E 01 80 01 AF 01 DB 01 05 02 28 00 3C 00 11  => C8
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x14, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 7, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
+
+		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x1A, 0x04}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x25, 0x01}, czcraft::KR_UNCRAFTABLE, "Hardware Settings - Adjustments - TE24 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
 
@@ -122,7 +127,6 @@ except one time:
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x2C, 0x03}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 1, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
 
-		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x1A, 0x04}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x39, 0x04}, czcraft::KR_UNCRAFTABLE, "Filter change countdown", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},
 
 // read: 01 02 03 04 0B 09 00 62 01 B2 68 => 17
@@ -178,6 +182,7 @@ except 1 time:
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x08, 0x00}, czcraft::KR_MONTH, "Month (1=Jan)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x09, 0x00}, czcraft::KR_YEAR, "Year (20xx)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x13, 0x02}, czcraft::KR_UNCRAFTABLE, "Junk packet 2, heatpump never replies to it", czdec::cmd_r_generic, czdec::empty, czdec::empty, czdec::reply_w_generic},
 // read: 01 02 03 04 0B 09 01 17 00 => 17
 /* replies => 18
 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 17 00 08 4D 11
@@ -367,6 +372,9 @@ except 1 time:
 // reply always : 41 44 44 52 07 8A 65 6F DE 02 2C 72 01 02 03 04 0B 09 04 4E 3F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 6A => 2C
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x04, 0x4E, 0x3F}, czcraft::KR_UNCRAFTABLE, "Status xx (0x2c bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_x2c, czdec::reply_w_generic},	// 0x26 bytes
 
+// read: 01 02 03 04 0B 09 04 9C 3E => 17
+// reply always : 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 04 9C 3E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 EF  => C8
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x04, 0x9C, 0x3E}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 6, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
 
 // 01 02 03 04 0B 09 05 28 00  => 17
 /* replies: => 2E
@@ -451,6 +459,18 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 5C 7E  => 1
 write 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 09 81 17 00 01 00 00  => 18
 reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 17
 */
+
+// occurs during fan settings
+// write: 01 02 03 04 0B 09 80 0E 00 00 02 1E  => 18
+// write: 01 02 03 04 0B 09 40 0E 00 FF FD 88  => 18
+// reply: 01 02 03 04 0B 09 40 0E 00 41 6C  => 17
+
+
+// occurs on filter change
+// write: 01 02 03 04 0B 09 81 29 00 02 00 08  => 18
+// reply: 01 02 03 04 0B 09 81 29 00 00 2C  => 17
+// read:  01 02 03 04 0B 09 01 29 00 02 D1  => 17 
+// reply: 01 02 03 04 0B 09 01 29 00 02 00 10  => 18
 
 #endif
 		{ {0}, czcraft::KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
