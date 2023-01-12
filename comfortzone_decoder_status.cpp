@@ -2164,4 +2164,214 @@ void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *k
 #endif
 }
 
+void czdec::reply_r_status_v180_xa3(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xa3 *q = (R_REPLY_STATUS_V180_STATUS_xa3 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xa3", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xad *q = (R_REPLY_STATUS_V180_STATUS_xad *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xad", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_xc7(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xc7 *q = (R_REPLY_STATUS_V180_STATUS_xc7 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xc7", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_xc72(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xc72 *q = (R_REPLY_STATUS_V180_STATUS_xc72 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xc72", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_xc5(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xc5 *q = (R_REPLY_STATUS_V180_STATUS_xc5 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xc5", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_xbf(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_xbf *q = (R_REPLY_STATUS_V180_STATUS_xbf *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_xbf", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x6d(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x6d *q = (R_REPLY_STATUS_V180_STATUS_x6d *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x6d", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x56(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x56 *q = (R_REPLY_STATUS_V180_STATUS_x56 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x56", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_short2(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_SHORT2 *q = (R_REPLY_STATUS_V180_STATUS_SHORT2 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_SHORT2", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x20 *q = (R_REPLY_STATUS_V180_STATUS_x20 *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x20", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_x2c(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V180_STATUS_x2c *q = (R_REPLY_STATUS_V180_STATUS_x2c *)p;
+
+	//int reg_v;
+	//float reg_v_f;
+
+	// ===
+	// seems to never change
+	dump_unknown("unknown_v180_x2c", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+
 

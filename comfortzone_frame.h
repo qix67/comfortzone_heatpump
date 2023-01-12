@@ -712,9 +712,97 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
+	byte unknown[141];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xa3;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
 	byte heatpump_status[2];
 	byte crc;
 } R_REPLY_STATUS_V180_02;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[151];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xad;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[177];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xc7;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[175];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xc5;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[169];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xbf;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[87];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x6d;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[64];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x56;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[2];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_SHORT2;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[10];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x20;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[22];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_x2c;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[177];
+	byte crc;
+} R_REPLY_STATUS_V180_STATUS_xc72;
 
 
 #endif
