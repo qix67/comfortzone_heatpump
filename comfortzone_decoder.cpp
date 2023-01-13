@@ -111,7 +111,7 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 
 // read: 01 02 03 04 0B 09 00 14 02 => 17
 // only 1 reply: 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 00 14 02 E8 03 05 05 05 05 05 05 05 05 05 05 05 05 05 05 05 05 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 05 05 05 0F 0F 05 05 05 05 05 05 00 00 1E 14 A0 0A 0E 01 00 2C 01 14 2C 01 14 05 0F 00 00 0A 00 3C 00 E8 03 0A 00 3C 00 00 00 0A 00 3C 00 E8 03 0A 00 3C 00 00 00 01 01 03 01 04 03 01 00 00 00 01 00 01 00 01 00 B4 00 14 00 0A 00 0A 00 0A 00 01 06 00 00 FF 00 00 FF 46 D2 00 1E 00 32 00 CE FF 00 00 00 05 00 00 19 01 4E 01 80 01 AF 01 DB 01 05 02 28 00 3C 00 11  => C8
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x14, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 7, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x14, 0x02}, czcraft::KR_UNCRAFTABLE, "Status 11", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_11, czdec::reply_w_generic},	// 0xC2 bytes
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x1A, 0x04}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 
@@ -453,7 +453,7 @@ except 1 time:
 41 44 44 52 07 8A 65 6F DE 02 56 72 01 02 03 04 0B 09 05 00 00 37 07 22 01 11 01 23 00 00 00 00 00 01 01 01 01 56 14 00 00 17 0F 00 00 9F 0A 00 00 65 06 00 00 00 00 00 00 BC 34 00 00 00 00 00 00 33 FC 3A 00 77 71 05 00 39 42 0F 00 30 87 0B 00 86 56 1D 00 0E
 41 44 44 52 07 8A 65 6F DE 02 56 72 01 02 03 04 0B 09 05 00 00 33 59 21 01 11 01 23 00 00 00 00 00 00 00 00 00 56 14 00 00 17 0F 00 00 9F 0A 00 00 65 06 00 00 00 00 00 00 BC 34 00 00 00 00 00 00 21 FC 3A 00 77 71 05 00 26 42 0F 00 2C 87 0B 00 7E 56 1D 00 A3
 */
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x05, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Status xx (0x56 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_x56, czdec::reply_w_generic},	// 0x50 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x05, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Status 08", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_08, czdec::reply_w_generic},	// 0x50 bytes
 
 // write:  01 02 03 04 0B 09 81 17 00 ???
 /*
