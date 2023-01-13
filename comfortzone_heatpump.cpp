@@ -8,16 +8,16 @@
 
 void comfortzone_heatpump::begin(HardwareSerial &rs485_serial, int de_pin)
 {
-	//rs485 = rs485_serial;
-	//rs485_de_pin = de_pin;
+	rs485 = &rs485_serial;
+	rs485_de_pin = de_pin;
 
-	//rs485.begin(19200, SERIAL_8N1);
+	rs485->begin(19200, SERIAL_8N1);
 
-	//pinMode(rs485_de_pin, OUTPUT);
-	//digitalWrite(rs485_de_pin, LOW);		// enable RS485 receive mode
+	pinMode(rs485_de_pin, OUTPUT);
+	digitalWrite(rs485_de_pin, LOW);		// enable RS485 receive mode
 }
 
-comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process(byte fake_input)
+comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 {
 	PROCESSED_FRAME_TYPE pft;
 
@@ -31,102 +31,75 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process(byte fa
 	//
 	// if not, first byte is discarded
 
-	pft = PFT_CORRUPTED;
-
-	//Serial.print("adding ");
-	//Serial.println(fake_input, HEX);
-	cz_buf[cz_size++] = fake_input;
-
-	while(pft == PFT_CORRUPTED)
+	while(rs485->available())
 	{
-		//while(rs485.available())
-		{
-			//cz_buf[cz_size++] = rs485.read();
+		cz_buf[cz_size++] = rs485->read();
 
-			//Serial.print("   buf size:");
-			//Serial.print(cz_size);
-			//Serial.print(" - expected packet size:");
-			//Serial.println(cz_full_frame_size);
-	
-			if(cz_size == sizeof(cz_buf))
-			{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
-				// disable_cz_buf_clear_on_completion = true ?
-				cz_size = 0;
-				//continue;
-				return PFT_NONE;
-			}
-	
-			if(cz_size < sizeof(CZ_PACKET_HEADER))
-			{
-				//continue;
-				return PFT_NONE;
-			}
-	
-			if(cz_size >= sizeof(CZ_PACKET_HEADER))
-			{
-				CZ_PACKET_HEADER *czph = (CZ_PACKET_HEADER *)cz_buf;
-				byte comp1_dest[4];
-	
-				comp1_dest[0] = czph->destination[0] ^ 0xFF;
-				comp1_dest[1] = czph->destination[1] ^ 0xFF;
-				comp1_dest[2] = czph->destination[2] ^ 0xFF;
-				comp1_dest[3] = czph->destination[3] ^ 0xFF;
-	
-				if(
-					(czph->destination_crc == CRC8.maxim(czph->destination, 4))
-					&& (czph->comp1_destination_crc == CRC8.maxim(comp1_dest, 4))
-					&& (
-							(czph->cmd == 'W') || (czph->cmd == 'R') || (czph->cmd == 'w') || (czph->cmd == 'r')
-						)
-					)
-				{
-					cz_full_frame_size = czph->packet_size;
-				}
-				else
-				{
-					memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
-					cz_size--;
-					//Serial.println("corrupted header, skipping 1 byte");
-					continue;
-					//return PFT_NONE;
-				}
-			}
-	
-			//if(cz_size == cz_full_frame_size)
-				//break;
-			//if(cz_size != cz_full_frame_size)
-				//return PFT_NONE;
-		}
-
-		// not enough data received to be a header
-		if(cz_size < sizeof(CZ_PACKET_HEADER))
-			return PFT_NONE;
-	
-		// not enough data received to be a packet (header+data)
-		if(cz_size != cz_full_frame_size)
-			return PFT_NONE;
-	
 		if(cz_size == sizeof(cz_buf))
 		{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
 			// disable_cz_buf_clear_on_completion = true ?
 			cz_size = 0;
-			return PFT_NONE;
+			continue;
 		}
-	
-		// check frame CRC (last byte of buffer is CRC
-		if(CRC8.maxim(cz_buf, cz_size - 1) == cz_buf[cz_size - 1])
+
+		if(cz_size < sizeof(CZ_PACKET_HEADER))
+			continue;
+
+		if(cz_size == sizeof(CZ_PACKET_HEADER))
 		{
-			pft = czdec::process_frame(this, (CZ_PACKET_HEADER *)cz_buf);
+			CZ_PACKET_HEADER *czph = (CZ_PACKET_HEADER *)cz_buf;
+			byte comp1_dest[4];
+
+			comp1_dest[0] = czph->destination[0] ^ 0xFF;
+			comp1_dest[1] = czph->destination[1] ^ 0xFF;
+			comp1_dest[2] = czph->destination[2] ^ 0xFF;
+			comp1_dest[3] = czph->destination[3] ^ 0xFF;
+
+			if(
+				(czph->destination_crc == CRC8.maxim(czph->destination, 4))
+				&& (czph->comp1_destination_crc == CRC8.maxim(comp1_dest, 4))
+				&& (
+						(czph->cmd == 'W') || (czph->cmd == 'R') || (czph->cmd == 'w') || (czph->cmd == 'r')
+					)
+				)
+			{
+				cz_full_frame_size = czph->packet_size;
+			}
+			else
+			{
+				memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
+				cz_size--;
+				continue;
+			}
 		}
-		else
-		{
-			memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
-			cz_size--;
-			pft = PFT_CORRUPTED;
-			Serial.println("pft_corrupted. Wiping first byte of buffer");
-			//Serial.print("buf size:");
-			//Serial.println(cz_size);
-		}
+
+		if(cz_size == cz_full_frame_size)
+			break;
+	}
+
+	// not enough data received to be a header
+	if(cz_size < sizeof(CZ_PACKET_HEADER))
+		return PFT_NONE;
+
+	// not enough data received to be a packet (header+data)
+	if(cz_size != cz_full_frame_size)
+		return PFT_NONE;
+
+	if(cz_size == sizeof(cz_buf))
+	{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
+		// disable_cz_buf_clear_on_completion = true ?
+		cz_size = 0;
+		return PFT_NONE;
+	}
+
+	// check frame CRC (last byte of buffer is CRC
+	if(CRC8.maxim(cz_buf, cz_size - 1) == cz_buf[cz_size - 1])
+	{
+		pft = czdec::process_frame(this, (CZ_PACKET_HEADER *)cz_buf);
+	}
+	else
+	{
+		pft = PFT_CORRUPTED;
 	}
 
 	if(grab_buffer)
@@ -761,7 +734,7 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 			// wait a little time to see if the controller has not strated to send a new command
 			while(now < min_time_after_reply)
 			{
-				//pft = process();
+				pft = process();
 
 				if(pft != comfortzone_heatpump::PFT_NONE)
 					break;
@@ -790,7 +763,7 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 
 				while(now < reply_timeout)
 				{
-					//pft = process();
+					pft = process();
 
 					if(pft != comfortzone_heatpump::PFT_NONE)
 						break;
@@ -860,7 +833,7 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 			}
 		}
 
-		//process();
+		process();
 		now = millis();
 	}
 
@@ -898,7 +871,7 @@ bool comfortzone_heatpump::guess_heatpump_addr(byte guessed_addr[4], int timeout
 
 	while(now < timeout_time)
 	{
-		//pft = process();
+		pft = process();
 
 		if(pft != comfortzone_heatpump::PFT_NONE)
 		{
