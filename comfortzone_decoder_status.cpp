@@ -2025,6 +2025,9 @@ void czdec::reply_r_status_v180_runtime_and_energy(comfortzone_heatpump *czhp, K
 	int reg_v;
 	float reg_v_f;
 
+	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_runtime_and_energy", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	reg_v = get_uint32(q->unknown1);
 	NPRINT("unknown1_v180_runtime_and_energy : ");
 	NPRINT(reg_v);
@@ -2100,6 +2103,8 @@ void czdec::reply_r_status_v180_xa1(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_xa1", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xa1", q->unknown, sizeof(q->unknown));
@@ -2113,12 +2118,34 @@ void czdec::reply_r_status_v180_xa1(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_V180_02 *q = (R_REPLY_STATUS_V180_02 *)p;
+	int reg_v;
 
-	//int reg_v;
+	reg_v = (q->heatpump_status[1] >> 4) & 0x07;
+
+	switch(reg_v)
+	{
+		case 0:	// off 
+		case 1:	// unknown
+		case 7:	// unknown
+					czhp->comfortzone_status.led_luminosity_setting = reg_v;
+					break;
+
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+					czhp->comfortzone_status.led_luminosity_setting = reg_v - 1;
+					break;
+	}
+
+#ifdef DEBUG
+
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_02", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_02a", q->heatpump_status, 1);
@@ -2129,7 +2156,19 @@ void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *k
 	else
 		NPRINTLN("no");
 
-	NPRINTLN("* bit 6-0 not decoded");
+	NPRINT("* Compressor running: ");
+	if(q->heatpump_status[0] & 0x20)
+		NPRINTLN("yes");
+	else
+		NPRINTLN("no");
+
+	NPRINT("* Additional power: ");
+	if(q->heatpump_status[0] & 0x10)
+		NPRINTLN("yes");
+	else
+		NPRINTLN("no");
+
+	NPRINTLN("* bit 6,3-0 not decoded");
 
 	dump_unknown("unknown_v180_02b", q->heatpump_status+1, 1);
 
@@ -2181,6 +2220,8 @@ void czdec::reply_r_status_v180_xa3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_xa3", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xa3", q->unknown, sizeof(q->unknown));
@@ -2194,15 +2235,101 @@ void czdec::reply_r_status_v180_xa3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_V180_STATUS_xad *q = (R_REPLY_STATUS_V180_STATUS_xad *)p;
 
-	//int reg_v;
-	//float reg_v_f;
+	int reg_v;
+	float reg_v_f;
+
+#ifdef DEBUG
+	// ===
+
+	dump_unknown("RAW unknown_v180_xad", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->unknown_temp1);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("unknown temperature 1 (sensors_te24_hot_water_temp?): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
 
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xad", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint32(q->heatpump_target_compressor_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - target compressor frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown2_v180_xad", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	dump_unknown("unknown2a_v180_xad", q->unknown2a, sizeof(q->unknown2a));
+
+	// ===
+	reg_v = get_uint32(q->heatpump_current_compressor_power);
+
+	NPRINT("Heatpump - current compressor power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+#if 0
+	// ===
+	reg_v = get_uint32(q->heatpump_current_add_power);
+
+	NPRINT("Heatpump - current add power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+#endif
+	// ===
+	reg_v = get_uint32(q->heatpump_current_total_power1);
+
+	NPRINT("Heatpump - current total power 1: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint32(q->heatpump_current_total_power2);
+
+	NPRINT("Heatpump - current total power 2: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+#if 0
+	reg_v = get_uint16(q->heatpump_compressor_input_power);
+
+	NPRINT("Heatpump - Compressor input power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+#endif
+
+	// ===
+	dump_unknown("unknown2b_v180_xad", q->unknown2b, sizeof(q->unknown2b));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - current compressor frequency (2): ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	dump_unknown("unknown3_v180_xad", q->unknown3, sizeof(q->unknown3));
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
@@ -2218,6 +2345,9 @@ void czdec::reply_r_status_v180_xc7(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	//int reg_v;
 	//float reg_v_f;
+
+	dump_unknown("RAW unknown_v180_xc7", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 
 	// ===
 	// seems to never change
@@ -2237,6 +2367,8 @@ void czdec::reply_r_status_v180_xc72(comfortzone_heatpump *czhp, KNOWN_REGISTER 
 
 	//int reg_v;
 	//float reg_v_f;
+	dump_unknown("RAW unknown_v180_xc72", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 
 	// ===
 	// seems to never change
@@ -2276,6 +2408,9 @@ void czdec::reply_r_status_v180_xbf(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_xbf", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xbf", q->unknown, sizeof(q->unknown));
@@ -2295,6 +2430,9 @@ void czdec::reply_r_status_v180_x6d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_x6d", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_x6d", q->unknown, sizeof(q->unknown));
@@ -2308,11 +2446,55 @@ void czdec::reply_r_status_v180_x6d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 void czdec::reply_r_status_v180_x56(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_V180_STATUS_x56 *q = (R_REPLY_STATUS_V180_STATUS_x56 *)p;
 
-	//int reg_v;
+#ifdef DEBUG
+
+	int reg_v;
 	//float reg_v_f;
+
+	dump_unknown("RAW unknown_v180_x56", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	reg_v = q->bcd_second;
+
+	NPRINT("Second (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_minute;
+
+	NPRINT("Minute (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_hour;
+
+	NPRINT("Hour (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_s08_0 (increase by 1 every day but it is not day of week)", &(q->unknown0), sizeof(q->unknown0));
+
+	// ===
+	reg_v = q->bcd_day;
+
+	NPRINT("Day (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_month;
+
+	NPRINT("Month (BCD): ");
+	NPRINTLN(reg_v, HEX);
+
+	// ===
+	reg_v = q->bcd_year;
+
+	NPRINT("Year (BCD)(20xx): ");
+	NPRINTLN(reg_v, HEX);
+
 
 	// ===
 	// seems to never change
@@ -2333,6 +2515,9 @@ void czdec::reply_r_status_v180_short2(comfortzone_heatpump *czhp, KNOWN_REGISTE
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_SHORT2", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_SHORT2", q->unknown, sizeof(q->unknown));
@@ -2352,6 +2537,9 @@ void czdec::reply_r_status_v180_x20(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW unknown_v180_x20", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_x20", q->unknown, sizeof(q->unknown));
@@ -2370,6 +2558,9 @@ void czdec::reply_r_status_v180_x2c(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	//int reg_v;
 	//float reg_v_f;
+
+	dump_unknown("RAW unknown_v180_x2c", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 
 	// ===
 	// seems to never change

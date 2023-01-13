@@ -728,7 +728,25 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown[151];
+	byte unknown_temp1[2];							// ? °C, LSB, 2 bytes, signed (sensors_te24_hot_water_temp?)
+
+	byte unknown[59];
+	byte heatpump_target_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (compressor frequency to reach)
+	byte unknown2[38];
+
+	//byte heatpump_current_add_power[4];			// W, LSB, 4 bytes
+	byte unknown2a[2];
+	byte heatpump_current_compressor_power[4];		// W, LSB, 4 bytes
+
+	byte heatpump_current_total_power1[4];		// W, LSB, 4 bytes
+	byte heatpump_current_total_power2[4];		// W, LSB, 4 bytes
+
+	//byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
+
+	byte unknown2b[28];
+
+	byte heatpump_current_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (real compressor frequency)
+	byte unknown3[6];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xad;
 
@@ -767,8 +785,18 @@ typedef struct __attribute__ ((packed))
 typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
-	
-	byte unknown[64];
+
+	byte bcd_second;
+	byte bcd_minute;
+	byte bcd_hour;
+
+	byte unknown0;		// padding ?
+
+	byte bcd_day;
+	byte bcd_month;
+	byte bcd_year;
+
+	byte unknown[57];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x56;
 

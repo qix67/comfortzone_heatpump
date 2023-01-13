@@ -19,29 +19,32 @@ typedef enum
 	CZMD_UNKNOWN,			// undefined mode	(rarer)
 } COMFORTZONE_MODE;
 
+// Heatpump status
+// Not all values are available on on protocol version
+// Supported protocols are 1.60, 1.80. If no protocol version is specified, only 1.60 is supported
 typedef struct
 {
 	uint16_t fan_time_to_filter_change;		// days
 
-	bool filter_alarm;							// true = replace/clean filter alarm, false = filter ok
+	bool filter_alarm;							// true = replace/clean filter alarm, false = filter ok (proto: 1.60, 1.80)
 
 	bool hot_water_production;					// true = on, false = off
 	bool room_heating_in_progress;			// true = on, false = off
 
-	COMFORTZONE_COMPRESSOR_ACTIVITY compressor_activity;
-	bool additional_power_enabled;			// true = resistor is enabled, false = resistor is disabled
+	COMFORTZONE_COMPRESSOR_ACTIVITY compressor_activity;		// (proto: 1.60, 1.80)
+	bool additional_power_enabled;			// true = resistor is enabled, false = resistor is disabled (proto: 1.60, 1.80)
 
-	COMFORTZONE_MODE mode;
-	bool defrost_enabled;						// true = defrost in progress, false = no defrost in progress
+	COMFORTZONE_MODE mode;						// (proto: 1.60, 1.80)
+	bool defrost_enabled;						// true = defrost in progress, false = no defrost in progress (proto: 1.60, 1.80)
 
-	int16_t sensors_te1_flow_water;			// °C, * 10
-	int16_t sensors_te2_return_water;		// °C, * 10
-	int16_t sensors_te3_indoor_temp;			// °C, * 10
-	int16_t sensors_te4_hot_gas_temp;		// °C, * 10
-	int16_t sensors_te5_exchanger_out;		// °C, * 10
-	int16_t sensors_te6_evaporator_in;		// °C, * 10
-	int16_t sensors_te7_exhaust_air;			// °C, * 10
-	int16_t sensors_te24_hot_water_temp;	// °C, * 10
+	int16_t sensors_te1_flow_water;			// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te2_return_water;		// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te3_indoor_temp;			// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te4_hot_gas_temp;		// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te5_exchanger_out;		// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te6_evaporator_in;		// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te7_exhaust_air;			// °C, * 10 (proto: 1.60, 1.80)
+	int16_t sensors_te24_hot_water_temp;	// °C, * 10 (proto: 1.60, 1.80)
 
 	int16_t heatpump_current_compressor_frequency;		// Hz, * 10
 
@@ -50,24 +53,24 @@ typedef struct
 	int16_t heatpump_current_total_power;			// W = total power produced
 	int16_t heatpump_current_compressor_input_power;	// W = power sent to compressor
 
-	uint32_t compressor_energy;				// kWh, * 100
-	uint32_t add_energy;							// kWh, * 100
-	uint32_t hot_water_energy;					// kWh, * 100
+	uint32_t compressor_energy;				// kWh, * 100 (proto: 1.60, 1.80)
+	uint32_t add_energy;							// kWh, * 100 (proto: 1.60, 1.80)
+	uint32_t hot_water_energy;					// kWh, * 100 (proto: 1.60, 1.80)
 
-	uint32_t compressor_runtime;				// minutes
-	uint32_t total_runtime;						// minutes
+	uint32_t compressor_runtime;				// minutes (proto: 1.60, 1.80)
+	uint32_t total_runtime;						// minutes (proto: 1.60, 1.80)
 
 	// heatpump current time
-	byte hour;
-	byte minute;
-	byte second;
+	byte hour; 										// (proto: 1.60, 1.80)
+	byte minute; 									// (proto: 1.60, 1.80)
+	byte second; 									// (proto: 1.60, 1.80)
 
-	// heatpump currant day
-	byte day;
-	byte month;
-	uint16_t year;
+	// heatpump current day
+	byte day; 										// (proto: 1.60, 1.80)
+	byte month; 									// (proto: 1.60, 1.80)
+	uint16_t year; 								// (proto: 1.60, 1.80)
 
-	byte day_of_week;								// 1 = monday, 7 = sunday
+	byte day_of_week;								// 1 = monday, 7 = sunday (proto: 1.60, 1.80)
 
 	// current user settings
 	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
@@ -78,7 +81,7 @@ typedef struct
 
 	byte hot_water_priority_setting;			// 1 = low, 2 = normal, 3 = fast
 
-	byte led_luminosity_setting;				// 0 = off -> 6 = highest level
+	byte led_luminosity_setting;				// 0 = off -> 6 = highest level (proto: 1.60, 1.80)
 
 	// current heatpump calculated setting
 	uint16_t fan_speed_duty;					// %, * 10

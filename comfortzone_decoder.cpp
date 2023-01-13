@@ -174,6 +174,11 @@ except 1 time:
 */
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0xDE, 0x03}, czcraft::KR_UNCRAFTABLE, "Status xx (0x8d bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_x8d, czdec::reply_w_generic},	// 0x87 bytes
 
+/* replies => C8
+41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 01 00 00 00 00 00 00 16 33 37 0C 01 17 04 00 16 33 37 00 00 40 00 44 00 00 20 0B 5E 00 01 16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 41 19 FC 19 FC 2E 00 10 01 1D 01 E1 00 19 01 14 01 2C 00 08 00 22 FC 22 FC 04 01 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC D0 01 4B 00 1F 00 13 00 00 00 00 00 E8 03 93 03 00 00 4B 00 85 00 AC 00 00 00 00 00 00 00 55 00 2E 00 10 01 62 01 E1 00 1B 01 24 01 2F 00 94 01 08 00 22 FC 22 FC 04 01 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 57
+*/
+
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Status 02", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_02, czdec::reply_w_generic},	// 0xC2 bytes
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x04, 0x00}, czcraft::KR_HOUR, "Hour", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x05, 0x00}, czcraft::KR_MINUTE, "Minute", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
