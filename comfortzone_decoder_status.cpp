@@ -2008,16 +2008,25 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 #endif
 }
 
-void czdec::reply_r_status_v180_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+// 202301113 - proto v1.8 ok
+void czdec::reply_r_status_v180_runtime_and_energy(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
+	R_REPLY_STATUS_V180_STATUS_runtime_and_energy *q = (R_REPLY_STATUS_V180_STATUS_runtime_and_energy *)p;
+
+	czhp->comfortzone_status.compressor_energy = get_uint32(q->compressor_energy);
+	czhp->comfortzone_status.add_energy = get_uint32(q->add_energy);
+	czhp->comfortzone_status.hot_water_energy = get_uint32(q->hot_water_energy);
+
+	czhp->comfortzone_status.compressor_runtime = get_uint32(q->compressor_runtime);
+	czhp->comfortzone_status.total_runtime = get_uint32(q->total_runtime);
+
 #ifdef DEBUG
-	R_REPLY_STATUS_V180_STATUS_x2e *q = (R_REPLY_STATUS_V180_STATUS_x2e *)p;
 
 	int reg_v;
 	float reg_v_f;
 
 	reg_v = get_uint32(q->unknown1);
-	NPRINT("unknown1_v180_x2e : ");
+	NPRINT("unknown1_v180_runtime_and_energy : ");
 	NPRINT(reg_v);
 	NPRINT(" ");
 	dump_unknown("", q->unknown1, 4);

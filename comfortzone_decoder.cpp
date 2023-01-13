@@ -409,7 +409,7 @@ except 1 time:
 41 44 44 52 07 8A 65 6F DE 02 2E 72 01 02 03 04 0B 09 05 28 00 00 00 00 00 0E FC 3A 00 77 71 05 00 14 42 0F 00 27 87 0B 00 79 56 1D 00 AB
 41 44 44 52 07 8A 65 6F DE 02 2E 72 01 02 03 04 0B 09 05 28 00 00 00 00 00 0F FC 3A 00 77 71 05 00 14 42 0F 00 27 87 0B 00 79 56 1D 00 60
 */
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x05, 0x28, 0x00}, czcraft::KR_UNCRAFTABLE, "Status xx (0x2e bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_x2e, czdec::reply_w_generic},	// 0x28 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x05, 0x28, 0x00}, czcraft::KR_UNCRAFTABLE, "Status HP runtime and energy", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_runtime_and_energy, czdec::reply_w_generic},	// 0x28 bytes
 
 // 01 02 03 04 0B 09 04 9C 3E ??
 

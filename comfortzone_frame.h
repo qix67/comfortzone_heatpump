@@ -692,13 +692,13 @@ typedef struct __attribute__ ((packed))
 	CZ_PACKET_HEADER cz_head;
 	
 	byte unknown1[4];
-	byte total_runtime[4];
-	byte compressor_runtime[4];
-	byte compressor_energy[4];
-	byte add_energy[4];
-	byte hot_water_energy[4];
+	byte compressor_energy[4];		// kWh, 4 bytes, LSB, * 100
+	byte add_energy[4];				// kWh, 4 bytes, LSB, * 100
+	byte hot_water_energy[4];		// kWh, 4 bytes, LSB, * 100
+	byte compressor_runtime[4];	// minutes, 4 bytes LSB
+	byte total_runtime[4];			// minutes, 4 bytes LSB
 	byte crc;
-} R_REPLY_STATUS_V180_STATUS_x2e;
+} R_REPLY_STATUS_V180_STATUS_runtime_and_energy;
 
 typedef struct __attribute__ ((packed))
 {
