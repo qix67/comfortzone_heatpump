@@ -770,7 +770,13 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown[169];
+	byte unknown[143];
+
+	byte ui_software_major_version;
+	byte ui_software_minor_version;
+	byte ui_software_patch_version;
+	byte ui_hardware_version;			// 1 => 'A'
+	byte unknown1[22];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xbf;
 
@@ -812,9 +818,13 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown[10];
+	byte ui_software_major_version;
+	byte ui_software_minor_version;
+	byte ui_software_patch_version;
+	byte ui_hardware_version;			// 1 => 'A'
+	byte unknown[6];
 	byte crc;
-} R_REPLY_STATUS_V180_STATUS_x20;
+} R_REPLY_STATUS_V180_STATUS_ui_versions;
 
 typedef struct __attribute__ ((packed))
 {

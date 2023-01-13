@@ -2410,6 +2410,7 @@ void czdec::reply_r_status_v180_xbf(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	//int reg_v;
 	//float reg_v_f;
+	char v[2];
 
 	dump_unknown("RAW unknown_v180_xbf", (byte *)q, sizeof(*q));
 	NPRINTLN("");
@@ -2417,6 +2418,24 @@ void czdec::reply_r_status_v180_xbf(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xbf", q->unknown, sizeof(q->unknown));
+
+	// ===
+	NPRINT("UI Software version: ");
+	NPRINT(q->ui_software_major_version);
+	NPRINT(".");
+	NPRINT(q->ui_software_minor_version);
+	NPRINT(".");
+	NPRINTLN(q->ui_software_patch_version);
+
+	v[0] = 'A' + q->ui_hardware_version - 1;
+	v[1] = '\0';
+
+	NPRINT("UI Hardware version: ");
+	NPRINTLN(v);
+
+	// ===
+
+	dump_unknown("unknown1_v180_xbf", q->unknown, sizeof(q->unknown1));
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
@@ -2532,20 +2551,34 @@ void czdec::reply_r_status_v180_short2(comfortzone_heatpump *czhp, KNOWN_REGISTE
 #endif
 }
 
-void czdec::reply_r_status_v180_x20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+void czdec::reply_r_status_v180_ui_versions(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 #ifdef DEBUG
-	R_REPLY_STATUS_V180_STATUS_x20 *q = (R_REPLY_STATUS_V180_STATUS_x20 *)p;
+	R_REPLY_STATUS_V180_STATUS_ui_versions *q = (R_REPLY_STATUS_V180_STATUS_ui_versions *)p;
 
 	//int reg_v;
 	//float reg_v_f;
+	char v[2];
 
-	dump_unknown("RAW unknown_v180_x20", (byte *)q, sizeof(*q));
+	dump_unknown("RAW unknown_v180_ui_versions", (byte *)q, sizeof(*q));
 	NPRINTLN("");
+
+	NPRINT("UI Software version: ");
+	NPRINT(q->ui_software_major_version);
+	NPRINT(".");
+	NPRINT(q->ui_software_minor_version);
+	NPRINT(".");
+	NPRINTLN(q->ui_software_patch_version);
+
+	v[0] = 'A' + q->ui_hardware_version - 1;
+	v[1] = '\0';
+
+	NPRINT("UI Hardware version: ");
+	NPRINTLN(v);
 
 	// ===
 	// seems to never change
-	dump_unknown("unknown_v180_x20", q->unknown, sizeof(q->unknown));
+	dump_unknown("unknown_v180_ui_versions", q->unknown, sizeof(q->unknown));
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)

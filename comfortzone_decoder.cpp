@@ -166,11 +166,11 @@ except one time:
 
 // read:  01 02 03 04 0B 09 00 DE 03 77 3B  => 17 
 /* replies:
-41 44 44 52 07 8A 65 6F DE 02 8D 72 01 02 03 04 0B 09 00 DE 03 D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 2C 01 26 02 26 02 1E 00 8A 02 B4 00 DA 02 0A 0A 1E 26 02 32 00 58 02 04 0C 03 D4 FE 2C 01 00 00 2C 01 48 03 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 00 00 32 00 58 00 A4 06 10 0E 88 13 D2 00 34 03 26 02 BC 02 34 03 FC 03 1A 04 00 00 00 00 00 00 59 => 8D
+41 44 44 52 07 8A 65 6F DE 02 8D 72 01 02 03 04 0B 09 00 DE 03 D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 2C 01 26 02 26 02 1E 00 8A 02 B4 00 DA 02 0A 0A 1E 26 02 32 00 58 02 04 0C 03 D4 FE 2C 01 00 00 2C 01 48 03 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 00 00 32 00 -58- 00 A4 06 10 0E 88 13 D2 00 34 03 26 02 BC 02 34 03 FC 03 1A 04 00 00 00 00 00 00 59 => 8D
 
  always:
 except 1 time:
-41 44 44 52 07 8A 65 6F DE 02 8D 72 01 02 03 04 0B 09 00 DE 03 D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 2C 01 26 02 26 02 1E 00 8A 02 B4 00 DA 02 0A 0A 1E 26 02 32 00 58 02 04 0C 03 D4 FE 2C 01 00 00 2C 01 48 03 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 00 00 32 00 5A 00 A4 06 10 0E 88 13 D2 00 34 03 26 02 BC 02 34 03 FC 03 1A 04 00 00 00 00 00 00 31 => 8D
+41 44 44 52 07 8A 65 6F DE 02 8D 72 01 02 03 04 0B 09 00 DE 03 D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 2C 01 26 02 26 02 1E 00 8A 02 B4 00 DA 02 0A 0A 1E 26 02 32 00 58 02 04 0C 03 D4 FE 2C 01 00 00 2C 01 48 03 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 00 00 32 00 -5A- 00 A4 06 10 0E 88 13 D2 00 34 03 26 02 BC 02 34 03 FC 03 1A 04 00 00 00 00 00 00 31 => 8D
 */
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0xDE, 0x03}, czcraft::KR_UNCRAFTABLE, "Status xx (0x8d bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_x8d, czdec::reply_w_generic},	// 0x87 bytes
 
@@ -188,7 +188,7 @@ except 1 time:
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x09, 0x00}, czcraft::KR_YEAR, "Year (20xx)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x13, 0x02}, czcraft::KR_UNCRAFTABLE, "Junk packet 2, heatpump never replies to it", czdec::cmd_r_generic, czdec::empty, czdec::empty, czdec::reply_w_generic},
-// read: 01 02 03 04 0B 09 01 17 00 => 17
+
 /* replies => 18
 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 17 00 08 4D 11
 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 17 00 08 4C 4F
@@ -307,7 +307,7 @@ except 1 time:
 
 // read: 01 02 03 04 0B 09 01 B3 04 => 17
 // reply always: 41 44 44 52 07 8A 65 6F DE 02 20 72 01 02 03 04 0B 09 01 B3 04 02 06 00 05 00 00 00 00 00 00 C7 => 20
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0xB3, 0x04}, czcraft::KR_UNCRAFTABLE, "Status xx (0x20 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_x20, czdec::reply_w_generic},	// 0x1A bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0xB3, 0x04}, czcraft::KR_UNCRAFTABLE, "Status UI versions", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_ui_versions, czdec::reply_w_generic},	// 0x1A bytes
 
 // read: 01 02 03 04 0B 09 01 C4 02 => 17
 /* replies:  => C5
@@ -445,10 +445,6 @@ except 1 time:
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 2, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
 // read:  01 90 01 C8 00 14 00 DE 00 F9 00  => 17 ??? no reply
 
-// status frame ???
-// reply: 41 44 44 52 07 8A 65 6F DE 02 78 72 -- 01 01 01 01 01 01 01 01 01 02 03 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 44 52 17 52 01 02 03 04 0B 09 01 F5 01 2A 56 41 09 01 CC 02 97 6F DE 02 FF 00 3B 01 FE 01 00 00 00 00 00 00 B4 14 00 00 02 03 04 0B 09 01 85 03 52 12 41 44 44 52 07 8A 03 04 0B 09 01 B3 04 0A 6A 41 44 44 52 07 8A 65 0B 09 03 0B 0D 17 1C 0A -- 16  => 78
-
-// read: 01 02 03 04 0B 09 05 00 00  => 17
 /* replies => 56
 41 44 44 52 07 8A 65 6F DE 02 56 72 01 02 03 04 0B 09 05 00 00 37 07 22 01 11 01 23 00 00 00 00 00 01 01 01 01 56 14 00 00 17 0F 00 00 9F 0A 00 00 65 06 00 00 00 00 00 00 BC 34 00 00 00 00 00 00 33 FC 3A 00 77 71 05 00 39 42 0F 00 30 87 0B 00 86 56 1D 00 0E
 41 44 44 52 07 8A 65 6F DE 02 56 72 01 02 03 04 0B 09 05 00 00 33 59 21 01 11 01 23 00 00 00 00 00 00 00 00 00 56 14 00 00 17 0F 00 00 9F 0A 00 00 65 06 00 00 00 00 00 00 BC 34 00 00 00 00 00 00 21 FC 3A 00 77 71 05 00 26 42 0F 00 2C 87 0B 00 7E 56 1D 00 A3

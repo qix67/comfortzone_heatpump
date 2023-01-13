@@ -112,7 +112,7 @@ class czdec
 	static void reply_r_status_v180_x6d(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v180_x56(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v180_short2(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
-	static void reply_r_status_v180_x20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v180_ui_versions(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v180_x2c(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v180_xc72(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 };
