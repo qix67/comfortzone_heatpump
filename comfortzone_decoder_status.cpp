@@ -2252,7 +2252,7 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	NPRINT("unknown temperature 1 (sensors_te24_hot_water_temp?): ");
+	NPRINT("unknown temperature 1 (hot water target temperature ?): ");
 	NPRINT(reg_v_f);
 	NPRINTLN("°C");
 
