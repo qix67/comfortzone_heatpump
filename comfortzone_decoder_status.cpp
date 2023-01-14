@@ -1851,6 +1851,9 @@ void czdec::reply_r_status_v180_x58(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 #ifdef DEBUG
 	R_REPLY_STATUS_V180_STATUS_x58 *q = (R_REPLY_STATUS_V180_STATUS_x58 *)p;
 
+	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_runtime_and_energy", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	//int reg_v;
 	//float reg_v_f;
 
@@ -1869,6 +1872,9 @@ void czdec::reply_r_status_v180_x68(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 {
 #ifdef DEBUG
 	R_REPLY_STATUS_V180_STATUS_x68 *q = (R_REPLY_STATUS_V180_STATUS_x68 *)p;
+
+	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_runtime_and_energy", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 
 	//int reg_v;
 	//float reg_v_f;
@@ -1909,6 +1915,9 @@ void czdec::reply_r_status_v180_x40(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	float reg_v_f;
 	int i;
 
+	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_runtime_and_energy", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	for(i = 0; i < STATUS_V180_x40_NB_TEMP; i++)
 	{
 		reg_v = get_int16(q->temp[i]);
@@ -1940,6 +1949,9 @@ void czdec::reply_r_status_v180_x26(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	//int reg_v;
 	//float reg_v_f;
 
+	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_runtime_and_energy", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_x26", q->unknown, sizeof(q->unknown));
@@ -1959,6 +1971,9 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	int reg_v;
 	float reg_v_f;
 	int i;
+
+	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_runtime_and_energy", (byte *)q, sizeof(*q));
+	NPRINTLN("");
 
 	for(i = 0; i < STATUS_V180_x8d_NB_TEMP; i++)
 	{
