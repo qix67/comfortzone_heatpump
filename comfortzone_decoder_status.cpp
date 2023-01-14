@@ -2238,8 +2238,8 @@ void czdec::reply_r_status_v180_xa3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	dump_unknown("RAW unknown_v180_xa3", (byte *)q, sizeof(*q));
 	NPRINTLN("");
+
 	// ===
-	// seems to never change
 	dump_unknown("unknown_v180_xa3", q->unknown, sizeof(q->unknown));
 
 	NPRINT("crc: ");
@@ -2324,6 +2324,29 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	NPRINTLN("Hz");
 
 	// ===
+	dump_unknown("unknown1_v180_xad", q->unknown1, sizeof(q->unknown1));
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - current compressor frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	reg_v = get_uint16(q->heating_compressor_max_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating compressor max freq.: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
 	for(i = 0; i < STATUS_V180_x8a_NB_TEMP3; i++)
 	{
 		reg_v = get_int16(q->temp3[i]);
@@ -2396,16 +2419,6 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	// ===
 	dump_unknown("unknown2c_v180_xad", q->unknown2c, sizeof(q->unknown2c));
-
-	// ===
-	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
-
-	reg_v_f = reg_v;
-	reg_v_f /= 10.0;
-
-	NPRINT("Heatpump - current compressor frequency (2): ");
-	NPRINT(reg_v_f);
-	NPRINTLN("Hz");
 
 	// ===
 	dump_unknown("unknown3_v180_xad", q->unknown3, sizeof(q->unknown3));

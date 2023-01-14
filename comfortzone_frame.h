@@ -740,8 +740,13 @@ typedef struct __attribute__ ((packed))
 	byte temp2[STATUS_V180_x8a_NB_TEMP2][2];
 
 	byte heatpump_target_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (compressor frequency to reach)
+	
+	byte unknown1[2];   
+                        
+	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
+	byte heating_compressor_max_frequency[2];    // Hz, LSB, 2 bytes, * 10. Compressor max frequency when running in room heating mode
 
-#define STATUS_V180_x8a_NB_TEMP3 19
+#define STATUS_V180_x8a_NB_TEMP3 16
 	byte temp3[STATUS_V180_x8a_NB_TEMP3][2];
 
 	byte heatpump_current_compressor_power[4];		// W, LSB, 4 bytes
@@ -757,8 +762,7 @@ typedef struct __attribute__ ((packed))
 
 	byte unknown2c[20];
 
-	byte heatpump_current_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (real compressor frequency)
-	byte unknown3[6];
+	byte unknown3[8];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xad;
 
