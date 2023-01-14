@@ -1982,7 +1982,7 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		reg_v_f = reg_v;
 		reg_v_f /= 10.0;
 
-		NPRINT("?Temp #");
+		NPRINT("x8d_a ?Temp #");
 		NPRINT(i);
 		NPRINT(": ");
 		NPRINT(reg_v_f);
@@ -2002,7 +2002,7 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		reg_v_f = reg_v;
 		reg_v_f /= 10.0;
 
-		NPRINT("?Temp1 #");
+		NPRINT("x8d_b ?Temp1 #");
 		NPRINT(i);
 		NPRINT(": ");
 		NPRINT(reg_v_f);
@@ -2256,25 +2256,62 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	int reg_v;
 	float reg_v_f;
 
+	czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
+
 #ifdef DEBUG
+	int i;
 	// ===
 
 	dump_unknown("RAW unknown_v180_xad", (byte *)q, sizeof(*q));
 	NPRINTLN("");
 
 	// ===
-	reg_v = get_uint16(q->unknown_temp1);
+	reg_v = get_uint16(q->hot_water_calculated_setting);
 
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
 
-	NPRINT("unknown temperature 1 (hot water target temperature ?): ");
+	NPRINT("Hot water calculated setting: ");
 	NPRINT(reg_v_f);
 	NPRINTLN("°C");
 
 	// ===
+	for(i = 0; i < STATUS_V180_x8a_NB_TEMP1; i++)
+	{
+		reg_v = get_int16(q->temp1[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("xad ?Temp1 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp1[i], 2);
+	}
+
+	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xad", q->unknown, sizeof(q->unknown));
+
+	// ===
+	for(i = 0; i < STATUS_V180_x8a_NB_TEMP2; i++)
+	{
+		reg_v = get_int16(q->temp2[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("xad ?Temp2 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp2[i], 2);
+	}
 
 	// ===
 	reg_v = get_uint32(q->heatpump_target_compressor_frequency);
@@ -2287,10 +2324,21 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	NPRINTLN("Hz");
 
 	// ===
-	dump_unknown("unknown2_v180_xad", q->unknown2, sizeof(q->unknown2));
+	for(i = 0; i < STATUS_V180_x8a_NB_TEMP3; i++)
+	{
+		reg_v = get_int16(q->temp3[i]);
 
-	// ===
-	dump_unknown("unknown2a_v180_xad", q->unknown2a, sizeof(q->unknown2a));
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("xad ?Temp3 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp3[i], 2);
+	}
 
 	// ===
 	reg_v = get_uint32(q->heatpump_current_compressor_power);
@@ -2299,15 +2347,13 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	NPRINT(reg_v);
 	NPRINTLN("W");
 
-#if 0
 	// ===
-	reg_v = get_uint32(q->heatpump_current_add_power);
+	reg_v = get_uint16(q->heatpump_current_add_power);
 
 	NPRINT("Heatpump - current add power: ");
 	NPRINT(reg_v);
 	NPRINTLN("W");
 
-#endif
 	// ===
 	reg_v = get_uint32(q->heatpump_current_total_power1);
 
@@ -2332,7 +2378,24 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 #endif
 
 	// ===
-	dump_unknown("unknown2b_v180_xad", q->unknown2b, sizeof(q->unknown2b));
+	for(i = 0; i < STATUS_V180_x8a_NB_TEMP4; i++)
+	{
+		reg_v = get_int16(q->temp4[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("xad ?Temp4 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp4[i], 2);
+	}
+
+	// ===
+	dump_unknown("unknown2c_v180_xad", q->unknown2c, sizeof(q->unknown2c));
 
 	// ===
 	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
@@ -2614,6 +2677,77 @@ void czdec::reply_r_status_v180_x2c(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_x2c", q->unknown, sizeof(q->unknown));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_settings(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V180_SETTINGS *q = (R_REPLY_STATUS_V180_SETTINGS *)p;
+
+	czhp->comfortzone_status.hot_water_setting = get_uint16(q->hot_water_user_setting);
+
+#ifdef DEBUG
+
+	int reg_v;
+	float reg_v_f;
+
+	dump_unknown("RAW unknown_v180_settings", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_v180_settings", q->unknown, sizeof(q->unknown));
+
+	// ===
+	reg_v = get_uint16(q->hot_water_user_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Hot water user setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	dump_unknown("unknown1_v180_settings", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v180_c8a(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V180_C8A *q = (R_REPLY_STATUS_V180_C8A *)p;
+
+	czhp->comfortzone_status.fan_speed_duty = get_uint16(q->fan_speed_duty);
+
+#ifdef DEBUG
+
+	int reg_v;
+	float reg_v_f;
+
+	dump_unknown("RAW unknown_v180_c8a", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->fan_speed_duty);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Fan Speed duty: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	dump_unknown("unknown1_v180_c8a", q->unknown1, sizeof(q->unknown1));
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)

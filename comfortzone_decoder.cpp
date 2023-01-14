@@ -125,7 +125,7 @@ except one time:
 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 00 2C 03 64 00 64 00 B4 00 BC 02 C8 00 F4 01 78 00 58 02 00 00 02 64 00 05 78 00 1E 00 52 03 2C 01 0C FE C8 00 0A 00 8C 0A 0C FE 1E 0C FE 58 02 D0 07 58 02 9C FF AC 0D FA 00 2C 01 5E 01 90 01 90 01 90 01 5E 01 2C 01 14 14 14 14 14 14 14 14 00 00 00 12 90 01 C8 00 14 00 DE 00 F9 00 10 01 27 01 3B 01 4E 01 00 14 05 1C 02 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF CE FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF F1 FF EC FF E7 FF E2 FF DD FF D8 FF DD  => C8
 */
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x2C, 0x03}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 1, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x2C, 0x03}, czcraft::KR_UNCRAFTABLE, "Status (settings)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_settings, czdec::reply_w_generic},	// 0xC2 bytes
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x39, 0x04}, czcraft::KR_UNCRAFTABLE, "Filter change countdown", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},
 
@@ -440,9 +440,9 @@ except 1 time:
 // after reseting filter countdown
 //   reply: 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 03 BD 0D 00 00 00 00 00 0B 01 17 16 10 30 02 12 00 00 00 00 00 00 0B 01 17 16 10 32 03 12 00 00 00 00 00 00 0B 01 17 16 11 15 01 12 00 00 00 00 00 00 0B 01 17 16 11 21 02 12 00 00 00 00 00 00 0B ** 01 17 16 11 25 03 12 ** 00 00 00 00 00 00 1A 0C 16 10 37 37 02 12 00 00 00 00 00 00 1A 0C 16 10 3A 21 03 12 00 00 00 00 00 00 1B 0C 16 0C 00 00 01 12 00 00 00 00 00 00 1B 0C 16 0D 16 26 02 12 00 00 00 00 00 00 1B 0C 16 0D 16 2A 03 12 00 00 00 00 00 00 1C 0C 16 0C 00 00 01 12 00 00 00 00 00 00 1C 0C 16 0D 2F 0E 02 12 00 00 00 00 00 00 1C 0C 16 0D 2F 18  => C8
 
+		//{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 2, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Status C8A", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_c8a, czdec::reply_w_generic},	// 0xC2 bytes
 
-
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Status xx (random mapping 2, not decoded)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_19, czdec::reply_w_generic},	// 0xC2 bytes
 // read:  01 90 01 C8 00 14 00 DE 00 F9 00  => 17 ??? no reply
 
 /* replies => 56

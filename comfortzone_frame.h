@@ -728,22 +728,34 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown_temp1[2];							// ? °C, LSB, 2 bytes, signed (sensors_te24_hot_water_temp?)
+	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes (it is the current hot water the heatpump tries to reach)
+																	// it is either the user one or a different one if extra hot water is enabled
 
-	byte unknown[59];
+#define STATUS_V180_x8a_NB_TEMP1 7
+	byte temp1[STATUS_V180_x8a_NB_TEMP1][2];
+
+	byte unknown[1];
+
+#define STATUS_V180_x8a_NB_TEMP2 22
+	byte temp2[STATUS_V180_x8a_NB_TEMP2][2];
+
 	byte heatpump_target_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (compressor frequency to reach)
-	byte unknown2[38];
 
-	//byte heatpump_current_add_power[4];			// W, LSB, 4 bytes
-	byte unknown2a[2];
+#define STATUS_V180_x8a_NB_TEMP3 19
+	byte temp3[STATUS_V180_x8a_NB_TEMP3][2];
+
 	byte heatpump_current_compressor_power[4];		// W, LSB, 4 bytes
+	byte heatpump_current_add_power[2];			// W, LSB, 4 bytes
 
 	byte heatpump_current_total_power1[4];		// W, LSB, 4 bytes
 	byte heatpump_current_total_power2[4];		// W, LSB, 4 bytes
 
 	//byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
 
-	byte unknown2b[28];
+#define STATUS_V180_x8a_NB_TEMP4 4
+	byte temp4[STATUS_V180_x8a_NB_TEMP4][2];
+
+	byte unknown2c[20];
 
 	byte heatpump_current_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (real compressor frequency)
 	byte unknown3[6];
@@ -841,6 +853,30 @@ typedef struct __attribute__ ((packed))
 	byte unknown[177];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xc72;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte unknown[102];
+
+	byte hot_water_user_setting[2];							// ? °C, LSB, 2 bytes, signed
+
+	byte unknown1[74];
+	byte crc;
+} R_REPLY_STATUS_V180_SETTINGS;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown[52];
+
+	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
+
+	byte unknown1[124];
+	byte crc;
+} R_REPLY_STATUS_V180_C8A;
 
 
 #endif

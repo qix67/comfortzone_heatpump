@@ -76,7 +76,7 @@ typedef struct
 	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
 
 	int16_t room_heating_setting;				// °C, * 10 (user selected)
-	int16_t hot_water_setting;					// °C, * 10 (user selected)
+	int16_t hot_water_setting;					// °C, * 10 (user selected) (proto: 1.60, 1.80)
 	bool extra_hot_water_setting;				// true = on, false = off
 
 	byte hot_water_priority_setting;			// 1 = low, 2 = normal, 3 = fast
@@ -84,7 +84,7 @@ typedef struct
 	byte led_luminosity_setting;				// 0 = off -> 6 = highest level (proto: 1.60, 1.80)
 
 	// current heatpump calculated setting
-	uint16_t fan_speed_duty;					// %, * 10
+	uint16_t fan_speed_duty;					// %, * 10 (proto: 1.60, 1.80)
 	int16_t hot_water_calculated_setting;	// °C, * 10 (heatpump selected). can be hot_water_setting (no extra hot water) or a different value
 } COMFORTZONE_STATUS;
 
