@@ -2013,15 +2013,13 @@ void czdec::reply_r_status_v180_runtime_and_energy(comfortzone_heatpump *czhp, K
 {
 	R_REPLY_STATUS_V180_STATUS_runtime_and_energy *q = (R_REPLY_STATUS_V180_STATUS_runtime_and_energy *)p;
 
-	// contains same information as "Status 08"
-/*
+	// update same informations as "Status 08" but it may be not here
 	czhp->comfortzone_status.compressor_energy = get_uint32(q->compressor_energy);
 	czhp->comfortzone_status.add_energy = get_uint32(q->add_energy);
 	czhp->comfortzone_status.hot_water_energy = get_uint32(q->hot_water_energy);
 
 	czhp->comfortzone_status.compressor_runtime = get_uint32(q->compressor_runtime);
 	czhp->comfortzone_status.total_runtime = get_uint32(q->total_runtime);
-*/
 
 #ifdef DEBUG
 
