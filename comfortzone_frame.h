@@ -682,8 +682,9 @@ typedef struct __attribute__ ((packed))
 	byte unknown[3];
 #define STATUS_V180_x8d_NB_TEMP1 15
 	byte temp1[STATUS_V180_x8d_NB_TEMP1][2];				// ? °C, LSB, 2 bytes, signed
-	byte unknown1[3];
-	byte unknown2[65];
+	byte unknown1[40];
+	byte fan_time_to_filter_change[2];
+	byte unknown2[26];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x8d;
 

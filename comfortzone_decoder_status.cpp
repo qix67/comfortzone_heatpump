@@ -2014,6 +2014,15 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	// ===
 	// seems to never change
 	dump_unknown("unknown1_v180_x8d", q->unknown1, sizeof(q->unknown1));
+
+	// ===
+	reg_v = get_uint16(q->fan_time_to_filter_change);
+
+	NPRINT("Fan - Time to filter change: ");
+	NPRINT(reg_v);
+	NPRINTLN("d");
+
+	// ===
 	dump_unknown("unknown2_v180_x8d", q->unknown2, sizeof(q->unknown2));
 
 	NPRINT("crc: ");
