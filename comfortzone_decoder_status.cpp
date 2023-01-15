@@ -785,7 +785,7 @@ void czdec::reply_r_status_05(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 		NPRINTLN(reg_v, HEX);
 
 	// ===
-	dump_unknown("unknown_s05_2c", q->unknown2b, sizeof(q->unknown2b));
+	dump_unknown("unknown_s05_2c", q->unknown2c, sizeof(q->unknown2c));
 
 	// ===
 	reg_v = q->fan_speed;
@@ -1965,9 +1965,11 @@ void czdec::reply_r_status_v180_x26(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_V180_STATUS_x8d *q = (R_REPLY_STATUS_V180_STATUS_x8d *)p;
 
+	//czhp->comfortzone_status.fan_speed_duty = get_uint16(q->fan_speed_duty);
+
+#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 	int i;
@@ -2012,8 +2014,51 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	}
 
 	// ===
-	// seems to never change
-	dump_unknown("unknown1_v180_x8d", q->unknown1, sizeof(q->unknown1));
+	reg_v = get_uint16(q->normal_fan_speed);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Normal fan speed: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	reg_v = get_int16(q->reduce_fan_speed);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Reduce fan speed: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	reg_v = get_int16(q->fan_boost_increase);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Fan boost increase: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
+
+	// ===
+	for(i = 0; i < STATUS_V180_x8d_NB_TEMP1a; i++)
+	{
+		reg_v = get_int16(q->temp1a[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("x8d_b ?Temp1a #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp1a[i], 2);
+	}
 
 	// ===
 	reg_v = get_uint16(q->fan_time_to_filter_change);
@@ -2023,7 +2068,22 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	NPRINTLN("d");
 
 	// ===
-	dump_unknown("unknown2_v180_x8d", q->unknown2, sizeof(q->unknown2));
+	for(i = 0; i < STATUS_V180_x8d_NB_TEMP2; i++)
+	{
+		reg_v = get_int16(q->temp2[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("x8d_b ?Temp2 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp2[i], 2);
+	}
+
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
@@ -2266,7 +2326,6 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	float reg_v_f;
 
 	czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
-	czhp->comfortzone_status.fan_speed_duty = get_uint16(q->fan_speed_duty);
 
 #ifdef DEBUG
 	int i;
@@ -2305,16 +2364,6 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	// ===
 	// seems to never change
 	dump_unknown("unknown_v180_xad", q->unknown, sizeof(q->unknown));
-
-	// ===
-	reg_v = get_uint16(q->fan_speed_duty);
-
-	reg_v_f = reg_v;
-	reg_v_f /= 10.0;
-
-	NPRINT("Fan Speed duty: ");
-	NPRINT(reg_v_f);
-	NPRINTLN("%");
 
 	// ===
 	for(i = 0; i < STATUS_V180_x8a_NB_TEMP1a; i++)
@@ -2816,6 +2865,8 @@ void czdec::reply_r_status_v180_c8a(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 {
 	R_REPLY_STATUS_V180_C8A *q = (R_REPLY_STATUS_V180_C8A *)p;
 
+	czhp->comfortzone_status.fan_speed_duty = get_uint16(q->fan_speed_duty);
+
 #ifdef DEBUG
 
 	int reg_v;
@@ -2823,6 +2874,16 @@ void czdec::reply_r_status_v180_c8a(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	dump_unknown("RAW unknown_v180_c8a", (byte *)q, sizeof(*q));
 	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->fan_speed_duty);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Fan Speed duty: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("%");
 
 	// ===
 	dump_unknown("unknown1_v180_c8a", q->unknown1, sizeof(q->unknown1));

@@ -680,11 +680,20 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8d_NB_TEMP 9
 	byte temp[STATUS_V180_x8d_NB_TEMP][2];				// ? °C, LSB, 2 bytes, signed
 	byte unknown[3];
-#define STATUS_V180_x8d_NB_TEMP1 15
+
+#define STATUS_V180_x8d_NB_TEMP1 20
 	byte temp1[STATUS_V180_x8d_NB_TEMP1][2];				// ? °C, LSB, 2 bytes, signed
-	byte unknown1[40];
+
+	byte normal_fan_speed[2];						// %, LSB, 2 bytes, * 10
+	byte reduce_fan_speed[2];						// %, LSB, 2 bytes, * 10, signed
+	byte fan_boost_increase[2];					// %, LSB, 2 bytes, * 10
+
+#define STATUS_V180_x8d_NB_TEMP1a 12
+	byte temp1a[STATUS_V180_x8d_NB_TEMP1a][2];				// ? °C, LSB, 2 bytes, signed
+
 	byte fan_time_to_filter_change[2];
-	byte unknown2[26];
+#define STATUS_V180_x8d_NB_TEMP2 13
+	byte temp2[STATUS_V180_x8d_NB_TEMP2][2];				// ? °C, LSB, 2 bytes, signed
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x8d;
 
@@ -735,9 +744,7 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8a_NB_TEMP1 7
 	byte temp1[STATUS_V180_x8a_NB_TEMP1][2];
 
-	byte unknown[3];
-
-	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
+	byte unknown[5];
 
 #define STATUS_V180_x8a_NB_TEMP1a 4
 	byte temp1a[STATUS_V180_x8a_NB_TEMP1a][2];
@@ -885,7 +892,9 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 
-	byte unknown[54];
+	byte unknown[52];
+
+	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
 
 	byte unknown1[124];
 	byte crc;
