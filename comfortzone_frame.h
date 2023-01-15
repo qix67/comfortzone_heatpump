@@ -734,16 +734,26 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8a_NB_TEMP1 7
 	byte temp1[STATUS_V180_x8a_NB_TEMP1][2];
 
-	byte unknown[1];
+	byte unknown[3];
 
-#define STATUS_V180_x8a_NB_TEMP2 22
+	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
+
+#define STATUS_V180_x8a_NB_TEMP1a 4
+	byte temp1a[STATUS_V180_x8a_NB_TEMP1a][2];
+
+	byte condensing_temperature[2];					// °C, LSB, 2 bytes, * 10
+	byte condensing_pressure[2];						// bar, LSB, 2 bytes, * 10
+	byte evaporator_pressure[2];				// bar, LSB, 2 bytes, * 10
+	byte pressure_ratio[2];				// LSB, 2 bytes, * 10
+
+#define STATUS_V180_x8a_NB_TEMP2 11
 	byte temp2[STATUS_V180_x8a_NB_TEMP2][2];
 
+	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
 	byte heatpump_target_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (compressor frequency to reach)
 	
-	byte unknown1[2];   
+	byte unknown1[4];   
                         
-	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
 	byte heating_compressor_max_frequency[2];    // Hz, LSB, 2 bytes, * 10. Compressor max frequency when running in room heating mode
 
 #define STATUS_V180_x8a_NB_TEMP3 16
@@ -874,9 +884,7 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 
-	byte unknown[52];
-
-	byte fan_speed_duty[2];					// %, LSB, 2 bytes, * 10
+	byte unknown[54];
 
 	byte unknown1[124];
 	byte crc;
