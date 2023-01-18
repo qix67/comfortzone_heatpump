@@ -773,9 +773,9 @@ typedef struct __attribute__ ((packed))
 	byte heatpump_current_total_power1[4];		// W, LSB, 4 bytes
 	byte heatpump_current_total_power2[4];		// W, LSB, 4 bytes
 
-	//byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
+	byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
 
-#define STATUS_V180_x8a_NB_TEMP4 4
+#define STATUS_V180_x8a_NB_TEMP4 3
 	byte temp4[STATUS_V180_x8a_NB_TEMP4][2];
 
 	byte unknown2c[20];
