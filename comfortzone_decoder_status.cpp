@@ -1967,6 +1967,8 @@ void czdec::reply_r_status_v180_x8d(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 {
 	R_REPLY_STATUS_V180_STATUS_x8d *q = (R_REPLY_STATUS_V180_STATUS_x8d *)p;
 
+	czhp->comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
+
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
@@ -2240,7 +2242,7 @@ void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *k
 		NPRINTLN("no");
 
 	NPRINT("* Compressor running: ");
-	if(q->heatpump_status[0] & 0x20)
+	if(q->heatpump_status[0] & 0x01)
 		NPRINTLN("yes");
 	else
 		NPRINTLN("no");
@@ -2251,7 +2253,7 @@ void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *k
 	else
 		NPRINTLN("no");
 
-	NPRINTLN("* bit 6,3-0 not decoded");
+	NPRINTLN("* bit 6-5,3-1 not decoded");
 
 	dump_unknown("unknown_v180_02b", q->heatpump_status+1, 1);
 
@@ -2287,6 +2289,7 @@ void czdec::reply_r_status_v180_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *k
 	NPRINTLN("");
 
 	NPRINTLN("* bit 3-0 not decoded");
+	NPRINTLN("* bit 0 is related to heatpump running, perhaps mode (hot water, room heating...");
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
@@ -2324,6 +2327,8 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	float reg_v_f;
 
 	czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
+
+	czhp->comfortzone_status.heatpump_current_compressor_frequency = get_uint16(q->heatpump_current_compressor_frequency);
 
 	czhp->comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
 	czhp->comfortzone_status.heatpump_current_add_power = get_uint32(q->heatpump_current_add_power);
