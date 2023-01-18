@@ -776,9 +776,9 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8a_NB_TEMP4 3
 	byte temp4[STATUS_V180_x8a_NB_TEMP4][2];
 
-	byte unknown2c[20];
+#define STATUS_V180_x8a_NB_TEMP5 14
+	byte temp5[STATUS_V180_x8a_NB_TEMP4][2];
 
-	byte unknown3[8];
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xad;
 

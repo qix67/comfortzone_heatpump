@@ -2550,10 +2550,21 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	}
 
 	// ===
-	dump_unknown("unknown2c_v180_xad", q->unknown2c, sizeof(q->unknown2c));
+	for(i = 0; i < STATUS_V180_x8a_NB_TEMP5; i++)
+	{
+		reg_v = get_int16(q->temp5[i]);
 
-	// ===
-	dump_unknown("unknown3_v180_xad", q->unknown3, sizeof(q->unknown3));
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("xad ?Temp5 #");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(reg_v_f);
+		NPRINT("°C");
+		NPRINT(" ");
+		dump_unknown("", q->temp5[i], 2);
+	}
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
