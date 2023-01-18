@@ -746,7 +746,7 @@ typedef struct __attribute__ ((packed))
 
 	byte unknown[5];
 
-#define STATUS_V180_x8a_NB_TEMP1a 4
+#define STATUS_V180_x8a_NB_TEMP1a 3
 	byte temp1a[STATUS_V180_x8a_NB_TEMP1a][2];
 
 	byte condensing_temperature[2];					// °C, LSB, 2 bytes, * 10
@@ -754,7 +754,7 @@ typedef struct __attribute__ ((packed))
 	byte evaporator_pressure[2];				// bar, LSB, 2 bytes, * 10
 	byte pressure_ratio[2];				// LSB, 2 bytes, * 10
 
-#define STATUS_V180_x8a_NB_TEMP2 11
+#define STATUS_V180_x8a_NB_TEMP2 12
 	byte temp2[STATUS_V180_x8a_NB_TEMP2][2];
 
 	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
