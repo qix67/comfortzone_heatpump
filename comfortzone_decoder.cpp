@@ -423,6 +423,7 @@ except 1 time:
 // write: 01 02 03 04 0B 09 41 17 00 FF FE ..  => 18    reply: 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 41 17 00 4A ..  => 17
 // read:  01 02 03 04 0B 09 01 17 00 02 ..  => 17       reply: 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 17 00 08 4A ..  => 18
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x41, 0x17, 0x00}, czcraft::KR_EXTRA_HOT_WATER_OFF, "Extra hot water - off", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x81, 0x17, 0x00}, czcraft::KR_EXTRA_HOT_WATER_ON, "Extra hot water - on", czdec::cmd_r_generic, czdec::cmd_w_extra_hot_water, czdec::reply_r_extra_hot_water, czdec::reply_w_generic},
 
 /* read:  01 02 04 0B 09 00 2C 03 B2 0C 41  => 17 ???   reply:
 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 09 00 2C 03 64 00 64 00 B4 00 BC 02 C8 00 F4 01 78 00 58 02 00 00 02 64 00 05 78 00 1E 00 52 03 2C 01 0C FE C8 00 0A 00 8C 0A 0C FE 1E 0C FE 58 02 D0 07 58 02 9C FF AC 0D FA 00 2C 01 5E 01 90 01 90 01 90 01 5E 01 2C 01 14 14 14 14 14 14 14 14 00 00 00 12 90 01 C8 00 14 00 DE 00 F9 00 10 01 27 01 3B 01 4E 01 00 00 FF 1C 02 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF CE FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF F1 FF EC FF E7 FF E2 FF DD FF D8 FF C3  => C8
