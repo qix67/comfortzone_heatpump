@@ -2326,8 +2326,8 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
 
 	czhp->comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
-	czhp->comfortzone_status.heatpump_current_add_power = get_uint16(q->heatpump_current_add_power);
-	czhp->comfortzone_status.heatpump_current_total_power = get_uint16(q->heatpump_current_total_power1);
+	czhp->comfortzone_status.heatpump_current_add_power = get_uint32(q->heatpump_current_add_power);
+	czhp->comfortzone_status.heatpump_current_total_power = get_uint32(q->heatpump_current_total_power1);
 	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
 
 #ifdef DEBUG
@@ -2443,7 +2443,7 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	}
 
 	// ===
-	reg_v = get_uint32(q->heatpump_target_compressor_frequency);
+	reg_v = get_uint16(q->heatpump_target_compressor_frequency);
 
 	reg_v_f = reg_v;
 	reg_v_f /= 10.0;
@@ -2493,14 +2493,14 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	}
 
 	// ===
-	reg_v = get_uint32(q->heatpump_current_compressor_power);
+	reg_v = get_uint16(q->heatpump_current_compressor_power);
 
 	NPRINT("Heatpump - current compressor power: ");
 	NPRINT(reg_v);
 	NPRINTLN("W");
 
 	// ===
-	reg_v = get_uint16(q->heatpump_current_add_power);
+	reg_v = get_uint32(q->heatpump_current_add_power);
 
 	NPRINT("Heatpump - current add power: ");
 	NPRINT(reg_v);

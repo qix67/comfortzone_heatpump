@@ -767,12 +767,10 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8a_NB_TEMP3 16
 	byte temp3[STATUS_V180_x8a_NB_TEMP3][2];
 
-	byte heatpump_current_compressor_power[4];		// W, LSB, 4 bytes
-	byte heatpump_current_add_power[2];			// W, LSB, 4 bytes
-
+	byte heatpump_current_compressor_power[2];		// W, LSB, 2 bytes
+	byte heatpump_current_add_power[4];			// W, LSB, 4 bytes
 	byte heatpump_current_total_power1[4];		// W, LSB, 4 bytes
 	byte heatpump_current_total_power2[4];		// W, LSB, 4 bytes
-
 	byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
 
 #define STATUS_V180_x8a_NB_TEMP4 3
