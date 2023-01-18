@@ -633,18 +633,18 @@ typedef struct __attribute__ ((packed))
 	byte unknown2[4];
 	byte unknown3[2];
 	byte unknown4[2];
-	byte unknown5[2];
-	byte unknown6[2];
-	byte unknown7[2];
+	byte unknown5[2];		// never modified: 87 00
+	byte unknown6[2];		// never modified: 48 03
+	byte unknown7[2];		// never modified: 00 00
 	byte unknown8[2];
-	byte unknown9[2];
-	byte unknown10[2];
+	byte unknown9[2];		// never modified: 44 48
+	byte unknown10[2];	// never modified: 00 00
 	byte unknown11[2];
-	byte unknown12[2];
-	byte unknown13[2];
-	byte unknown14[2];
+	byte unknown12[2];	// never modified: 00 00
+	byte unknown13[2];	// never modified: 00 00
+	byte unknown14[2];	// never modified: 00 00
 	byte unknown15[2];
-	byte unknown16[48];
+	byte unknown16[48];	// never modified: 00 00 00 00 00 22 FC FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x68;
 
@@ -679,7 +679,7 @@ typedef struct __attribute__ ((packed))
 	
 #define STATUS_V180_x8d_NB_TEMP 9
 	byte temp[STATUS_V180_x8d_NB_TEMP][2];				// ? °C, LSB, 2 bytes, signed
-	byte unknown[3];
+	byte unknown[3];									// never modified: 05 1E 14
 
 #define STATUS_V180_x8d_NB_TEMP1 20
 	byte temp1[STATUS_V180_x8d_NB_TEMP1][2];				// ? °C, LSB, 2 bytes, signed
@@ -701,7 +701,7 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown1[4];
+	byte unknown1[4];					// never modified: 00 00 00 00
 	byte compressor_energy[4];		// kWh, 4 bytes, LSB, * 100
 	byte add_energy[4];				// kWh, 4 bytes, LSB, * 100
 	byte hot_water_energy[4];		// kWh, 4 bytes, LSB, * 100
@@ -722,7 +722,7 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown[141];
+	byte unknown[141];				// never modified: F0 0A 09 01 60 09 AA 00 00 00 0A 0A 0A 01 C8 00 E8 03 E8 03 58 02 87 00 64 00 96 00 48 03 32 1E 00 14 14 14 00 E8 03 E8 03 00 05 01 64 00 00 2D 00 BB 03 05 1E 2C 01 0A F4 01 3C 00 05 46 00 FA 00 74 04 26 02 78 00 0A D2 00 F4 01 32 00 A0 00 D0 07 58 02 1A FF 2C 01 DA 02 05 50 00 78 B0 04 78 E8 03 E8 03 14 01 84 03 08 07 08 07 5A 00 C0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 D2 04 56 55 
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xa3;
 
@@ -744,7 +744,7 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8a_NB_TEMP1 7
 	byte temp1[STATUS_V180_x8a_NB_TEMP1][2];
 
-	byte unknown[5];
+	byte unknown[5];											// never modified (always 00 03 0B 0C 03)
 
 #define STATUS_V180_x8a_NB_TEMP1a 3
 	byte temp1a[STATUS_V180_x8a_NB_TEMP1a][2];
@@ -760,7 +760,7 @@ typedef struct __attribute__ ((packed))
 	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
 	byte heatpump_target_compressor_frequency[2];  // Hz, LSB, 2bytes, * 10. (compressor frequency to reach)
 	
-	byte unknown1[4];   
+	byte unknown1[4];   										// never modified: 00 00 D2 00
                         
 	byte heating_compressor_max_frequency[2];    // Hz, LSB, 2 bytes, * 10. Compressor max frequency when running in room heating mode
 
@@ -816,7 +816,7 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown[87];
+	byte unknown[87];						// never modified:  00 00 07 01 02 00 06 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 00 01 01 00 
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x6d;
 
@@ -870,7 +870,7 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 	
-	byte unknown[177];
+	byte unknown[177];				// never modified: 00 00 00 00 FF 03 FF 03 99 03 99 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 FF 03 00 00 00 00 0A 00 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 E8 03 E8 03 FF 03 E8 03 FE 01 6E 00 E8 03 E8 03 E8 03 E8 03 FF 03 E8 03 E8 03 E8 03 E8 03 E8 03 00 00 00 00 01 2E 3E 3E 2E 2E 2E 2E 40 2E 2E 2E 2E 2E 2E 2E 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xc72;
 
@@ -882,7 +882,7 @@ typedef struct __attribute__ ((packed))
 
 	byte hot_water_user_setting[2];							// ? °C, LSB, 2 bytes, signed
 
-	byte unknown1[74];
+	byte unknown1[74];				// never modified: 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF CE FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF F1 FF EC FF E7 FF E2 FF DD FF D8 FF
 	byte crc;
 } R_REPLY_STATUS_V180_SETTINGS;
 
