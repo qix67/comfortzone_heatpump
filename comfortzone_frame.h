@@ -659,9 +659,14 @@ typedef struct __attribute__ ((packed))
 typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
-	
-#define STATUS_V180_x40_NB_TEMP 21
+
+	byte calculated_flow_set[2];			// °C, LSB, 2 bytes, * 10
+
+#define STATUS_V180_x40_NB_TEMP 19
 	byte temp[STATUS_V180_x40_NB_TEMP][2];				// ? °C, LSB, 2 bytes, signed
+
+	byte heating_calculated_setting[2];	// °C, LSB, 2 bytes, * 10
+
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_x40;
 
@@ -776,8 +781,12 @@ typedef struct __attribute__ ((packed))
 #define STATUS_V180_x8a_NB_TEMP4 3
 	byte temp4[STATUS_V180_x8a_NB_TEMP4][2];
 
-#define STATUS_V180_x8a_NB_TEMP5 14
-	byte temp5[STATUS_V180_x8a_NB_TEMP4][2];
+#define STATUS_V180_x8a_NB_TEMP5 11
+	byte temp5[STATUS_V180_x8a_NB_TEMP5][2];
+
+	byte expansion_valve_calculated_setting[2];	// K, LSB, 2 bytes, * 10
+	byte vanne_expansion_xxx[2];						// negative number, expansion_valve_calculated_setting + xxx = temperature difference
+	byte expansion_valve_temperature_difference[2];		// K, LSB, 2 bytes, * 10
 
 	byte crc;
 } R_REPLY_STATUS_V180_STATUS_xad;

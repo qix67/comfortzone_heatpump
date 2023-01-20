@@ -75,7 +75,7 @@ typedef struct
 	// current user settings
 	byte fan_speed;								// 1 = low, 2 = normal, 3 = fast
 
-	int16_t room_heating_setting;				// °C, * 10 (user selected)
+	int16_t room_heating_setting;				// °C, * 10 (user selected) (proto: 1.60, 1.80)
 	int16_t hot_water_setting;					// °C, * 10 (user selected) (proto: 1.60, 1.80)
 	bool extra_hot_water_setting;				// true = on, false = off
 

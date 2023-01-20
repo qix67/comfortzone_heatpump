@@ -1908,15 +1908,27 @@ void czdec::reply_r_status_v180_x68(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 void czdec::reply_r_status_v180_x40(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_V180_STATUS_x40 *q = (R_REPLY_STATUS_V180_STATUS_x40 *)p;
 
+	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
+
+#ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
 	int i;
 
 	dump_unknown("RAW R_REPLY_STATUS_V180_STATUS_x40", (byte *)q, sizeof(*q));
 	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->calculated_flow_set);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Calculated flow set: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
 
 	for(i = 0; i < STATUS_V180_x40_NB_TEMP; i++)
 	{
@@ -1925,7 +1937,7 @@ void czdec::reply_r_status_v180_x40(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		reg_v_f = reg_v;
 		reg_v_f /= 10.0;
 
-		NPRINT("?Temp #");
+		NPRINT("x40 ?Temp #");
 		NPRINT(i);
 		NPRINT(": ");
 		NPRINT(reg_v_f);
@@ -1933,6 +1945,16 @@ void czdec::reply_r_status_v180_x40(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		NPRINT(" ");
 		dump_unknown("", q->temp[i], 2);
 	}
+
+	// ===
+	reg_v = get_uint16(q->heating_calculated_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating - Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
@@ -2565,6 +2587,31 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		NPRINT(" ");
 		dump_unknown("", q->temp5[i], 2);
 	}
+
+	// ===
+	reg_v = get_uint16(q->expansion_valve_calculated_setting);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
+	// ===
+	reg_v = get_int16(q->vanne_expansion_xxx);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - xxx?: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
+	// ===
+	reg_v = get_int16(q->expansion_valve_temperature_difference);
+	reg_v_f = reg_v / 10;
+
+	NPRINT("Expansion valve - Temperature difference 1: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("K");
+
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
