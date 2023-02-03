@@ -37,6 +37,7 @@ typedef struct
 	COMFORTZONE_MODE mode;						// (proto: 1.60, 1.80)
 	bool defrost_enabled;						// true = defrost in progress, false = no defrost in progress (proto: 1.60, 1.80)
 
+	int16_t sensors_te0_outdoor_temp;		// °C, * 10 (proto: 1.60, 1.80)
 	int16_t sensors_te1_flow_water;			// °C, * 10 (proto: 1.60, 1.80)
 	int16_t sensors_te2_return_water;		// °C, * 10 (proto: 1.60, 1.80)
 	int16_t sensors_te3_indoor_temp;			// °C, * 10 (proto: 1.60, 1.80)

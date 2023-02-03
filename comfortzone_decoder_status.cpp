@@ -283,14 +283,15 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	R_REPLY_STATUS_02 *q = (R_REPLY_STATUS_02 *)p;
 	uint16_t active_alarm;
 
-	czhp->comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[0]);
-	czhp->comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[1]);
-	czhp->comfortzone_status.sensors_te3_indoor_temp= get_int16(q->sensors[2]);
-	czhp->comfortzone_status.sensors_te4_hot_gas_temp = get_int16(q->sensors[3]);
-	czhp->comfortzone_status.sensors_te5_exchanger_out = get_int16(q->sensors[4]);
-	czhp->comfortzone_status.sensors_te6_evaporator_in = get_int16(q->sensors[5]);
-	czhp->comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[6]);
-	czhp->comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[23]);
+	czhp->comfortzone_status.sensors_te0_outdoor_temp = get_int16(q->sensors[0]);
+	czhp->comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[1]);
+	czhp->comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[2]);
+	czhp->comfortzone_status.sensors_te3_indoor_temp= get_int16(q->sensors[3]);
+	czhp->comfortzone_status.sensors_te4_hot_gas_temp = get_int16(q->sensors[4]);
+	czhp->comfortzone_status.sensors_te5_exchanger_out = get_int16(q->sensors[5]);
+	czhp->comfortzone_status.sensors_te6_evaporator_in = get_int16(q->sensors[6]);
+	czhp->comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[7]);
+	czhp->comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[24]);
 
 	czhp->comfortzone_status.additional_power_enabled = (q->general_status[0] & 0x20) ? true : false;
 	czhp->comfortzone_status.defrost_enabled = (q->general_status[4] & 0x04) ? true : false;
@@ -344,7 +345,8 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	int i;
 
 	static const char *sensor_names[STATUS_02_NB_SENSORS] =
-						{	"TE1 Flow water",
+						{	"TE0 Outdoor temp",
+							"TE1 Flow water",
 							"TE2 Return water",
 							"TE3 Indoor temp. = Heating - Room temperature",
 							"TE4 Hot gas temp.",
