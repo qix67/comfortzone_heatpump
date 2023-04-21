@@ -178,8 +178,27 @@ typedef struct __attribute__ ((packed))
 	byte second2;
 
 	byte unknown3[10];
+								// version 1.8
+								// byte 8:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//           =0 ----------------------------------> always
+								//               =0 ------------------------------> always
+								//                   =1 --------------------------> always
+								//                       =x ----------------------> 1 (additional power), 0 (no additional power)
+								//                           =1 ------------------> always
+								//                               =0 --------------> always
+								//                                   =x---y ------> xy= 11 (extra hot water forced), 00 (no extra hotwater forced)
+
+								// byte 9:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//           =0 ----------------------------------> always
+								//               =1 ------------------------------> always
+								//                    x---y-----------------------> xy = 10 (heatpump is running), 11 (heatpump is powering down), 01 (defrost), 00 ( heatpump stopped)
+								//                           =? ------------------> 0 (compressor disallowed), 1 (compressor allowed)
+								//                               =x---y-----------> xy = 10 (hot water mode), 00 (idle mode), 01 (heating mode, default mode), 11 (heating+hot water)
+								//                                       =0 ------> always
+
 
 	byte general_status[5];
+								// version 1.6
 								// 0x88 0A 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
 								// 0x88 0E 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
 								// 0x8B 0E 00 00 10    // heatpump stopped, no defrost, no heating, no hot water, no add
@@ -228,6 +247,14 @@ typedef struct __attribute__ ((packed))
 								//                               =x --------------> x = 1 (defrost in progress), 0 (no defrost in progress)
 								//                                   =0 ----------> always
 								//                                       =0 ------> always
+
+								// version 1.8
+								// byte 2:  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+								//           =0 ----------------------------------> always
+								//               =0 ------------------------------> always
+								//                   =0 --------------------------> always
+								//                       =1 ----------------------> always
+								//                           =x-----------y ------> 1010 (defrost in progress), 0000 (no defrost in process
 
 	byte unknown3b[3];
 

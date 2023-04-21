@@ -293,6 +293,7 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	czhp->comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[7]);
 	czhp->comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[24]);
 
+#if HP_PROTOCOL == HP_PROTOCOL_1_6
 	czhp->comfortzone_status.additional_power_enabled = (q->general_status[0] & 0x20) ? true : false;
 	czhp->comfortzone_status.defrost_enabled = (q->general_status[4] & 0x04) ? true : false;
 
@@ -325,6 +326,42 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 		case 3:	czhp->comfortzone_status.mode = CZMD_HOT_WATER;
 					break;
 	}
+#endif
+
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	czhp->comfortzone_status.additional_power_enabled = (q->unknown3[8] & 0x10) ? true : false;
+	czhp->comfortzone_status.defrost_enabled = ((q->general_status[2] & 0x0f) == 0x0a) ? true : false;
+
+	switch((q->unknown3[9]>>4) & 0x3)
+	{
+		case 0:  czhp->comfortzone_status.compressor_activity = CZCMP_STOPPED;
+					break;
+
+		case 1:  czhp->comfortzone_status.compressor_activity = CZCMP_DEFROST;
+					break;
+
+		case 2:  czhp->comfortzone_status.compressor_activity = CZCMP_RUNNING;
+					break;
+
+		case 3:  czhp->comfortzone_status.compressor_activity = CZCMP_STOPPING;
+					break;
+	}
+
+	switch((q->unknown3[9]>>1) & 0x3)
+	{
+		case 0:  czhp->comfortzone_status.mode = CZMD_IDLE;
+					break;
+
+		case 1:  czhp->comfortzone_status.mode = CZMD_ROOM_HEATING;
+					break;
+
+		case 2:  czhp->comfortzone_status.mode = CZMD_HOT_WATER;
+					break;
+
+		case 3:  czhp->comfortzone_status.mode = CZMD_ROOM_HEATING_AND_HOT_WATER;
+					break;
+	}
+#endif
 
 	active_alarm = get_uint16(q->pending_alarm) ^ get_uint16(q->acknowledged_alarm);
 
@@ -446,11 +483,57 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 	// ===
 	dump_unknown("unknown_s02_3", q->unknown3, sizeof(q->unknown3));
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	NPRINT("Add energy: ");
+	NPRINTLN( (q->unknown3[8] & 0x10) ? "on" : "off");
+
+/*
+	NPRINT("Mode (1): ");
+	switch(q->unknown3[0] & 0x3)
+	{
+		case 0:	NPRINTLN("Heating");
+					break;
+		case 1:	NPRINTLN("1?");
+					break;
+		case 2:	NPRINTLN("2?");
+					break;
+		case 3:	NPRINTLN("Hot water");
+					break;
+	}
+*/
+
+	NPRINT("Heatpump activity: ");
+	switch((q->unknown3[9]>>4) & 0x3)
+	{
+		case 0:	NPRINTLN("Stopped");
+					break;
+		case 1:	NPRINTLN("Defrost");
+					break;
+		case 2:	NPRINTLN("Running");
+					break;
+		case 3:	NPRINTLN("Stopping");
+					break;
+	}
+
+	NPRINT("Mode (2): ");
+	switch((q->unknown3[9]>>1) & 0x3)
+	{
+		case 0:	NPRINTLN("Idle");
+					break;
+		case 1:	NPRINTLN("Heating");
+					break;
+		case 2:	NPRINTLN("Hot water");
+					break;
+		case 3:	NPRINTLN("Heating + Hot water");
+					break;
+	}
+#endif
 
 	// ===
 	dump_unknown("unknown_general_status", q->general_status, sizeof(q->general_status));
 
 	// ===
+#if HP_PROTOCOL == HP_PROTOCOL_1_6
 	NPRINT("Add energy: ");
 	NPRINTLN( (q->general_status[0] & 0x20) ? "on" : "off");
 
@@ -495,6 +578,12 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 	NPRINT("Defrost: ");
 	NPRINTLN( (q->general_status[4] & 0x04) ? "on" : "off");
+#endif
+
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	NPRINT("Defrost: ");
+	NPRINTLN( ((q->general_status[2] & 0x0f) == 0x0a) ? "on" : "off");
+#endif
 
 	// ===
 	dump_unknown("unknown_s02_3b", q->unknown3b, sizeof(q->unknown3b));

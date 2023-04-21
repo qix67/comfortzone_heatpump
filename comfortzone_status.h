@@ -9,6 +9,9 @@ typedef enum
 	CZCMP_STOPPING,		// compressor is shutting down
 	CZCMP_RUNNING,			// compressor is up and running
 	CZCMP_UNKNOWN,			// undefined status (very rare)
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	CZCMP_DEFROST,			// (v1.8 only)
+#endif
 } COMFORTZONE_COMPRESSOR_ACTIVITY;
 
 typedef enum
@@ -17,6 +20,9 @@ typedef enum
 	CZMD_ROOM_HEATING,	// default mode (even when everything is off)
 	CZMD_HOT_WATER,		// hot water production
 	CZMD_UNKNOWN,			// undefined mode	(rarer)
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	CZMD_ROOM_HEATING_AND_HOT_WATER,		// room heating + hot water production
+#endif
 } COMFORTZONE_MODE;
 
 // Heatpump status
