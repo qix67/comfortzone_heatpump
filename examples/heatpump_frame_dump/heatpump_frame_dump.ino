@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "comfortzone_heatpump.h"
+#include "rs485_interface.h"
 
 // Example used to dump all received frames and how they are recognized byt the library
 // Code was tested on teensy 3.2 with RS485 module connected to
@@ -14,7 +15,7 @@
 // pin connected to DE/RE pin of RS485 module
 #define RS485_DE_PIN 2
 
-comfortzone_heatpump heatpump;
+comfortzone_heatpump heatpump(new ArduinoRS485Interface(RS485SER, RS485_DE_PIN));
 
 void setup()
 {
@@ -23,7 +24,7 @@ void setup()
 	// let linux detect the new USB device
 	delay(1000);
 
-	heatpump.begin(RS485SER, RS485_DE_PIN);
+	heatpump.begin();
 }
 
 void loop()

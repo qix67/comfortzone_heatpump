@@ -1,7 +1,7 @@
 #ifndef _COMFORTZONE_FRAME_H
 #define _COMFORTZONE_FRAME_H
 
-#include <Arduino.h>
+#include "platform_specific.h"
 
 // This file contains the description of RS485 frames
 

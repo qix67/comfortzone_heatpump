@@ -1,8 +1,6 @@
 #ifndef _COMFORTZONE_TOOLS_H
 #define _COMFORTZONE_TOOLS_H
 
-#include <Arduino.h>
-
 static inline uint16_t get_uint16(byte *ptr)
 {
 	uint16_t v;

@@ -329,8 +329,8 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 #endif
 
 #if HP_PROTOCOL == HP_PROTOCOL_1_8
-	czhp->comfortzone_status.additional_power_enabled = (q->unknown3[8] & 0x10) ? true : false;
-	czhp->comfortzone_status.defrost_enabled = ((q->general_status[2] & 0x0f) == 0x0a) ? true : false;
+	bool defrost = false;
+	bool running = false;
 
 	switch((q->unknown3[9]>>4) & 0x3)
 	{
@@ -338,29 +338,40 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 					break;
 
 		case 1:  czhp->comfortzone_status.compressor_activity = CZCMP_DEFROST;
+				    defrost = true;
 					break;
 
 		case 2:  czhp->comfortzone_status.compressor_activity = CZCMP_RUNNING;
+					running = true;
 					break;
 
 		case 3:  czhp->comfortzone_status.compressor_activity = CZCMP_STOPPING;
 					break;
 	}
 
+	czhp->comfortzone_status.defrost_enabled = defrost;
+
+	bool heating = false;
+	bool water = false;
 	switch((q->unknown3[9]>>1) & 0x3)
 	{
 		case 0:  czhp->comfortzone_status.mode = CZMD_IDLE;
 					break;
 
 		case 1:  czhp->comfortzone_status.mode = CZMD_ROOM_HEATING;
+					heating = true;
 					break;
 
 		case 2:  czhp->comfortzone_status.mode = CZMD_HOT_WATER;
+					water = true;
 					break;
 
 		case 3:  czhp->comfortzone_status.mode = CZMD_ROOM_HEATING_AND_HOT_WATER;
+					water = true;
 					break;
 	}
+	czhp->comfortzone_status.room_heating_in_progress = (heating && running);
+	czhp->comfortzone_status.hot_water_production = (water && running);
 #endif
 
 	active_alarm = get_uint16(q->pending_alarm) ^ get_uint16(q->acknowledged_alarm);
@@ -743,6 +754,7 @@ void czdec::reply_r_status_05(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 	R_REPLY_STATUS_05 *q = (R_REPLY_STATUS_05 *)p;
 
+#if HP_PROTOCOL == HP_PROTOCOL_1_6
 	if(q->hot_water_production == 0x00)
 		czhp->comfortzone_status.hot_water_production = false;
 	else
@@ -753,6 +765,7 @@ void czdec::reply_r_status_05(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 		czhp->comfortzone_status.room_heating_in_progress = false;
 	else
 		czhp->comfortzone_status.room_heating_in_progress = true;
+#endif
 
 	czhp->comfortzone_status.fan_speed = q->fan_speed;
 	czhp->comfortzone_status.fan_speed_duty = get_uint16(q->fan_speed_duty);
@@ -933,6 +946,10 @@ void czdec::reply_r_status_06(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	czhp->comfortzone_status.heatpump_current_add_power = get_uint16(q->heatpump_current_add_power);
 	czhp->comfortzone_status.heatpump_current_total_power = get_uint16(q->heatpump_current_total_power1);
 	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
+
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	czhp->comfortzone_status.additional_power_enabled = (czhp->comfortzone_status.heatpump_current_add_power > 0);
+#endif	
 
 #ifdef DEBUG
 	int reg_v;

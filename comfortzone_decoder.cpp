@@ -4,6 +4,8 @@
 #include "comfortzone_frame.h"
 #include "comfortzone_decoder.h"
 
+#include "string.h"
+
 static czdec::KNOWN_REGISTER kr_decoder[] =
 	{
 #if HP_PROTOCOL == HP_PROTOCOL_1_6
@@ -565,8 +567,9 @@ void czdec::dump_frame(comfortzone_heatpump *cz_class, const char *prefix)
 
 	for(i = 0; i < cz_class->cz_size; i++)
 	{
-		if(cz_class->cz_buf[i] < 0x10)
+		if(cz_class->cz_buf[i] < 0x10) {
 			DPRINT("0");
+		}
 		DPRINT(cz_class->cz_buf[i], HEX);
 
 		DPRINT(" ");
