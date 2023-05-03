@@ -8,10 +8,10 @@
 
 void comfortzone_heatpump::begin(HardwareSerial &rs485_serial, int de_pin)
 {
-	rs485 = rs485_serial;
+	rs485 = &rs485_serial;
 	rs485_de_pin = de_pin;
 
-	rs485.begin(19200, SERIAL_8N1);
+	rs485->begin(19200, SERIAL_8N1);
 
 	pinMode(rs485_de_pin, OUTPUT);
 	digitalWrite(rs485_de_pin, LOW);		// enable RS485 receive mode
@@ -31,9 +31,9 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 	//
 	// if not, first byte is discarded
 
-	while(rs485.available())
+	while(rs485->available())
 	{
-		cz_buf[cz_size++] = rs485.read();
+		cz_buf[cz_size++] = rs485->read();
 
 		if(cz_size == sizeof(cz_buf))
 		{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
@@ -170,7 +170,7 @@ void comfortzone_heatpump::set_grab_buffer(byte *buffer, uint16_t buffer_size, u
 
 #define RETURN_MESSAGE(msg)	{ strcpy(last_message, msg); last_message_size = strlen(last_message); }
 
-// fan speed: 1 = low, 2 = normal, 3 = fast
+// fan speed: 1 = low, 2 = normal, 3 = fast, 4 = on timer (HP v1.8)
 bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 {
 	W_SMALL_CMD cmd;
@@ -178,11 +178,21 @@ bool comfortzone_heatpump::set_fan_speed(uint8_t fan_speed, int timeout)
 	czdec::KNOWN_REGISTER *kr;
 	bool push_result;
 
+#if HP_PROTOCOL == HP_PROTOCOL_1_6
 	if((fan_speed < 1) || (fan_speed > 3))
 	{
 		RETURN_MESSAGE("Invalid value, must be between 1 and 3");
 		return false;
 	}
+#endif
+
+#if HP_PROTOCOL == HP_PROTOCOL_1_8
+	if((fan_speed < 1) || (fan_speed > 4))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 1 and 4");
+		return false;
+	}
+#endif
 
 	kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_SPEED);
 
@@ -743,8 +753,8 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 
 				digitalWrite(rs485_de_pin, HIGH);	// enable send mode
 				disable_cz_buf_clear_on_completion = true;
-				rs485.write(cmd, cmd_length);
-				rs485.flush();
+				rs485->write(cmd, cmd_length);
+				rs485->flush();
 				digitalWrite(rs485_de_pin, LOW);		// enable receive mode
 
 				// now, wait for a frame at most 100ms
