@@ -5,7 +5,7 @@
 #define HP_PROTOCOL_1_8 180
 
 // adjust HP_PROTOCOL value according to protocol version to use
-#define HP_PROTOCOL HP_PROTOCOL_1_8
+#define HP_PROTOCOL HP_PROTOCOL_1_6
 
 #undef DEBUG
 // uncomment to enable debug mode
