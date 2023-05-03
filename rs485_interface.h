@@ -37,7 +37,7 @@ public:
     }
 
     int write_bytes(const void* data, int size) {
-        return _hw_serial.write((const char*)data, size);
+        return _hw_serial.write((const uint8_t*)data, size);
     }
 
     void flush() {
