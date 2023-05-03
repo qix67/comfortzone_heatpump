@@ -6,15 +6,13 @@
 
 #include "comfortzone_crafting.h"
 
-void comfortzone_heatpump::begin(HardwareSerial &rs485_serial, int de_pin)
-{
-	rs485 = &rs485_serial;
-	rs485_de_pin = de_pin;
+#include "platform_specific.h"
 
-	rs485->begin(19200, SERIAL_8N1);
+#include "string.h"
+#include "stdio.h"
 
-	pinMode(rs485_de_pin, OUTPUT);
-	digitalWrite(rs485_de_pin, LOW);		// enable RS485 receive mode
+void comfortzone_heatpump::begin() {
+	rs485->begin();
 }
 
 comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
@@ -33,7 +31,7 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 
 	while(rs485->available())
 	{
-		cz_buf[cz_size++] = rs485->read();
+		cz_buf[cz_size++] = rs485->read_byte();
 
 		if(cz_size == sizeof(cz_buf))
 		{	// something goes wrong. packet size is store in a single byte, how can it goes above 255 ???
@@ -67,7 +65,7 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 			}
 			else
 			{
-				memcpy(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
+				memmove(cz_buf, cz_buf + 1, sizeof(CZ_PACKET_HEADER) - 1);
 				cz_size--;
 				continue;
 			}
@@ -698,7 +696,7 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 	unsigned long min_time_after_reply;
 	unsigned long reply_frame_time;
 	unsigned long reply_timeout;
-	PROCESSED_FRAME_TYPE pft;
+	PROCESSED_FRAME_TYPE pft = comfortzone_heatpump::PFT_NONE;
 	int i;
 
 	now = millis();
@@ -751,11 +749,11 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 				if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
 					last_message[last_message_size++] = 'b';
 
-				digitalWrite(rs485_de_pin, HIGH);	// enable send mode
+				rs485->enable_sender_mode();
 				disable_cz_buf_clear_on_completion = true;
-				rs485->write(cmd, cmd_length);
+				rs485->write_bytes(cmd, cmd_length);
 				rs485->flush();
-				digitalWrite(rs485_de_pin, LOW);		// enable receive mode
+				rs485->enable_receiver_mode();
 
 				// now, wait for a frame at most 100ms
 				now = millis();

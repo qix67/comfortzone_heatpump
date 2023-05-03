@@ -63,10 +63,16 @@ initialized or partially initialized, it is normal.
 The library exposes few methods to make it easily usable. All methods are inside
 comfortzone_heatpump object.
 
- * void begin(HardwareSerial &rs485_serial, int de_pin);
+ * constructor: comfortzone_heatpump(RS485Interface* rs485);
 
- First function to call before anything else. Its parameters are a
- HardwareSerial object and number of the pin connected to RS485 module DE pin.
+ The constructor takes a pointer to a RS485Interface object. An Arduino-specific
+ implementation (ArduinoRS485Interface) is provided in rs485_interface.h.
+ It is initalized with HardwareSerial object and number of the pin connected
+ to RS485 module DE pin.
+
+ * void begin();
+
+ First function to call before anything else.
 
  * PROCESSED_FRAME_TYPE process();
 

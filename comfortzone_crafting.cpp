@@ -4,6 +4,8 @@
 
 #include "comfortzone_crafting.h"
 
+#include "string.h"
+
 // craft a W_CMD paquet
 // input: pointer to output buffer
 //		  9 byte array contaning register number

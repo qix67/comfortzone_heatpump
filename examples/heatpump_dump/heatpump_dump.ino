@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "comfortzone_heatpump.h"
+#include "rs485_interface.h"
 
 // Basic example showing how to use library to decode message.
 // Code was tested on teensy 3.2 with RS485 module connected to
@@ -15,7 +16,7 @@
 // pin connected to DE/RE pin of RS485 module
 #define RS485_DE_PIN 2
 
-comfortzone_heatpump heatpump;
+comfortzone_heatpump heatpump(new ArduinoRS485Interface(RS485SER, RS485_DE_PIN));
 
 // print periodic status every X seconds
 #define PERIODIC_STATUS 5
@@ -172,7 +173,7 @@ void setup()
 	// let linux detect the new USB device
 	delay(1000);
 
-	heatpump.begin(RS485SER, RS485_DE_PIN);
+	heatpump.begin();
 }
 
 void loop()
