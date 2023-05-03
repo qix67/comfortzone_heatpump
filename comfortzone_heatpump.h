@@ -22,13 +22,12 @@
 #ifndef _COMFORTZONE_HEATPUMP_H
 #define _COMFORTZONE_HEATPUMP_H
 
-#include <Arduino.h>
-
-#include <HardwareSerial.h>
 #include <FastCRC.h>
 
 #include <comfortzone_config.h>
 #include <comfortzone_status.h>
+#include <platform_specific.h>
+#include <rs485_interface.h>
 
 class comfortzone_heatpump
 {
@@ -42,9 +41,9 @@ class comfortzone_heatpump
 		PFT_UNKNOWN,	// received frame has an unknown type
 	} PROCESSED_FRAME_TYPE;
 
-	comfortzone_heatpump() : rs485(Serial1) {};
+	comfortzone_heatpump(RS485Interface* rs485) : rs485(rs485) {};
 
-	void begin(HardwareSerial &rs485_serial, int de_pin);
+	void begin();
 
 	// Function to call periodically to manage rs485 serial input
 	PROCESSED_FRAME_TYPE process();
@@ -97,8 +96,7 @@ class comfortzone_heatpump
 	friend class czdec;
 	friend class czcraft;
 
-	HardwareSerial &rs485;
-	int rs485_de_pin;
+	RS485Interface *rs485;
 
 	FastCRC8 CRC8;
 

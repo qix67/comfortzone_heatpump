@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "comfortzone_heatpump.h"
+#include "rs485_interface.h"
 
 // Basic example showing how to use library to decode message.
 // Code was tested on teensy 3.2 with RS485 module connected to
@@ -15,7 +16,7 @@
 // pin connected to DE/RE pin of RS485 module
 #define RS485_DE_PIN 2
 
-comfortzone_heatpump heatpump;
+comfortzone_heatpump heatpump(new ArduinoRS485Interface(RS485SER, RS485_DE_PIN));
 
 // print periodic status every X seconds
 #define PERIODIC_STATUS 5
@@ -57,11 +58,11 @@ void periodic_status()
 		{
 			case CZCMP_STOPPED:	Serial.println("stopped");
 										break;
-   		case CZCMP_STOPPING:Serial.println("shutting down");
+			case CZCMP_STOPPING:Serial.println("shutting down");
 										break;
-   		case CZCMP_RUNNING:	Serial.println("running");
+			case CZCMP_RUNNING:	Serial.println("running");
 										break;
-   		case CZCMP_UNKNOWN:	Serial.println("unknown");
+			case CZCMP_UNKNOWN:	Serial.println("unknown");
 										break;
 		}
 
@@ -73,17 +74,21 @@ void periodic_status()
 		{
 			case CZMD_IDLE:		Serial.println("idle");
 										break;
-   		case CZMD_ROOM_HEATING:Serial.println("room heating");
+			case CZMD_ROOM_HEATING:Serial.println("room heating");
 										break;
-   		case CZMD_HOT_WATER:Serial.println("hot water");
+			case CZMD_HOT_WATER:Serial.println("hot water");
 										break;
-   		case CZMD_UNKNOWN:	Serial.println("unknown");
+			case CZMD_UNKNOWN:	Serial.println("unknown");
 										break;
 		}
 
 		Serial.print("Defrost enabled: ");
 		Serial.println((heatpump.comfortzone_status.defrost_enabled ? "yes" : "no" ));
 		
+		Serial.print("TE0 - Outdoor temp: ");
+		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te0_outdoor_temp) / 10.0) );
+		Serial.println("°C");
+
 		Serial.print("TE1 - Flow water: ");
 		Serial.print( ((float)(heatpump.comfortzone_status.sensors_te1_flow_water) / 10.0) );
 		Serial.println("°C");
@@ -168,7 +173,7 @@ void setup()
 	// let linux detect the new USB device
 	delay(1000);
 
-	heatpump.begin(RS485SER, RS485_DE_PIN);
+	heatpump.begin();
 }
 
 void loop()
