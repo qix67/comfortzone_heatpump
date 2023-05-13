@@ -121,6 +121,8 @@ typedef struct
 	// current heatpump calculated setting
 	Subscribable<uint16_t> fan_speed_duty;					// %, * 10 (proto: 1.60, 1.80)
 	Subscribable<int16_t> hot_water_calculated_setting;	// °C, * 10 (heatpump selected). can be hot_water_setting (no extra hot water) or a different value (proto: 1.60, 1.80)
+
+	Subscribable<int16_t> calculated_flow_set;	// °C, * 10 (heatpump selected) (proto: 1.80)
 } COMFORTZONE_STATUS;
 
 #endif
