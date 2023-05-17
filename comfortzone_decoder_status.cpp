@@ -2019,6 +2019,7 @@ void czdec::reply_r_status_v180_x40(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	R_REPLY_STATUS_V180_STATUS_x40 *q = (R_REPLY_STATUS_V180_STATUS_x40 *)p;
 
 	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
+	czhp->comfortzone_status.calculated_flow_set = get_uint16(q->calculated_flow_set);
 
 #ifdef DEBUG
 	int reg_v;
