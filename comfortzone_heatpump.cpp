@@ -566,6 +566,43 @@ bool comfortzone_heatpump::set_extra_hot_water(bool enable, int timeout)
 }
 
 // true = enable, false = disable
+bool comfortzone_heatpump::set_fireplace_mode(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	byte reply_value;
+	bool push_result;
+
+	// Don't know why this setting requires 2 register (???)
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_FIREPLACE_MODE_ENABLE);
+		cmd_value = 0x0400;
+		reply_value = 0x04;
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_FIREPLACE_MODE_DISABLE);
+		cmd_value = 0xFBFF;
+		reply_value = 0x08;
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("nczcraft::KR_FIREPLACE_MODE_* Not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
+
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+	return push_result;
+}
+
+// true = enable, false = disable
 bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeout)
 {
 	W_CMD cmd;
