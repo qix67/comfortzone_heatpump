@@ -189,6 +189,12 @@ comfortzone_heatpump object.
  Possible temperature offset goes from -10.0° to 10.0°, with step of 0.1°
 
 
+ * bool set_fireplace_mode(bool enable, int timeout = 5);
+
+ Enable/disable temporary mode to start the fireplace
+ (disables fan for 5 minutes, runs completely on electricity during that period)
+
+
  Special methods
  ---------------
 
