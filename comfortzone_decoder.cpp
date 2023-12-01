@@ -108,6 +108,14 @@ static czdec::KNOWN_REGISTER kr_decoder[] =
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x0D, 0x04}, czcraft::KR_UNCRAFTABLE, "Hot water extra time", czdec::cmd_r_generic, czdec::cmd_w_time_minutes, czdec::reply_r_time_minutes, czdec::reply_w_generic},
 
 
+// Write: 01 02 03 04 0b 09 81 13 00 00 04 ab
+// Write reply: 01 02 03 04 0b 09 81 13 00 04 f9
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x81, 0x13, 0x00}, czcraft::KR_FIREPLACE_MODE_ENABLE, "Enable fireplace mode", czdec::empty, czdec::cmd_w_generic_2byte, czdec::empty, czdec::reply_w_generic},
+
+// Write: 01 02 03 04 0b 09 41 13 00 ff fb 3d
+// Write reply: 01 02 03 04 0b 09 41 13 00 08 63
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x41, 0x13, 0x00}, czcraft::KR_FIREPLACE_MODE_DISABLE, "Disable fireplace mode", czdec::empty, czdec::cmd_w_generic_2byte, czdec::empty, czdec::reply_w_generic},
+
 
 		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Sanitary priority (get)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_sanitary_priority, czdec::empty},
 
