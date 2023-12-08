@@ -3071,4 +3071,81 @@ void czdec::reply_r_status_v180_c8a(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 }
 
 
+void czdec::reply_r_status_v221_xc1(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_xC1 *q = (R_REPLY_STATUS_V221_xC1 *)p;
+
+	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	dump_unknown("RAW R_REPLY_STATUS_V221_xC1", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_xc1_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	reg_v = get_uint16(q->heating_calculated_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating - Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	dump_unknown("unknown_xc1_1", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v221_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_x51 *q = (R_REPLY_STATUS_V221_x51 *)p;
+
+	czhp->comfortzone_status.fan_speed = q->fan_speed;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	dump_unknown("RAW R_REPLY_STATUS_V221_x51", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_x51_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	reg_v = q->fan_speed;
+
+	NPRINT("Fan speed: ");
+	if(reg_v == 0x01)
+		NPRINTLN("low");
+	else if(reg_v == 0x02)
+		NPRINTLN("normal");
+	else if(reg_v == 0x03)
+		NPRINTLN("high");
+	else
+		NPRINTLN(reg_v, HEX);
+
+	// ===
+	dump_unknown("unknown_x51_1", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
 

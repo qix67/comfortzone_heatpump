@@ -934,5 +934,32 @@ typedef struct __attribute__ ((packed))
 	byte crc;
 } R_REPLY_STATUS_V180_C8A;
 
+// =====================================
+// == status frames (protocol version 2.21)
+// =====================================
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[9];
+
+	byte heating_calculated_setting[2];	// °C, LSB, 2 bytes, * 10
+
+	byte unknown1[160];
+	byte crc;
+} R_REPLY_STATUS_V221_xC1;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[3];
+
+	byte fan_speed;							// 1 = slow, 2 = normal, 3 = fast
+
+	byte unknown1[55];
+	byte crc;
+} R_REPLY_STATUS_V221_x51;
+
 
 #endif

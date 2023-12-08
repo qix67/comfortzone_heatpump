@@ -485,6 +485,14 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 // reply: 01 02 03 04 0B 09 01 29 00 02 00 10  => 18
 
 #endif
+
+#if HP_PROTOCOL == HP_PROTOCOL_2_21
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x90, 0x02}, czcraft::KR_ROOM_HEATING_TEMP, "Heating calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0xD5, 0x03}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
+
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x87, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0xc1 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_xc1, czdec::reply_w_generic},	// 0xc1 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0xCD, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0x51 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_x51, czdec::reply_w_generic},	// 0x51 bytes
+#endif
 		{ {0}, czcraft::KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
 	};
 
