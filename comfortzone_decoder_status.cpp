@@ -3148,4 +3148,66 @@ void czdec::reply_r_status_v221_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 #endif
 }
 
+void czdec::reply_r_status_v221_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_x88 *q = (R_REPLY_STATUS_V221_x88 *)p;
+
+	czhp->comfortzone_status.hour = q->hour1;
+	czhp->comfortzone_status.minute = q->minute1;
+	czhp->comfortzone_status.second = q->second1;
+
+	czhp->comfortzone_status.day = q->day;
+	czhp->comfortzone_status.month = q->month;
+	czhp->comfortzone_status.year = 2000 + q->year;
+	czhp->comfortzone_status.day_of_week = q->day_of_week;
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	dump_unknown("RAW R_REPLY_STATUS_V221_x88", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	NPRINT("Time1: ");
+	NPRINT(q->hour1);
+	NPRINT(":");
+	NPRINT(q->minute1);
+	NPRINT(":");
+	NPRINT(q->second1);
+	NPRINTLN();
+
+	// ===
+	NPRINT("Day: ");
+	NPRINT(q->day);
+	NPRINT("/");
+	NPRINT(q->month);
+	NPRINT("/");
+	NPRINT(q->year + 2000);
+	NPRINTLN();
+
+	// ===
+	NPRINT("Day of week: ");
+	NPRINTLN(q->day_of_week);
+
+	// ===
+	NPRINT("Time2: ");
+	NPRINT(q->hour2);
+	NPRINT(":");
+	NPRINT(q->minute2);
+	NPRINT(":");
+	NPRINT(q->second2);
+	NPRINTLN();
+
+	// ===
+	dump_unknown("unknown_x88_0", q->unknown0, sizeof(q->unknown0));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
 

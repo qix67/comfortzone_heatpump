@@ -962,4 +962,28 @@ typedef struct __attribute__ ((packed))
 } R_REPLY_STATUS_V221_x51;
 
 
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte hour1;
+	byte minute1;
+	byte second1;
+	byte day;
+	byte month;
+	byte year;
+	byte day_of_week;		// 1 = monday, 7 = sunday
+
+	byte unknown2;			// maybe daylight saving?
+
+	byte hour2;
+	byte minute2;
+	byte second2;
+
+	byte unknown0[103];
+
+	byte crc;
+} R_REPLY_STATUS_V221_x88;
+
+
 #endif
