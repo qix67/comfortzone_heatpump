@@ -957,7 +957,9 @@ typedef struct __attribute__ ((packed))
 
 	byte fan_speed;							// 1 = slow, 2 = normal, 3 = fast
 
-	byte unknown1[55];
+	byte unknown1[5][2];
+	byte unknown2[1];
+	byte unknown3[22][2];
 	byte crc;
 } R_REPLY_STATUS_V221_x51;
 
@@ -980,7 +982,10 @@ typedef struct __attribute__ ((packed))
 	byte minute2;
 	byte second2;
 
-	byte unknown0[103];
+	byte unknown0[37];
+
+#define STATUS_v221_x88_NB_SENSORS 33
+	byte sensors[STATUS_v221_x88_NB_SENSORS][2];	// bunch of sensors (TEx)
 
 	byte crc;
 } R_REPLY_STATUS_V221_x88;

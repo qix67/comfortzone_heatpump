@@ -3072,7 +3072,6 @@ void czdec::reply_r_status_v180_c8a(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 #endif
 }
 
-
 void czdec::reply_r_status_v221_xc1(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
 	R_REPLY_STATUS_V221_xC1 *q = (R_REPLY_STATUS_V221_xC1 *)p;
@@ -3141,7 +3140,67 @@ void czdec::reply_r_status_v221_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		NPRINTLN(reg_v, HEX);
 
 	// ===
-	dump_unknown("unknown_x51_1", q->unknown1, sizeof(q->unknown1));
+	for(i = 0 ; i < 5; i++)
+	{
+		reg_v = get_int16(q->unknown1[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("unknown_x51_1 - ");
+		NPRINT(i);
+		NPRINT(": ");
+
+		NPRINT(reg_v_f);
+		NPRINT("°C (0x");
+		NPRINT(reg_v, HEX);
+		NPRINT(" 0x");
+
+		if(q->unknown1[i][0] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown1[i][0], HEX);
+
+		NPRINT(" ");
+		if(q->unknown1[i][1] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown1[i][1], HEX);
+
+		NPRINTLN(")");
+	}
+
+
+	// ===
+	dump_unknown("unknown_x51_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	// ===
+	for(i = 0 ; i < 22 ; i++)
+	{
+		reg_v = get_int16(q->unknown3[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("unknown_x51_3 - ");
+		NPRINT(i);
+		NPRINT(": ");
+
+		NPRINT(reg_v_f);
+		NPRINT("°C (0x");
+		NPRINT(reg_v, HEX);
+		NPRINT(" 0x");
+
+		if(q->unknown3[i][0] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown3[i][0], HEX);
+
+		NPRINT(" ");
+		if(q->unknown3[i][1] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown3[i][1], HEX);
+
+		NPRINTLN(")");
+	}
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
@@ -3204,6 +3263,73 @@ void czdec::reply_r_status_v221_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	// ===
 	dump_unknown("unknown_x88_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	static const char *sensor_names[STATUS_v221_x88_NB_SENSORS] =
+						{	"TE0 Outdoor temp",
+							"TE1 Flow water",
+							"TE2 Return water",
+							"TE3 Indoor temp. = Heating - Room temperature",
+							"TE4 Hot gas temp.",
+							"TE5 Exchanger out",
+							"TE6 Evaporator in",
+							"TE7 Exhaust air",
+							"TE8 ?",			// no value
+							"TE9 ?",			// no value
+							"TE10 ?",
+							"TE11 ?",		// no value
+							"TE12 ?",		// no value
+							"TE13 ?",		// no value
+							"TE14 ?",		// no value
+							"TE15 ?",		// no value
+							"TE16 ?",		// no value
+							"TE17 ?",		// no value
+							"TE18 ?",		// no value
+							"TE19 ?",		// no value
+							"TE20 ?",		// no value
+							"TE21 ?",		// no value
+							"TE22 ?",		// no value
+							"TE23 ?",		// no value
+							"TE24 Hot water = Hot water Measured temperature",	
+							"TE25 ?",
+							"TE26 ?",
+							"TE27 ?",
+							"TE28 ?",
+							"TE29 ?",		// always 0.0°C
+							"TE30 ?",		// always 100.0°C
+							"TE31 ?",		// always 100.0°C
+							"TE32 ?",		// always 0.0°C
+						};
+	for(i = 0 ; i < STATUS_v221_x88_NB_SENSORS; i++)
+	{
+		reg_v = get_int16(q->sensors[i]);
+
+		if(reg_v == -990)		// pas de valeur pour le sensor ? (= -99.0°=
+			continue;
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Sensor - ");
+		NPRINT(sensor_names[i]);
+		NPRINT(": ");
+
+		NPRINT(reg_v_f);
+		NPRINT("°C (0x");
+		NPRINT(reg_v, HEX);
+		NPRINT(" 0x");
+
+		if(q->sensors[i][0] < 0x10)
+			NPRINT("0");
+		NPRINT(q->sensors[i][0], HEX);
+
+		NPRINT(" ");
+		if(q->sensors[i][1] < 0x10)
+			NPRINT("0");
+		NPRINT(q->sensors[i][1], HEX);
+
+		NPRINTLN(")");
+	}
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
