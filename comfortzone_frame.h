@@ -986,4 +986,16 @@ typedef struct __attribute__ ((packed))
 } R_REPLY_STATUS_V221_x88;
 
 
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes (it is the current hot water the heatpump tries to reach)
+																	// it is either the user one or a different one if extra hot water is enabled
+	byte unknown0[173];
+
+	byte crc;
+} R_REPLY_STATUS_V221_xc5;
+
+
 #endif

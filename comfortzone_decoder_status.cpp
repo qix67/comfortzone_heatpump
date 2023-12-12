@@ -48,8 +48,10 @@ void czdec::reply_r_status_01(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	if(reg_v == 0xFF)
 		NPRINT("off");
 	else
+	{
 		NPRINT("on - ");			// 0xFF = off mais on = 0x02 ou autre chose
 		NPRINT(reg_v, HEX);
+	}
 	NPRINTLN("");
 
 	// ===
@@ -3208,6 +3210,76 @@ void czdec::reply_r_status_v221_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		NPRINT("0");
 	NPRINTLN(q->crc, HEX);
 #endif
+}
+
+void czdec::reply_r_temp_or_r_status_v221_xc5(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	// the read command is a 1-byte parameter command. However, if the read parameter is 0x02, the reply is like a 2-bytes parameter command reply but if the read parameter is 0xAF, the reply is a status frame
+	if(p->cz_head.packet_size == 0x18)	// reply of a read command with parameter = 0x02
+	{
+		// 
+#ifdef DEBUG
+		dump_unknown("RAW R_REPLY_STATUS_V221_xc5_0x18", (byte *)p, sizeof(*p));
+		NPRINTLN("");
+
+		int reg_v;
+		float reg_v_f;
+	
+		reg_v = get_uint16(p->reg_value);
+	
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0; 
+		
+		NPRINT(reg_v_f); 
+		NPRINTLN("°C");
+
+		NPRINT("crc: "); 
+		if(p->crc < 0x10)
+			NPRINT("0");
+		NPRINTLN(p->crc, HEX);
+		return;
+#endif
+	}
+	else if(p->cz_head.packet_size == 0xc5)	// reply of a read command with parameter = 0xAF
+	{
+		R_REPLY_STATUS_V221_xc5 *q = (R_REPLY_STATUS_V221_xc5 *)p;
+
+		czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
+
+#ifdef DEBUG
+		int reg_v;
+		float reg_v_f;
+		int i;
+
+		dump_unknown("RAW R_REPLY_STATUS_V221_xc5_0xc5", (byte *)q, sizeof(*q));
+		NPRINTLN("");
+
+		// ===
+		reg_v = get_uint16(q->hot_water_calculated_setting);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Hot water Calculated setting (0xc5): ");
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+
+		// ===
+		dump_unknown("unknown0_xc5", q->unknown0, sizeof(q->unknown0));
+
+		NPRINT("crc: ");
+		if(q->crc < 0x10)
+			NPRINT("0");
+		NPRINTLN(q->crc, HEX);
+#endif
+	}
+	else
+	{
+#ifdef DEBUG
+		dump_unknown("RAW R_REPLY_STATUS_V221_xc5_0x??", (byte *)p, (int)(p->cz_head.packet_size));
+		NPRINTLN("");
+#endif
+	}
 }
 
 

@@ -487,12 +487,23 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 #endif
 
 #if HP_PROTOCOL == HP_PROTOCOL_2_21
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x87, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0xc1 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_xc1, czdec::reply_w_generic},	// 0xc1 bytes
+
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x90, 0x02}, czcraft::KR_ROOM_HEATING_TEMP, "Heating calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0xD5, 0x03}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x87, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0xc1 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_xc1, czdec::reply_w_generic},	// 0xc1 bytes
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0xCD, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0x51 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_x51, czdec::reply_w_generic},	// 0x51 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x04, 0x00}, czcraft::KR_UNCRAFTABLE, "Status xx (0x88 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_x88, czdec::reply_w_generic},	// 0x88 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0xCD, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0x51 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_x51, czdec::reply_w_generic},	// 0x51 bytes
+
+		// UNK:65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 0D 00 41 03 B8 01 01  => 18
+		// UNK:65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 0D 00 41 03 C2 01 50  => 18
+
+		// UNK:41 44 44 52 07 8A 65 6F DE 02 C5 72 01 02 03 04 0B 0D 00 41 03 B8 01 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF C9 FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF F1 FF EC FF E7 FF E2 FF DD FF D8 FF D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 96 00 68 01 C2 01 7E FF 26 02 B4 00 8A 02 DA 02 0A 1E 1E F4 01 32 00 58 02 68 01 90 01 26 02 58 02 58 02 02 F8 02 D4 FE E8 03 00 00 FA 00 8A 02 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 E6  => C5
+		// UNK:41 44 44 52 07 8A 65 6F DE 02 C5 72 01 02 03 04 0B 0D 00 41 03 C2 01 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF C9 FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF F1 FF EC FF E7 FF E2 FF DD FF D8 FF D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 96 00 68 01 C2 01 7E FF 26 02 B4 00 8A 02 DA 02 0A 1E 1E F4 01 32 00 58 02 68 01 90 01 26 02 58 02 58 02 02 F8 02 D4 FE E8 03 00 00 FA 00 8A 02 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 AF  => C5
+		// this command is weird, the write command works like a 2-bytes parameter command.
+		// the read command is a 1-byte parameter command. However, if the read parameter is 0x02, the reply is like a 2-bytes parameter command reply but if the read parameter is 0xAF, the reply is a status frame
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x41, 0x03}, czcraft::KR_HOT_WATER_TEMP, "Hot water calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp_or_r_status_v221_xc5, czdec::reply_w_generic},
+
 #endif
 		{ {0}, czcraft::KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
 	};
