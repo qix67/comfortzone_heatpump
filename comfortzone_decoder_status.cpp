@@ -3297,8 +3297,6 @@ void czdec::reply_r_status_v221_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 							"TE28 ?",
 							"TE29 ?",		// always 0.0°C
 							"TE30 ?",		// always 100.0°C
-							"TE31 ?",		// always 100.0°C
-							"TE32 ?",		// always 0.0°C
 						};
 	for(i = 0 ; i < STATUS_v221_x88_NB_SENSORS; i++)
 	{
@@ -3408,4 +3406,98 @@ void czdec::reply_r_temp_or_r_status_v221_xc5(comfortzone_heatpump *czhp, KNOWN_
 	}
 }
 
+void czdec::reply_r_status_v221_xf2(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_xf2 *q = (R_REPLY_STATUS_V221_xf2 *)p;
 
+	czhp->comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	dump_unknown("RAW R_REPLY_STATUS_V221_xf2", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_xf2_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	reg_v = get_uint16(q->fan_time_to_filter_change);
+
+	NPRINT("Fan - Time to filter change: ");
+	NPRINT(reg_v);
+	NPRINTLN("d");
+
+	// ===
+	dump_unknown("unknown_xf2_1", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+void czdec::reply_r_status_v221_xb9(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_xb9 *q = (R_REPLY_STATUS_V221_xb9 *)p;
+
+	czhp->comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
+	czhp->comfortzone_status.heatpump_current_add_power = get_uint32(q->heatpump_current_add_power);
+	czhp->comfortzone_status.heatpump_current_total_power = get_uint32(q->heatpump_current_total_power1);
+	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+	int i;
+
+	dump_unknown("RAW R_REPLY_STATUS_V221_xb9", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_compressor_power);
+
+	NPRINT("Heatpump - current compressor power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint32(q->heatpump_current_add_power);
+
+	NPRINT("Heatpump - current add power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint32(q->heatpump_current_total_power1);
+
+	NPRINT("Heatpump - current total power 1: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint32(q->heatpump_current_total_power2);
+
+	NPRINT("Heatpump - current total power 2: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	reg_v = get_uint16(q->heatpump_compressor_input_power);
+
+	NPRINT("Heatpump - Compressor input power: ");
+	NPRINT(reg_v);
+	NPRINTLN("W");
+
+	// ===
+	dump_unknown("unknown_xf2_0", q->unknown0, sizeof(q->unknown0));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}

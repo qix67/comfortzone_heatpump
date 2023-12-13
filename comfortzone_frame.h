@@ -982,9 +982,9 @@ typedef struct __attribute__ ((packed))
 	byte minute2;
 	byte second2;
 
-	byte unknown0[37];
+	byte unknown0[41];
 
-#define STATUS_v221_x88_NB_SENSORS 33
+#define STATUS_v221_x88_NB_SENSORS 31
 	byte sensors[STATUS_v221_x88_NB_SENSORS][2];	// bunch of sensors (TEx)
 
 	byte crc;
@@ -1001,6 +1001,33 @@ typedef struct __attribute__ ((packed))
 
 	byte crc;
 } R_REPLY_STATUS_V221_xc5;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[2];
+
+	byte fan_time_to_filter_change[2];	// days, LSB, 2 bytes
+	
+	byte unknown1[55];
+	byte crc;
+} R_REPLY_STATUS_V221_xf2;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte heatpump_current_compressor_power[2];		// W, LSB, 2 bytes
+	byte heatpump_current_add_power[4];			// W, LSB, 4 bytes
+	byte heatpump_current_total_power1[4];		// W, LSB, 4 bytes
+	byte heatpump_current_total_power2[4];		// W, LSB, 4 bytes
+	byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
+
+	byte unknown0[148];
+
+	byte crc;
+} R_REPLY_STATUS_V221_xb9;
 
 
 #endif
