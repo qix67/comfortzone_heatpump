@@ -3115,6 +3115,8 @@ void czdec::reply_r_status_v221_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	czhp->comfortzone_status.fan_speed = q->fan_speed;
 
+	czhp->comfortzone_status.heatpump_current_compressor_frequency = get_uint16(q->heatpump_current_compressor_frequency);
+
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
@@ -3173,8 +3175,7 @@ void czdec::reply_r_status_v221_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	dump_unknown("unknown_x51_2", q->unknown2, sizeof(q->unknown2));
 
 	// ===
-	// ===
-	for(i = 0 ; i < 22 ; i++)
+	for(i = 0 ; i < 9 ; i++)
 	{
 		reg_v = get_int16(q->unknown3[i]);
 
@@ -3198,6 +3199,45 @@ void czdec::reply_r_status_v221_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 		if(q->unknown3[i][1] < 0x10)
 			NPRINT("0");
 		NPRINT(q->unknown3[i][1], HEX);
+
+		NPRINTLN(")");
+	}
+
+	// ===
+	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - current compressor frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	// ===
+	for(i = 0 ; i < 12 ; i++)
+	{
+		reg_v = get_int16(q->unknown4[i]);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("unknown_x51_4 - ");
+		NPRINT(i);
+		NPRINT(": ");
+
+		NPRINT(reg_v_f);
+		NPRINT("°C (0x");
+		NPRINT(reg_v, HEX);
+		NPRINT(" 0x");
+
+		if(q->unknown4[i][0] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown4[i][0], HEX);
+
+		NPRINT(" ");
+		if(q->unknown4[i][1] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown4[i][1], HEX);
 
 		NPRINTLN(")");
 	}
@@ -3448,6 +3488,8 @@ void czdec::reply_r_status_v221_xb9(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	czhp->comfortzone_status.heatpump_current_add_power = get_uint32(q->heatpump_current_add_power);
 	czhp->comfortzone_status.heatpump_current_total_power = get_uint32(q->heatpump_current_total_power1);
 	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
+
+	czhp->comfortzone_status.additional_power_enabled = (czhp->comfortzone_status.heatpump_current_add_power > 0);
 
 #ifdef DEBUG
 	int reg_v;

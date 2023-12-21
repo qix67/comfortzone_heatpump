@@ -959,10 +959,13 @@ typedef struct __attribute__ ((packed))
 
 	byte unknown1[5][2];
 	byte unknown2[1];
-	byte unknown3[22][2];
+	byte unknown3[9][2];
+
+	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
+
+	byte unknown4[12][2];
 	byte crc;
 } R_REPLY_STATUS_V221_x51;
-
 
 typedef struct __attribute__ ((packed))
 {
