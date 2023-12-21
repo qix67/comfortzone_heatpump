@@ -216,7 +216,7 @@ except 1 time:
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x09, 0x01, 0x24, 0x04}, czcraft::KR_UNCRAFTABLE, "Status xx (0xbf bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v180_xbf, czdec::reply_w_generic},	// 0xb9 bytes
 
 // read:  01 02 03 04 0B 09 01 47 01 02 44  => 17      reply: 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 09 01 47 01 21 21 D7  => 18
-		// related to led luminosity.
+		//, 0xrelated to led luminosity.
 		// Luminosity = 0 => 21 01
 		// Luminosity = 1 => 21 21
 		// Luminosity = 2 => 21 31
@@ -491,9 +491,9 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		// 41 44 44 52 07 8A 65 6F DE 02 C1 72 01 02 03 04 0B 0D 00 87 02 - 00 06 00 00 FF 01 00 07 28 F0 00 14 00 32 00 CE FF 05 FA ED E8 E9 E8 F6 00 1C 01 3E 01 5E 01 7D 01 9B 01 1E 00 28 00 1E 00 64 00 32 00 B0 04 5A 00 B0 04 5A 00 46 00 B4 00 50 00 78 00 FA 00 32 00 12 FD 1E 00 A8 FD 80 0C E0 FC A0 0F DC 05 1E 00 64 00 64 00 96 00 C2 01 BC 02 C8 00 F4 01 78 00 58 02 EC FF 02 64 00 05 78 00 1E 00 EE 02 FA 00 FF 0C FE C8 00 0A 00 8C 0A 0C FE 1E 0C FE 58 02 D0 07 58 02 9C FF 54 0B FA 00 2C 01 5E 01 90 01 C2 01 90 01 5E 01 2C 01 14 14 14 14 14 14 14 14 00 00 00 1E 90 01 C8 00 14 00 1C
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x87, 0x02}, czcraft::KR_UNCRAFTABLE, "Status xx (0xc1 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_xc1, czdec::reply_w_generic},	// 0xc1 bytes
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x90, 0x02}, czcraft::KR_ROOM_HEATING_TEMP, "Heating calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
+		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x90, 0x02}, czcraft::KR_ROOM_HEATING_TEMP, "Heating calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},
 
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0xD5, 0x03}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
+		/* @OK */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0xD5, 0x03}, czcraft::KR_FAN_SPEED, "Fan speed", czdec::cmd_r_generic, czdec::cmd_w_fan_speed, czdec::reply_r_fan_speed, czdec::reply_w_generic},
 
 		// 41 44 44 52 07 8A 65 6F DE 02 88 72 01 02 03 04 0B 0D 01 04 00 - 0F 18 08 0A 0C 17 07 00 0F 18 08 00 00 40 00 41 00 00 04 08 2C 00 81 10 00 04 00 00 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 41*19 FC 19 FC 76 00 F1 00 A4 01 F0 00 FA 01 B1 01 61 00 1E 00 22 FC 22 FC D4 FE 22 FC 22 FC*22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 92 01 4C 00 1A 00 0F 00*8B 00 00 00 E8 03 3B
 		// 41 44 44 52 07 8A 65 6F DE 02 88 72 01 02 03 04 0B 0D 01 04 00 - 0F 18 0A 0A 0C 17 07 00 0F 18 0A 00 00 40 00 41 00 00 04 08 2C 00 81 10 00 04 00 00 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 41 19 FC 19 FC 76 00 F1 00 A5 01 F0 00 FA 01 B2 01 60 00 1E 00 22 FC 22 FC D4 FE 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 92 01 3A 00 0D 00 16 00 8B 00 00 00 E8 03 01
@@ -565,7 +565,7 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		// UNK:41 44 44 52 07 8A 65 6F DE 02 C5 72 01 02 03 04 0B 0D 00 41 03 C2 01 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF C9 FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF F1 FF EC FF E7 FF E2 FF DD FF D8 FF D3 FF CE FF C9 FF C4 FF BF FF BA FF BA FF BA FF BA FF 05 1E 14 7E FF 74 FF 92 FF 88 FF CE FF C4 FF F1 FF E7 FF 96 00 68 01 C2 01 7E FF 26 02 B4 00 8A 02 DA 02 0A 1E 1E F4 01 32 00 58 02 68 01 90 01 26 02 58 02 58 02 02 F8 02 D4 FE E8 03 00 00 FA 00 8A 02 8A 02 EE 02 48 03 B6 03 E8 03 D4 FE BC 02 AF  => C5
 		// this command is weird, the write command works like a 2-bytes parameter command.
 		// the read command is a 1-byte parameter command. However, if the read parameter is 0x02, the reply is like a 2-bytes parameter command reply but if the read parameter is 0xAF, the reply is a status frame
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x41, 0x03}, czcraft::KR_HOT_WATER_TEMP, "Hot water calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp_or_r_status_v221_xc5, czdec::reply_w_generic},
+		/* @OK* */ { {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x00, 0x41, 0x03}, czcraft::KR_HOT_WATER_TEMP, "Hot water calculated setting", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp_or_r_status_v221_xc5, czdec::reply_w_generic},
 
 		// 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 0D 00 8C 02 - 00 37  => 17
 
@@ -770,6 +770,13 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		// 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 0D 03 BD 0D - 00 00 00 00 00 18 0A 16 0C 00 00 01 12 00 00 00 00 00 00 18 0A 16 0D 01 00 02 12 00 00 00 00 00 00 18 0A 16 0D 03 2C 00 00 00 00 00 00 00 00 18 0A 16 0D 03 2D 01 12 00 00 00 00 00 00 18 0A 16 0D 04 02 02 12 00 00 00 00 00 00 18 0A 16 0D 04 04 03 12 00 00 00 00 00 00 16 01 17 0C 00 00 01 12 00 00 00 00 00 00 16 01 17 0D 00 14 02 12 00 00 00 00 00 00 17 01 17 12 31 19 03 12 00 00 00 00 00 00 10 03 17 0F 08 32 00 00 00 00 00 00 00 00 13 03 17 11 24 36 00 00 00 00 00 00 00 00 17 04 17 0C 00 00 01 12 00 00 00 00 00 00 17 04 17 15 00 EE  => C8
 
 		// 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 0D 04 9C 3E - 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7D  => C8
+
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x04, 0x00}, czcraft::KR_HOUR, "Hour", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x05, 0x00}, czcraft::KR_MINUTE, "Minute", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x06, 0x00}, czcraft::KR_UNCRAFTABLE, "Second", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x07, 0x00}, czcraft::KR_DAY, "Day of Month", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x08, 0x00}, czcraft::KR_MONTH, "Month (1=Jan)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x0D, 0x01, 0x09, 0x00}, czcraft::KR_YEAR, "Year (20xx)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 
 #endif
 		{ {0}, czcraft::KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
