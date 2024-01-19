@@ -947,6 +947,9 @@ void czdec::reply_r_status_06(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 	czhp->comfortzone_status.heatpump_current_total_power = get_uint16(q->heatpump_current_total_power1);
 	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
 
+	czhp->comfortzone_status.expansion_valve_calculated_setting = get_uint16(q->expansion_valve_calculated_setting);
+	czhp->comfortzone_status.expansion_valve_temperature_difference = get_int16(q->expansion_valve_temperature_difference1);
+
 #if HP_PROTOCOL == HP_PROTOCOL_1_8
 	czhp->comfortzone_status.additional_power_enabled = (czhp->comfortzone_status.heatpump_current_add_power > 0);
 #endif	
@@ -2465,6 +2468,9 @@ void czdec::reply_r_status_v180_xad(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	czhp->comfortzone_status.heatpump_current_add_power = get_uint32(q->heatpump_current_add_power);
 	czhp->comfortzone_status.heatpump_current_total_power = get_uint32(q->heatpump_current_total_power1);
 	czhp->comfortzone_status.heatpump_current_compressor_input_power = get_uint16(q->heatpump_compressor_input_power);
+
+	czhp->comfortzone_status.expansion_valve_calculated_setting = get_uint16(q->expansion_valve_calculated_setting);
+	czhp->comfortzone_status.expansion_valve_temperature_difference = get_int16(q->expansion_valve_temperature_difference);
 
 #ifdef DEBUG
 	int i;
