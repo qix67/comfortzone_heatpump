@@ -934,5 +934,103 @@ typedef struct __attribute__ ((packed))
 	byte crc;
 } R_REPLY_STATUS_V180_C8A;
 
+// =====================================
+// == status frames (protocol version 2.21)
+// =====================================
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[9];
+
+	byte heating_calculated_setting[2];	// °C, LSB, 2 bytes, * 10
+
+	byte unknown1[160];
+	byte crc;
+} R_REPLY_STATUS_V221_xC1;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[3];
+
+	byte fan_speed;							// 1 = slow, 2 = normal, 3 = fast
+
+	byte unknown1[5][2];
+	byte unknown2[1];
+	byte unknown3[9][2];
+
+	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10. [ok]
+
+	byte unknown4[12][2];
+	byte crc;
+} R_REPLY_STATUS_V221_x51;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte hour1;
+	byte minute1;
+	byte second1;
+	byte day;
+	byte month;
+	byte year;
+	byte day_of_week;		// 1 = monday, 7 = sunday
+
+	byte unknown2;			// maybe daylight saving?
+
+	byte hour2;
+	byte minute2;
+	byte second2;
+
+	byte unknown0[41];
+
+#define STATUS_v221_x88_NB_SENSORS 31
+	byte sensors[STATUS_v221_x88_NB_SENSORS][2];	// bunch of sensors (TEx) [ok]
+
+	byte crc;
+} R_REPLY_STATUS_V221_x88;
+
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte hot_water_calculated_setting[2];				// °C, LSB, 2bytes (it is the current hot water the heatpump tries to reach)
+																	// it is either the user one or a different one if extra hot water is enabled
+	byte unknown0[173];
+
+	byte crc;
+} R_REPLY_STATUS_V221_xc5;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[2];
+
+	byte fan_time_to_filter_change[2];	// days, LSB, 2 bytes
+	
+	byte unknown1[55];
+	byte crc;
+} R_REPLY_STATUS_V221_xf2;
+
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+	
+	byte heatpump_current_compressor_power[2];		// W, LSB, 2 bytes
+	byte heatpump_current_add_power[4];			// W, LSB, 4 bytes
+	byte heatpump_current_total_power1[4];		// W, LSB, 4 bytes
+	byte heatpump_current_total_power2[4];		// W, LSB, 4 bytes
+	byte heatpump_compressor_input_power[2];					// W, LSB, 2 bytes
+
+	byte unknown0[148];
+
+	byte crc;
+} R_REPLY_STATUS_V221_xb9;
+
 
 #endif
