@@ -3268,6 +3268,16 @@ void czdec::reply_r_status_v221_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	czhp->comfortzone_status.year = 2000 + q->year;
 	czhp->comfortzone_status.day_of_week = q->day_of_week;
 
+	czhp->comfortzone_status.sensors_te0_outdoor_temp = get_int16(q->sensors[0]);
+	czhp->comfortzone_status.sensors_te1_flow_water = get_int16(q->sensors[1]);
+	czhp->comfortzone_status.sensors_te2_return_water = get_int16(q->sensors[2]);
+	czhp->comfortzone_status.sensors_te3_indoor_temp= get_int16(q->sensors[3]);
+	czhp->comfortzone_status.sensors_te4_hot_gas_temp = get_int16(q->sensors[4]);
+	czhp->comfortzone_status.sensors_te5_exchanger_out = get_int16(q->sensors[5]);
+	czhp->comfortzone_status.sensors_te6_evaporator_in = get_int16(q->sensors[6]);
+	czhp->comfortzone_status.sensors_te7_exhaust_air = get_int16(q->sensors[7]);
+	czhp->comfortzone_status.sensors_te24_hot_water_temp = get_int16(q->sensors[24]);
+
 #ifdef DEBUG
 	int reg_v;
 	float reg_v_f;
