@@ -961,7 +961,7 @@ typedef struct __attribute__ ((packed))
 	byte unknown2[1];
 	byte unknown3[9][2];
 
-	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10.
+	byte heatpump_current_compressor_frequency[2];	// Hz, LSB, 2bytes, * 10. [ok]
 
 	byte unknown4[12][2];
 	byte crc;
@@ -988,7 +988,7 @@ typedef struct __attribute__ ((packed))
 	byte unknown0[41];
 
 #define STATUS_v221_x88_NB_SENSORS 31
-	byte sensors[STATUS_v221_x88_NB_SENSORS][2];	// bunch of sensors (TEx)
+	byte sensors[STATUS_v221_x88_NB_SENSORS][2];	// bunch of sensors (TEx) [ok]
 
 	byte crc;
 } R_REPLY_STATUS_V221_x88;
