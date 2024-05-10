@@ -41,7 +41,7 @@ class comfortzone_heatpump
 		PFT_UNKNOWN,	// received frame has an unknown type
 	} PROCESSED_FRAME_TYPE;
 
-	comfortzone_heatpump(RS485Interface* rs485) : rs485(rs485) {};
+	comfortzone_heatpump(RS485Interface* rs485) : rs485(rs485) {}
 
 	void begin();
 

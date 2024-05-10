@@ -867,6 +867,23 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE czdec::process_frame(comfortzone_heat
 	return comfortzone_heatpump::PFT_UNKNOWN;
 }
 
+czdec::KNOWN_REGISTER* czdec::get_decoder_for_frame(CZ_PACKET_HEADER *czph)
+{
+	int i = 0;
+
+	while(kr_decoder[i].reg_name != NULL)
+	{
+		if(!memcmp(czph->reg_num, kr_decoder[i].reg_num, 9))
+		{
+			return &kr_decoder[i];
+		}
+		i++;
+	}
+
+	DPRINTLN("unknown register");
+	return NULL;
+}
+
 void czdec::dump_frame(comfortzone_heatpump *cz_class, const char *prefix)
 {
 	int i;
