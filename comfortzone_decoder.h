@@ -24,6 +24,7 @@ class czdec
 	static comfortzone_heatpump::PROCESSED_FRAME_TYPE process_frame(comfortzone_heatpump *cz_class, CZ_PACKET_HEADER *czph);
 	static void dump_frame(comfortzone_heatpump *cz_class, const char *prefix);
 	static czdec::KNOWN_REGISTER *kr_craft_name_to_index(czcraft::KNOWN_REGISTER_CRAFT_NAME reg_cname);
+	static czdec::KNOWN_REGISTER* get_decoder_for_frame(CZ_PACKET_HEADER *czph);
 
 	// command and reply decoder
 	static void cmd_r_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p);
