@@ -61,6 +61,7 @@ typedef struct
 	Subscribable<uint16_t> fan_time_to_filter_change;		// days (proto: 1.60, 1.80, 2.21)
 
 	Subscribable<bool> filter_alarm;								// true = replace/clean filter alarm, false = filter ok (proto: 1.60, 1.80)
+	Subscribable<bool> general_alarm;								// true = any active alarm (excluding filter), false = no alarm (proto: 1.60, 1.80)
 
 	Subscribable<bool> hot_water_production;					// true = on, false = off
 	Subscribable<bool> room_heating_in_progress;				// true = on, false = off
