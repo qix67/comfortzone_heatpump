@@ -378,7 +378,10 @@ void czdec::reply_r_status_02(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_
 
 	active_alarm = get_uint16(q->pending_alarm) ^ get_uint16(q->acknowledged_alarm);
 
-	czhp->comfortzone_status.filter_alarm = (active_alarm & 0x0002) ? true : false ;
+	czhp->comfortzone_status.filter_alarm = (active_alarm & 0x0002) ? true : false;
+
+	// any alarm other than filter alarm
+	czhp->comfortzone_status.general_alarm = (active_alarm & ~0x0002) ? true : false;
 
 	czhp->comfortzone_status.hour = q->hour1;
 	czhp->comfortzone_status.minute = q->minute1;
