@@ -1045,7 +1045,9 @@ typedef struct __attribute__ ((packed))
 {
 	CZ_PACKET_HEADER cz_head;
 
-	byte unknown0[8];
+	byte led_mode;								// "LED mode" on the panel (0 and 3 seen), confirmed by a write from the control panel (bank 0 0x0289)
+
+	byte unknown0[7];
 
 	byte heating_curve;						// * 10 (5.4 => 54), confirmed by a write from the control panel (bank 0 0x0291)
 
@@ -1189,6 +1191,26 @@ typedef struct __attribute__ ((packed))
 	byte unknown2[4];							// 120, 90
 	byte crc;
 } R_REPLY_STATUS_V250_x42;
+
+// read of 0x18 bytes at bank 0 addr 0x0000: system flags, polled every cycle
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte flags[2];								// LSB. bit 0x0040 = automatic daylight saving (set/cleared through 80 00 00 / 40 00 00, as in 1.6)
+	byte unknown0[22];						// 72 42 AE 34 86 1F BF 00 00 1D 0A C7 5A 41 2B 49 40 7B 50 80 0F 00 (constant, identification?)
+	byte crc;
+} R_REPLY_STATUS_V250_x2E;
+
+// read of 0x0A bytes at bank 0 addr 0x007F: sensor offsets, polled every cycle
+#define STATUS_V250_NB_SENSOR_OFFSETS 10
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte sensor_offset[STATUS_V250_NB_SENSOR_OFFSETS];	// °C * 10, signed, one byte per sensor TE0..TE9 (TE3 confirmed by a write from the panel)
+	byte crc;
+} R_REPLY_STATUS_V250_x20;
 
 // read of 0xA4 bytes at bank 1 addr 0x0340 (2.21: 0xA3 bytes at 0x033C)
 // layout is identical to R_REPLY_STATUS_V221_xb9, whose declared size (186 bytes) matches this

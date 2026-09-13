@@ -214,6 +214,26 @@ comfortzone_heatpump object.
  Protocol 2.50 only. Set hot water priority: 1 = low, 2 = normal, 3 = high.
  Sends up to two writes (set bits, clear bits) to the flags word.
 
+ * bool acknowledge_alarm(uint16_t alarm_mask, int timeout = 5);
+
+ Protocol 2.50 only. Acknowledge the alarms whose bits are set in alarm_mask
+ (CZ_ALARM_FILTER = 0x0002, or comfortzone_status.alarm_pending_mask for all).
+ This is what the control panel sends when the user acknowledges an alarm. The
+ alarm stays pending until its cause is gone.
+
+
+ * bool set_filter_days_left(uint16_t days, int timeout = 5);
+ * bool set_filter_interval(uint16_t days, int timeout = 5);
+
+ Protocol 2.50 only. Filter change countdown and interval, in days. Writing the
+ interval to the countdown is how the panel resets the filter alarm after a
+ filter change; writing 0 raises it.
+
+
+ Note for protocol 2.50: set_fireplace_mode(), set_automatic_daylight_saving(),
+ set_sensor_offset() and set_led_luminosity() (which sets the panel's "LED mode")
+ use the same registers as the older protocols and work unchanged.
+
 
  Special methods
  ---------------
@@ -247,6 +267,9 @@ comfortzone_heatpump object.
  * COMFORTZONE_STATUS comfortzone_status;
 
  Last status heatpump. Updated automatically when a STATUS frame is received.
+ On protocol 2.50, filter_alarm / general_alarm follow the pending and
+ acknowledged alarm masks (also exposed raw as alarm_pending_mask and
+ alarm_acknowledged_mask).
 
  See comfortzone_status.h for more information.
 

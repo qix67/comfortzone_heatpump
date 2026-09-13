@@ -735,6 +735,84 @@ bool comfortzone_heatpump::set_hot_water_priority(uint8_t priority, int timeout)
 	return true;
 }
 
+// Protocol 2.50 only. Acknowledge the alarms in alarm_mask (set-bit write of the mask to the acknowledged-alarms word,
+// what the control panel sends when the user acknowledges). The alarm stays pending until its cause is gone; for the
+// filter alarm that means set_filter_days_left(interval).
+bool comfortzone_heatpump::acknowledge_alarm(uint16_t alarm_mask, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if(alarm_mask == 0)
+	{
+		RETURN_MESSAGE("Empty alarm mask");
+		return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_ACKNOWLEDGE_ALARM);
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_ACKNOWLEDGE_ALARM not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, alarm_mask);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);		// reply value observed: 0x00
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+}
+
+// Protocol 2.50 only. 2-byte day counters, reply value 0x00 on both.
+bool comfortzone_heatpump::set_filter_days_left(uint16_t days, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr = czdec::kr_craft_name_to_index(czcraft::KR_FILTER_DAYS_LEFT);
+	bool push_result;
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_FILTER_DAYS_LEFT not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, days);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+
+	if(push_result == true)
+		comfortzone_status.fan_time_to_filter_change = days;
+
+	return push_result;
+}
+
+bool comfortzone_heatpump::set_filter_interval(uint16_t days, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr = czdec::kr_craft_name_to_index(czcraft::KR_FILTER_INTERVAL);
+
+	if((days < 1) || (days > 365))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 1 and 365");
+		return false;
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_FILTER_INTERVAL not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, days);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+}
+
 // true = enable, false = disable
 bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeout)
 {

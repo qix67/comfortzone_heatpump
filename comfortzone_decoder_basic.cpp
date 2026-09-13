@@ -248,9 +248,9 @@ void czdec::cmd_w_daylight_saving(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0xFFBF)		// == ~0x0040
+	if(reg_v == 0x0040)		// set bit: what set_automatic_daylight_saving(true) sends; confirmed on a 2.50 panel
 		NPRINTLN("on");
-	else if(reg_v == 0x0040)
+	else if(reg_v == 0xFFBF)	// clear bit
 		NPRINTLN("off");
 	else
 		NPRINTLN(reg_v, HEX);
@@ -590,9 +590,9 @@ void czdec::reply_r_daylight_saving(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0xFFBF)		// == ~0x0040
+	if(reg_v == 0x0040)		// set bit: what set_automatic_daylight_saving(true) sends; confirmed on a 2.50 panel
 		NPRINTLN("on");
-	else if(reg_v == 0x0040)
+	else if(reg_v == 0xFFBF)	// clear bit
 		NPRINTLN("off");
 	else
 		NPRINTLN(reg_v, HEX);

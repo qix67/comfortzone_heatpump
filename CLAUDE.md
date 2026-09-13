@@ -96,15 +96,20 @@ Supporting headers:
   to 5 and one or two bytes longer. Map a new register by matching payload content against
   the 2.21 sample comments, not by address arithmetic alone.
 - 2.50 status: heating setting, hot water setting, time/date, sensors, compressor frequency
-  and running flag, extra hot water flag, powers, energies, runtimes, and filter days are
-  decoded. `PROTOCOL_2_50.md` holds the register map,
+  and running flag, extra hot water flag, powers, energies, runtimes, filter days, and the
+  filter alarm (pending/acknowledged bitmask as in 1.8, raw masks exposed too) are decoded.
+  `acknowledge_alarm()`, `set_filter_days_left()` and `set_filter_interval()` replay the
+  panel's acknowledge and reset sequence. The bank 3 frames are
+  the alarm log, decoded in DEBUG mode. `PROTOCOL_2_50.md` holds the register map,
   the identified flag bits, and the open leads; `tools/` holds the capture and analysis
   scripts that produced them. Writes confirmed from
   the panel: hot water setting, extra hot water on/off (bit 0x0040, values differ from the
   1.6 ones hardcoded in the setter, hence the `#if` there), a fan boost toggle (bit
   0x0200 at address 0x0E, exposed as `set_fan_boost()`), cooling mode (bit 0x0400 at
-  bank 0 address 0x12, exposed as `set_cooling_mode()`), and hot water priority (low 2 bits
-  of the flags word at bank 0 address 0x0E, exposed as `set_hot_water_priority()`). Never seen on the bus: the 2.21
+  bank 0 address 0x12, exposed as `set_cooling_mode()`), hot water priority (low 2 bits
+  of the flags word at bank 0 address 0x0E, exposed as `set_hot_water_priority()`), plus
+  fireplace mode, automatic daylight saving, sensor offsets and LED mode, which use the same
+  registers as the older protocols so the existing setters work. Never seen on the bus: the 2.21
   style fan speed byte write and fireplace mode. Changing the room temperature on the panel
   produced no write, so `00 92 02` (room heating temperature) stays derived, not observed.
 - Bit-toggle registers use bank byte 0x81/0x80 to set and 0x41/0x40 to clear bits of a

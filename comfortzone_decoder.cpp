@@ -849,6 +849,12 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x80, 0x12, 0x00}, czcraft::KR_COOLING_MODE_ON, "Cooling mode - on", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x40, 0x12, 0x00}, czcraft::KR_COOLING_MODE_OFF, "Cooling mode - off", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
 
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 81 2B 00 - 02 00 xx   reply w ... 00   (acknowledge filter alarm; 1.6 used 81 29 00)
+		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 01 2B 00 - 02 00 xx   (read-back of the acknowledged mask, = payload bytes 39..40 of the 0x88 frame)
+		// Resetting the filter alarm on the panel is a write of the interval to "days left" (00 FD 03); both masks then clear.
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x81, 0x2B, 0x00}, czcraft::KR_ACKNOWLEDGE_ALARM, "Acknowledge alarm", czdec::cmd_r_generic, czdec::cmd_w_clr_alarm, czdec::reply_r_clr_alarm, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x2B, 0x00}, czcraft::KR_UNCRAFTABLE, "Acknowledged alarms", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_clr_alarm, czdec::reply_w_generic},
+
 		// read-backs the panel performs right after each toggle (2-byte reads of the flag words)
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 01 1D 00 - 45 00 xx  (extra hot water on)   05 00 (off)
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 00 0E 00 - 5A 43 xx  (fan boost on)         5A 41 (off)
@@ -867,14 +873,44 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0xDD, 0x03}, czcraft::KR_UNCRAFTABLE, "Fan normal speed (set)", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},	// 2 bytes, % * 10, reply 0x01
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0xC4, 0x03}, czcraft::KR_UNCRAFTABLE, "Legionella temperature 1 (set)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},	// 1 byte, °C, reply echoes the value
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x36, 0x04}, czcraft::KR_UNCRAFTABLE, "Blocked frequency 5 (set)", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},	// 2 bytes, Hz * 10, reply 0x00
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x76, 0x05}, czcraft::KR_UNCRAFTABLE, "Filter interval (set)", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},	// 2 bytes, days, reply 0x00
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x76, 0x05}, czcraft::KR_FILTER_INTERVAL, "Filter interval (set)", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},	// 2 bytes, days, reply 0x00
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0xFD, 0x03}, czcraft::KR_FILTER_DAYS_LEFT, "Filter days left (set)", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},	// 2 bytes, days, reply 0x00. Writing 0 raises the filter alarm, writing the interval resets it
+
+		// --- captured 2026-09-13 (change and revert on the panel). All four use the same registers, values and reply codes as
+		//     the older protocols, so the existing setters work unchanged on 2.50.
+
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 81 13 00 - 00 04 xx   reply w ... 04   (fireplace ON, same as 1.8 / 2.21)
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 41 13 00 - FF FB xx   reply w ... 08   (fireplace OFF)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x81, 0x13, 0x00}, czcraft::KR_FIREPLACE_MODE_ENABLE, "Enable fireplace mode", czdec::empty, czdec::cmd_w_generic_2byte, czdec::empty, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x41, 0x13, 0x00}, czcraft::KR_FIREPLACE_MODE_DISABLE, "Disable fireplace mode", czdec::empty, czdec::cmd_w_generic_2byte, czdec::empty, czdec::reply_w_generic},
+		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 01 13 00 - 01 0C xx  (fireplace on)   01 00 (off)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x13, 0x00}, czcraft::KR_UNCRAFTABLE, "Fireplace flags (bit 0x0400 = fireplace mode)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_fireplace_v250, czdec::reply_w_generic},
+
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 40 00 00 - BF FF xx   reply w ... 8E   (automatic daylight saving OFF, same as 1.6)
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 80 00 00 - 40 00 xx   reply w ... 8E   (automatic daylight saving ON)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x40, 0x00, 0x00}, czcraft::KR_AUTO_DAYLIGHT_SAVING_OFF, "Daylight saving - off", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x80, 0x00, 0x00}, czcraft::KR_AUTO_DAYLIGHT_SAVING_ON, "Daylight saving - on", czdec::cmd_r_generic, czdec::cmd_w_daylight_saving, czdec::reply_r_daylight_saving, czdec::reply_w_generic},
+
+		// 65 6F DE 02 D3 5E 41 44 44 52 17 57 01 02 03 04 0B 10 00 82 00 - F6 xx   reply w ... F6   (TE3 adjust -1.0 °C: 1 signed byte, °C * 10, reply echoes the value)
+		// TE0..TE7 are consecutive bytes from 0x7F (1.6: from 0x7B, 1.8: from 0x7D); only TE3 was observed
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x7F, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR0, "Hardware Settings - Adjustments - TE0 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x80, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR1, "Hardware Settings - Adjustments - TE1 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x81, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR2, "Hardware Settings - Adjustments - TE2 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x82, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR3, "Hardware Settings - Adjustments - TE3 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x83, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR4, "Hardware Settings - Adjustments - TE4 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x84, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR5, "Hardware Settings - Adjustments - TE5 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x85, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR6, "Hardware Settings - Adjustments - TE6 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x86, 0x00}, czcraft::KR_TEMP_OFFSET_SENSOR7, "Hardware Settings - Adjustments - TE7 Adjust", czdec::cmd_r_generic, czdec::cmd_w_temp_1byte, czdec::reply_r_temp_1byte, czdec::reply_w_generic},
+
+		// 65 6F DE 02 D3 5E 41 44 44 52 17 57 01 02 03 04 0B 10 00 89 02 - 03 xx   reply w ... 03   ("LED mode" 0 -> 3 -> 0: 1 byte, reply echoes the value)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x89, 0x02}, czcraft::KR_LED_LUMINOSITY, "LED mode", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},
 
 		// Not yet mapped for 2.50: the 2.21-style fan speed byte write (KR_FAN_SPEED) and fireplace mode were never seen on the bus.
 		// No write appeared either when the room temperature was changed on the panel, so KR_ROOM_HEATING_TEMP above stays derived.
 
 		// --- frames polled by the control panel every cycle, content not decoded (hex dumped in DEBUG mode) ---
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000000 (0x2e bytes, constant, ids?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x7F, 0x00}, czcraft::KR_UNCRAFTABLE, "Unknown 0x00007f (0x20 bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "System flags (bit 0x0040 = automatic daylight saving)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x2e, czdec::reply_w_generic},	// 0x2e bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x7F, 0x00}, czcraft::KR_UNCRAFTABLE, "Sensor offsets TE0..TE9", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x20, czdec::reply_w_generic},	// 0x20 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x27, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000127 (0x1a bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x8D, 0x04}, czcraft::KR_UNCRAFTABLE, "Regulator settings (0xaf bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_xaf, czdec::reply_w_generic},	// cooling group at the end confirmed
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x50, 0x05}, czcraft::KR_UNCRAFTABLE, "Misc settings (0x42 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x42, czdec::reply_w_generic},	// filter interval confirmed
@@ -884,9 +920,9 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xF9, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x0101f9 (0x8c bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x20, 0x04}, czcraft::KR_UNCRAFTABLE, "Unknown 0x010420 (0x2c bytes, all zero)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x50, 0x05}, czcraft::KR_UNCRAFTABLE, "Panel identity: UI versions and heartbeat counter", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_ui_versions, czdec::reply_w_generic},	// 0x32 bytes, first 10 bytes = 1.8 "UI versions" layout
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0x0B, 0x0D}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030d0b (0xc8 bytes, dated entries, event log?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030dbd (0xc8 bytes, dated entries, event log?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0x6F, 0x0E}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030e6f (0x58 bytes, dated entries, event log?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0x0B, 0x0D}, czcraft::KR_UNCRAFTABLE, "Alarm log (part 1: count + records 0..11)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_alarm_log_v250, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Alarm log (part 2: records 13..24)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_alarm_log_v250, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0x6F, 0x0E}, czcraft::KR_UNCRAFTABLE, "Alarm log (part 3: records 26..29)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_alarm_log_v250, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0xFC, 0x0E}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030efc (0x3f bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 
 		// --- writes the control panel performs every cycle. On 2.50 the panel is the regulator: it computes the

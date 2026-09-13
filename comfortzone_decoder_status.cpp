@@ -3503,6 +3503,10 @@ void czdec::reply_r_status_v221_xb9(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 {
 	R_REPLY_STATUS_V221_xb9 *q = (R_REPLY_STATUS_V221_xb9 *)p;
 
+	// 0xb9 bytes on 2.21, 0xba on 2.50; ignore anything too short to hold the power fields
+	if(p->cz_head.packet_size < (byte)(sizeof(CZ_PACKET_HEADER) + 16 + 1))
+		return;
+
 	czhp->comfortzone_status.heatpump_current_compressor_power = get_uint16(q->heatpump_current_compressor_power);
 	czhp->comfortzone_status.heatpump_current_add_power = get_uint32(q->heatpump_current_add_power);
 	czhp->comfortzone_status.heatpump_current_total_power = get_uint32(q->heatpump_current_total_power1);
@@ -3572,7 +3576,15 @@ void czdec::reply_r_status_v250_xc3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 {
 	R_REPLY_STATUS_V250_xC3 *q = (R_REPLY_STATUS_V250_xC3 *)p;
 
+	// the same address is read 1 byte at a time by the panel after changing the LED mode
+	if(p->cz_head.packet_size != 0xC3)
+	{
+		reply_r_digit(czhp, kr, p);
+		return;
+	}
+
 	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
+	czhp->comfortzone_status.led_luminosity_setting = q->led_mode;
 
 #ifdef DEBUG
 	int reg_v;
@@ -3580,6 +3592,10 @@ void czdec::reply_r_status_v250_xc3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	dump_unknown("RAW R_REPLY_STATUS_V250_xC3", (byte *)q, sizeof(*q));
 	NPRINTLN("");
+
+	// ===
+	NPRINT("LED mode: ");
+	NPRINTLN(q->led_mode);
 
 	// ===
 	dump_unknown("unknown_xc3_0", q->unknown0, sizeof(q->unknown0));
@@ -3734,6 +3750,9 @@ void czdec::reply_r_status_v250_x57(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 {
 	R_REPLY_STATUS_V250_x57 *q = (R_REPLY_STATUS_V250_x57 *)p;
 
+	if(p->cz_head.packet_size != 0x57)
+		return;
+
 	czhp->comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
 
 #ifdef DEBUG
@@ -3817,12 +3836,18 @@ void czdec::reply_r_extra_hot_water_v250(comfortzone_heatpump *czhp, KNOWN_REGIS
 // bank 1 addr 0x0004, 0x72 bytes: identical layout to 2.21 (time, date, sensors) plus status flag bits
 // in the 2.21 "unknown0" area. Bits identified on 2026-09-13 by watching them flip against
 // compressor power, the extra hot water toggle and the fan boost toggle:
+//   unknown0[5]  (payload byte 16) bits 0x0C: fireplace mode active
 //   unknown0[7]  (payload byte 18) bit 0x20: extra hot water active
-//   unknown0[8]  (payload byte 19) bits 0x03: extra hot water active, bit 0x20: fan boost active
+//   unknown0[8]  (payload byte 19) bits 0x03: extra hot water active, bit 0x20: fan override (fan boost or fireplace mode)
 //   unknown0[9]  (payload byte 20) bit 0x20: compressor running, bit 0x04: set once hot water was requested, bit 0x08: cleared during fan boost
 //   unknown0[14] (payload byte 25) bits 0xC0: extra hot water active
-//   unknown0[15] (payload byte 26) bit 0x10: fan boost active
+//   unknown0[15] (payload byte 26) bit 0x10: fan override (fan boost or fireplace mode)
 //   unknown0[16] (payload byte 27) bits 0x03: cooling mode on
+//   unknown0[20..21] (payload bytes 31..32): pending alarm bitmask, bit 0x0002 = filter replacement (as 1.8)
+//   unknown0[28..29] (payload bytes 39..40): acknowledged alarm bitmask (as 1.8) = bank 1 addr 0x002B, set through 81 2B 00
+//   both masks clear once the alarm condition is gone (for the filter: when the countdown is written back to > 0)
+//   while an alarm is active bytes 13 (0x05), 14 (0x10) and 24 (0x40) are also set (alarm indication), and byte 11 holds a
+//   countdown 90 -> 0 in 10 s steps started when the alarm was raised
 //   unknown0[17] (payload byte 28) bit 0x08: set once hot water was requested
 void czdec::reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
@@ -3841,8 +3866,32 @@ void czdec::reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	czhp->comfortzone_status.compressor_activity = (q->unknown0[9] & 0x20) ? CZCMP_RUNNING : CZCMP_STOPPED;
 	czhp->comfortzone_status.extra_hot_water_setting = ((q->unknown0[7] & 0x20) != 0);
 	czhp->comfortzone_status.cooling_enabled = ((q->unknown0[16] & 0x03) != 0);		// payload byte 27: 0x03 while cooling mode is on
+	czhp->comfortzone_status.fireplace_mode_enabled = ((q->unknown0[5] & 0x0C) != 0);	// payload byte 16: 0x0C while fireplace mode is on
+
+	// alarms: same scheme as 1.8 (pending ^ acknowledged, bit 0x0002 = filter), pending word at payload byte 31,
+	// acknowledged word 8 bytes later. Filter alarm confirmed 2026-09-13 by forcing the filter countdown to 0.
+	{
+		uint16_t pending = get_uint16(&q->unknown0[20]);
+		uint16_t acknowledged = get_uint16(&q->unknown0[28]);
+		uint16_t active_alarm = pending ^ acknowledged;
+
+		czhp->comfortzone_status.alarm_pending_mask = pending;
+		czhp->comfortzone_status.alarm_acknowledged_mask = acknowledged;
+		czhp->comfortzone_status.filter_alarm = ((active_alarm & CZ_ALARM_FILTER) != 0);
+		czhp->comfortzone_status.general_alarm = ((active_alarm & ~CZ_ALARM_FILTER) != 0);
+	}
 
 #ifdef DEBUG
+	NPRINT("Alarms - pending 0x");
+	NPRINT(get_uint16(&q->unknown0[20]), HEX);
+	NPRINT(" acknowledged 0x");
+	NPRINT(get_uint16(&q->unknown0[28]), HEX);
+	NPRINT(" filter alarm: ");
+	NPRINTLN(czhp->comfortzone_status.filter_alarm ? "yes" : "no");
+
+	NPRINT("Flags - fireplace mode: ");
+	NPRINTLN((q->unknown0[5] & 0x0C) ? "on" : "off");
+
 	NPRINT("Flags - cooling mode: ");
 	NPRINTLN((q->unknown0[16] & 0x03) ? "on" : "off");
 
@@ -4086,5 +4135,162 @@ void czdec::reply_r_fan_flags_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *k
 	if(p->crc < 0x10)
 		NPRINT("0");
 	NPRINTLN(p->crc, HEX);
+#endif
+}
+
+// bank 1 addr 0x0013, 2-byte read: flags word, bit 0x0400 = fireplace mode active (read back by the panel after toggling)
+void czdec::reply_r_fireplace_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	uint16_t reg_v;
+
+	if(p->cz_head.packet_size != 0x18)
+		return;
+
+	reg_v = get_uint16(p->reg_value);
+
+	czhp->comfortzone_status.fireplace_mode_enabled = ((reg_v & 0x0400) != 0);
+
+#ifdef DEBUG
+	NPRINT("Fireplace mode: ");
+	NPRINT(((reg_v & 0x0400) != 0) ? "on" : "off");
+	NPRINT(" (flags 0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+#endif
+}
+
+// bank 0 addr 0x0000, 0x18 bytes: system flags (polled every cycle)
+void czdec::reply_r_status_v250_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V250_x2E *q = (R_REPLY_STATUS_V250_x2E *)p;
+	uint16_t reg_v;
+
+	if(p->cz_head.packet_size != 0x2E)
+		return;
+
+	reg_v = get_uint16(q->flags);
+
+	czhp->comfortzone_status.automatic_daylight_saving = ((reg_v & 0x0040) != 0);
+
+#ifdef DEBUG
+	dump_unknown("RAW R_REPLY_STATUS_V250_x2E", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	NPRINT("Automatic daylight saving: ");
+	NPRINT(((reg_v & 0x0040) != 0) ? "on" : "off");
+	NPRINT(" (flags 0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
+
+	dump_unknown("unknown0_x2e", q->unknown0, sizeof(q->unknown0));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 0 addr 0x007F, 10 bytes: sensor offsets TE0..TE9 (polled every cycle)
+void czdec::reply_r_status_v250_x20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V250_x20 *q = (R_REPLY_STATUS_V250_x20 *)p;
+	int i;
+
+	if(p->cz_head.packet_size != 0x20)
+		return;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_x20", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	for(i = 0; i < STATUS_V250_NB_SENSOR_OFFSETS; i++)
+	{
+		NPRINT("Sensor offset TE");
+		NPRINT(i);
+		NPRINT(": ");
+		NPRINT(((int8_t)q->sensor_offset[i]) / 10.0);
+		NPRINTLN("°C");
+	}
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 3 addr 0x0D0B..0x0EB0: alarm / event log, a ring of 30 records of 14 bytes starting at 0x0D0C, with the
+// next write index at 0x0D0B. Record: day, month, year, hour, minute, second, event, type, 6 x 0.
+//   event: 1 = alarm raised, 2 = acknowledged, 3 = reset (2 and 3 follow 1 with the same type), 6 = weekly 05:00
+//          event on the legionella day (legionella run?), 0 = restart? (type 0)
+//   type:  0x12 = filter replacement (confirmed by forcing the filter alarm), 0x3D = communication error (matches the
+//          panel alarm raised while the RS485 adapter jammed the bus)
+// The panel reads the ring as three frames (0x0D0B, 0x0DBD, 0x0E6F) once a minute; frame boundaries fall inside
+// records, so each frame prints only the records it holds completely.
+void czdec::reply_r_alarm_log_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	const uint16_t log_base = 0x0D0C;
+	uint16_t addr = kr->reg_num[7] | (kr->reg_num[8] << 8);
+	int len = p->cz_head.packet_size - sizeof(CZ_PACKET_HEADER) - 1;
+	byte *pl = ((byte *)p) + sizeof(CZ_PACKET_HEADER);
+	int i;
+
+	if(addr == log_base - 1)
+	{
+		NPRINT("Alarm log - next write index: ");
+		NPRINTLN(pl[0]);
+	}
+
+	for(i = 0; i < len; i++)
+	{
+		uint16_t a = addr + i;
+
+		if((a < log_base) || (((a - log_base) % 14) != 0) || (i + 14 > len) || (((a - log_base) / 14) >= 30))
+			continue;
+
+		byte *e = pl + i;
+
+		if((e[0] == 0) && (e[1] == 0))
+			continue;
+
+		NPRINT("Alarm log #");
+		NPRINT((a - log_base) / 14);
+		NPRINT(": ");
+		if(e[0] < 10) NPRINT("0");
+		NPRINT(e[0]); NPRINT("/");
+		if(e[1] < 10) NPRINT("0");
+		NPRINT(e[1]); NPRINT("/20");
+		if(e[2] < 10) NPRINT("0");
+		NPRINT(e[2]); NPRINT(" ");
+		if(e[3] < 10) NPRINT("0");
+		NPRINT(e[3]); NPRINT(":");
+		if(e[4] < 10) NPRINT("0");
+		NPRINT(e[4]); NPRINT(":");
+		if(e[5] < 10) NPRINT("0");
+		NPRINT(e[5]);
+		NPRINT(" event ");
+		switch(e[6])
+		{
+			case 1: NPRINT("raised"); break;
+			case 2: NPRINT("acknowledged"); break;
+			case 3: NPRINT("reset"); break;
+			case 6: NPRINT("weekly"); break;
+			default: NPRINT(e[6]); break;
+		}
+		NPRINT(" type 0x");
+		NPRINT(e[7], HEX);
+		if(e[7] == 0x12)
+			NPRINT(" (filter replacement)");
+		else if(e[7] == 0x3D)
+			NPRINT(" (communication error)");
+		NPRINTLN("");
+	}
 #endif
 }

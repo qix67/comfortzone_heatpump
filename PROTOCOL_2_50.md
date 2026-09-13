@@ -45,6 +45,12 @@ by -0x38 and holds byte for byte up to `hot_water_extra_time`.
 | `80/40 0E 00` | write | fan boost on/off, bit 0x0200 | high, seen from panel |
 | `80/40 12 00` | write | cooling mode on/off, bit 0x0400 (reply 0x7F/0x7B) | high, seen from panel |
 | `00 12 00` | 2 | mode flags word, bit 0x0400 = cooling mode | high |
+| `81/41 13 00` | write | fireplace mode on/off, bit 0x0400 (replies 0x04/0x08), same as 1.8 and 2.21 | high, seen from panel |
+| `01 13 00` | 2 | flags word, bit 0x0400 = fireplace mode | high |
+| `80/40 00 00` | write | automatic daylight saving on/off, bit 0x0040 (reply 0x8E), same as 1.6 | high, seen from panel |
+| `00 00 00` | 0x2E | system flags word (bit 0x0040 = automatic daylight saving) + 22 constant bytes | high |
+| `00 7F 00` | 0x20 | sensor offsets TE0..TE9, one signed byte each, °C*10; write 1 byte to 0x7F+n, reply echoes | high, TE3 seen from panel |
+| `00 89 02` | write 1 byte | "LED mode" (0 and 3 seen), first byte of the heating settings frame, reply echoes | high, seen from panel |
 | `00 0E 00` | 2 / write | flags word: bits 0x0003 = hot water priority (1 low, 2 normal, 3 high, as in 1.6), bit 0x0200 = fan boost. The panel rewrites the whole word to change priority | high, seen from panel |
 | `01 40 03` | 0xBA | additional (electric heater) power confirmed: 6000 W while the heater ran, total = compressor + additional to the watt | high |
 | `01 D9 03` | write | panel → compressor frequency request, Hz*10 | high |
@@ -67,6 +73,14 @@ Payload byte offsets (add 21 for the position in the raw frame):
 | 25 | 0xC0 | extra hot water active | high |
 | 26 | 0x10 | fan boost active | high |
 | 27 | 0x03 | cooling mode on | high |
+| 16 | 0x0C | fireplace mode on | high |
+| 31..32 | word | pending alarm bitmask, bit 0x0002 = filter replacement (1.8 scheme, 1.8 had it 2 bytes earlier) | high |
+| 39..40 | word | acknowledged alarm bitmask = bank 1 0x002B, written through 81 2B 00 | high |
+| 13 / 14 / 24 | 0x05 / 0x10 / 0x40 | alarm indication, set while any alarm is active | high |
+| 11 | value | countdown 90 → 0 in 10 s steps, started when an alarm is raised | observed |
+
+Bytes 19 (0x20) and 26 (0x10) are also set during fireplace mode, so they mean "fan
+override" rather than fan boost specifically.
 | 28 | 0x08 | set once hot water was requested | low |
 
 ### Sensors in the 0x88 frame
@@ -145,6 +159,8 @@ keeps schedule settings locally.
 | Legionella temperature 1 | 0 / 0x03C4 | u8 °C | echo |
 | Blocked frequency 5 | 0 / 0x0436 | u16 Hz*10 | 0x00 |
 | Filter interval | 0 / 0x0576 | u16 days | 0x00 |
+| Filter days left | 0 / 0x03FD | u16 days (writing 0 raises the alarm, writing the interval resets it) | 0x00 |
+| Acknowledge alarm | 0x81 / 0x002B | set-bit write of the alarm mask (0x0002 filter); 1.6 used 0x0029 | 0x00 |
 
 The heating curve byte sits right before `heating_calculated_setting` in the 0xC3 frame:
 this panel has no room setpoint, the 18.0 there is computed from the curve. Write replies
@@ -165,7 +181,14 @@ vary per register, so setters for these need `header_check_only`.
 - Regulator version 2.50 appears as the byte pair 2, 50 at bank 0 0x054C, followed by 60,
   1298, -150, 0, 3 (WP box version 3?), 8, 7. Confirmed on the panel: UI 2.28.1 / F,
   regulator 2.50, WP box 3.
-- `03 0B 0D`, `03 BD 0D`, `03 6F 0E`: entries of `dd mm yy` + codes, looks like an event log.
+- `03 0B 0D`, `03 BD 0D`, `03 6F 0E`: the alarm log, decoded in DEBUG mode. A ring of 30
+  records of 14 bytes from bank 3 0x0D0C with the next write index at 0x0D0B. Record: day,
+  month, year, hour, minute, second, event, type, 6 zero bytes. Event 1 = raised, 2 =
+  acknowledged (the 81 2B 00 write), 3 = reset (for the filter: the countdown written back); type 0x12 = filter replacement (confirmed by forcing the alarm),
+  0x3D = communication error (the alarm the panel raised while the adapter jammed the bus).
+  Event 6 with type 0 appears weekly at 05:00 on the legionella day. Event 0 with type 0
+  appears at what look like restarts. `03 FC 0E` right after the log is probably per-type
+  counters.
 - `00 00 00`, `00 7F 00`, `00 27 01`, `00 61 06`, `00 8D 04`, `00 50 05`, `01 20 04`,
   `03 FC 0E`: constant during both captures, so settings or identification.
 
@@ -174,7 +197,6 @@ vary per register, so setters for these need `header_check_only`.
 - 2.21-style fan speed byte write (`KR_FAN_SPEED`). The captured panel has no fan speed
   setting because CO2/humidity sensors control the ventilation; the only user action
   produced the fan boost bit toggle. A 2.50 unit with manual fan speed still needs a capture.
-- Fireplace mode.
 - Room temperature write. Changing the room temperature on the panel produced no write at
   all, so `set_room_temperature()` uses a derived register (`00 92 02`) that is unverified.
 
