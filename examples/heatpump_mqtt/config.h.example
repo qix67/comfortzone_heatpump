@@ -1,7 +1,7 @@
 // Copy to config.h (gitignored) and fill in.
 #pragma once
 
-#define WIFI_SSID        "BerryRanch"
+#define WIFI_SSID        "MyWifi"
 #define WIFI_PASSWORD    "..."
 
 #define MQTT_HOST        "192.168.2.8"
