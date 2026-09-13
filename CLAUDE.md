@@ -95,8 +95,11 @@ Supporting headers:
   2.21 map with a few bytes inserted, so the same frame appears at an address shifted by 0
   to 5 and one or two bytes longer. Map a new register by matching payload content against
   the 2.21 sample comments, not by address arithmetic alone.
-- 2.50 status: heating setting, hot water setting, time/date, sensors, fan speed, compressor
-  frequency, powers, energies, runtimes, and filter days are decoded. Writes confirmed from
+- 2.50 status: heating setting, hot water setting, time/date, sensors, compressor frequency
+  and running flag, extra hot water flag, powers, energies, runtimes, and filter days are
+  decoded. `PROTOCOL_2_50.md` holds the register map,
+  the identified flag bits, and the open leads; `tools/` holds the capture and analysis
+  scripts that produced them. Writes confirmed from
   the panel: hot water setting, extra hot water on/off (bit 0x0040, values differ from the
   1.6 ones hardcoded in the setter, hence the `#if` there), and a fan boost toggle (bit
   0x0200 at address 0x0E, exposed as `set_fan_boost()`). Never seen on the bus: the 2.21

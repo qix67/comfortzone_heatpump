@@ -56,7 +56,7 @@ private:
 // Heatpump status
 // Not all values are available on all protocol version
 // Supported protocols are 1.60, 1.80, 2.21, 2.50. If no protocol version is specified, only 1.60 is supported
-// Protocol 2.50 populates the same fields as 2.21 (its frames share the 2.21 layouts)
+// Protocol 2.50 populates the same fields as 2.21 and adds compressor_activity and extra_hot_water_setting
 typedef struct
 {
 	Subscribable<uint16_t> fan_time_to_filter_change;		// days (proto: 1.60, 1.80, 2.21)

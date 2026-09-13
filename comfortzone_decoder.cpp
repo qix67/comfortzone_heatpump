@@ -802,11 +802,11 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 
 		// 41 44 44 52 07 8A 65 6F DE 02 88 72 01 02 03 04 0B 10 01 04 00 - 16 14 38 0C 09 1A 06 00 16 14 38 00 00 40 00 01 00 00 00 08 08 00 39 10 00 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 41 19 FC 19 FC BA 00 F7 00 03 01 E1 00 E6 00 09 01 22 FC E1 00 22 FC 22 FC 02 01 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC 22 FC F1 01 50 00 9E 00 A0 00 00 00 00 00 BA 00 xx
 		// identical to 2.21 (same address, same length, time/date/sensors at the same offsets)
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x04, 0x00}, czcraft::KR_UNCRAFTABLE, "Status time and sensors (0x88 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_x88, czdec::reply_w_generic},	// 0x88 bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x04, 0x00}, czcraft::KR_UNCRAFTABLE, "Status time, sensors and flags (0x88 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x88, czdec::reply_w_generic},	// 0x88 bytes
 
 		// 41 44 44 52 07 8A 65 6F DE 02 51 72 01 02 03 04 0B 10 01 D1 02 - 03 10 4D 01 00 00 00 00 00 00 00 00 1C 00 00 E0 00 9E 00 A0 00 09 00 75 00 E4 00 E4 00 00 00 00 00 00 00 E6 FB E6 FB E6 FB E6 FB 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 xx
-		// same layout as 2.21's 0x02CD frame. Compressor frequency confirmed (0 while compressor off); fan speed byte not yet confirmed
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xD1, 0x02}, czcraft::KR_UNCRAFTABLE, "Status fan speed and compressor (0x51 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v221_x51, czdec::reply_w_generic},	// 0x51 bytes (2.21: 0xCD 02)
+		// same layout as 2.21's 0x02CD frame. Compressor frequency confirmed against power readings; fan speed byte 3 changes by itself on a unit with sensor-controlled ventilation, 0 during fan boost
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xD1, 0x02}, czcraft::KR_UNCRAFTABLE, "Status fan speed and compressor (0x51 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x51, czdec::reply_w_generic},	// 0x51 bytes (2.21: 0xCD 02)
 
 		// 41 44 44 52 07 8A 65 6F DE 02 C8 72 01 02 03 04 0B 10 00 45 03 - FE 01 0F 00 92 FF 8D FF 88 FF 83 FF 7E FF 79 FF 74 FF 6F FF 6A FF 65 FF 60 FF 5B FF 5B FF 5B FF 5B FF CE FF CE FF C9 FF C9 FF C4 FF C4 FF BF FF BF FF BA FF BA FF B5 FF B5 FF B5 FF B5 FF B5 FF 00 ... 93
 		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 00 45 03 - F4 01 xx   (control panel writing hot water setting 50.0°C)
@@ -849,6 +849,17 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x1D, 0x00}, czcraft::KR_UNCRAFTABLE, "Hot water flags (bit 0x0040 = extra hot water)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_extra_hot_water_v250, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Fan flags (bit 0x0200 = fan boost)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
 
+		// --- settings written by the control panel when changed by the user (captured 2026-09-13, change and revert) ---
+		// Write replies carry a value that is not always 0 (0x04, 0x01, 0x00 or the written byte were seen), so a setter for
+		// these must check the reply header only.
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x1D, 0x04}, czcraft::KR_UNCRAFTABLE, "Compressor max frequency (set)", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},	// 2 bytes, Hz * 10, reply 0x04
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x1F, 0x04}, czcraft::KR_UNCRAFTABLE, "Compressor night max frequency (set)", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},	// 2 bytes, Hz * 10, reply 0x04
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x91, 0x02}, czcraft::KR_UNCRAFTABLE, "Heating curve (set)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},	// 1 byte, * 10 (5.4 => 54), reply echoes the value
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0xDD, 0x03}, czcraft::KR_UNCRAFTABLE, "Fan normal speed (set)", czdec::cmd_r_generic, czdec::cmd_w_percentage, czdec::reply_r_percentage, czdec::reply_w_generic},	// 2 bytes, % * 10, reply 0x01
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0xC4, 0x03}, czcraft::KR_UNCRAFTABLE, "Legionella temperature 1 (set)", czdec::cmd_r_generic, czdec::cmd_w_digit, czdec::reply_r_digit, czdec::reply_w_generic},	// 1 byte, °C, reply echoes the value
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x36, 0x04}, czcraft::KR_UNCRAFTABLE, "Blocked frequency 5 (set)", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},	// 2 bytes, Hz * 10, reply 0x00
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x76, 0x05}, czcraft::KR_UNCRAFTABLE, "Filter interval (set)", czdec::cmd_r_generic, czdec::cmd_w_time_days, czdec::reply_r_time_days, czdec::reply_w_generic},	// 2 bytes, days, reply 0x00
+
 		// Not yet mapped for 2.50: the 2.21-style fan speed byte write (KR_FAN_SPEED) and fireplace mode were never seen on the bus.
 		// No write appeared either when the room temperature was changed on the panel, so KR_ROOM_HEATING_TEMP above stays derived.
 
@@ -856,24 +867,25 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000000 (0x2e bytes, constant, ids?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x7F, 0x00}, czcraft::KR_UNCRAFTABLE, "Unknown 0x00007f (0x20 bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x27, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000127 (0x1a bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x8D, 0x04}, czcraft::KR_UNCRAFTABLE, "Unknown 0x00048d (0xaf bytes, settings?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x50, 0x05}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000550 (0x42 bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x8D, 0x04}, czcraft::KR_UNCRAFTABLE, "Regulator settings (0xaf bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_xaf, czdec::reply_w_generic},	// cooling group at the end confirmed
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x50, 0x05}, czcraft::KR_UNCRAFTABLE, "Misc settings (0x42 bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x42, czdec::reply_w_generic},	// filter interval confirmed
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x61, 0x06}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000661 (2 bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x47, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x010147 (0x2c bytes, changes every poll)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xA7, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x0101a7 (0x1e bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xF9, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x0101f9 (0x8c bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x20, 0x04}, czcraft::KR_UNCRAFTABLE, "Unknown 0x010420 (0x2c bytes, all zero)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x50, 0x05}, czcraft::KR_UNCRAFTABLE, "Unknown 0x010550 (0x32 bytes, echoes panel counter)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x50, 0x05}, czcraft::KR_UNCRAFTABLE, "Panel identity: UI versions and heartbeat counter", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_ui_versions, czdec::reply_w_generic},	// 0x32 bytes, first 10 bytes = 1.8 "UI versions" layout
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0x0B, 0x0D}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030d0b (0xc8 bytes, dated entries, event log?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0xBD, 0x0D}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030dbd (0xc8 bytes, dated entries, event log?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0x6F, 0x0E}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030e6f (0x58 bytes, dated entries, event log?)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x03, 0xFC, 0x0E}, czcraft::KR_UNCRAFTABLE, "Unknown 0x030efc (0x3f bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 
-		// --- writes the control panel performs every cycle (panel heartbeat / its own state), not decoded ---
+		// --- writes the control panel performs every cycle. On 2.50 the panel is the regulator: it computes the
+		//     compressor frequency and a setpoint and writes them to the heat pump board (see PROTOCOL_2_50.md) ---
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x68, 0x05}, czcraft::KR_UNCRAFTABLE, "Panel heartbeat (10 byte write: counter + status)", czdec::cmd_r_generic, czdec::empty, czdec::empty, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xD9, 0x03}, czcraft::KR_UNCRAFTABLE, "Panel periodic write 0x0103d9", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xDB, 0x03}, czcraft::KR_UNCRAFTABLE, "Panel periodic write 0x0103db", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xE1, 0x03}, czcraft::KR_UNCRAFTABLE, "Panel periodic write 0x0103e1", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xD9, 0x03}, czcraft::KR_UNCRAFTABLE, "Panel: compressor frequency request", czdec::cmd_r_generic, czdec::cmd_w_freq, czdec::reply_r_freq, czdec::reply_w_generic},	// Hz * 10, 0 = stop. Echoed at offset 49 of the 0x51 frame one cycle later
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xDB, 0x03}, czcraft::KR_UNCRAFTABLE, "Panel periodic write 0x0103db (always 0 so far)", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0xE1, 0x03}, czcraft::KR_UNCRAFTABLE, "Panel: temperature setpoint", czdec::cmd_r_generic, czdec::cmd_w_temp, czdec::reply_r_temp, czdec::reply_w_generic},	// °C * 10 (32.4 idle, 34.7 during hot water production). Echoed at payload offset 161 of the 0xba frame
 #endif
 		{ {0}, czcraft::KR_UNCRAFTABLE, NULL, NULL, NULL, NULL, NULL}
 	};
@@ -903,6 +915,11 @@ czdec::KNOWN_REGISTER *czdec::kr_craft_name_to_index(czcraft::KNOWN_REGISTER_CRA
 comfortzone_heatpump::PROCESSED_FRAME_TYPE czdec::process_frame(comfortzone_heatpump *cz_class, CZ_PACKET_HEADER *czph)
 {
 	int i = 0;
+
+#ifdef DEBUG
+	// one uniform hex line per frame so captures can be replayed and analysed (see tools/)
+	dump_frame(cz_class, "RAW:");
+#endif
 
 	while(kr_decoder[i].reg_name != NULL)
 	{

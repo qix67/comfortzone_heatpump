@@ -3585,6 +3585,10 @@ void czdec::reply_r_status_v250_xc3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	dump_unknown("unknown_xc3_0", q->unknown0, sizeof(q->unknown0));
 
 	// ===
+	NPRINT("Heating - curve: ");
+	NPRINTLN(q->heating_curve / 10.0);
+
+	// ===
 	reg_v = get_uint16(q->heating_calculated_setting);
 
 	reg_v_f = reg_v;
@@ -3635,27 +3639,80 @@ void czdec::reply_r_temp_or_r_status_v250_xc8(comfortzone_heatpump *czhp, KNOWN_
 	{
 		R_REPLY_STATUS_V250_xC8 *q = (R_REPLY_STATUS_V250_xC8 *)p;
 
-		czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
+		czhp->comfortzone_status.hot_water_setting = get_uint16(q->hot_water_user_setting);
+		czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_user_setting);	// kept for 2.21 compatibility
 
 #ifdef DEBUG
 		int reg_v;
 		float reg_v_f;
+		int i;
 
 		dump_unknown("RAW R_REPLY_STATUS_V250_xc8_0xc8", (byte *)q, sizeof(*q));
 		NPRINTLN("");
 
-		// ===
-		reg_v = get_uint16(q->hot_water_calculated_setting);
+#define PRINT_TEMP(label, field) reg_v = get_int16(q->field); reg_v_f = reg_v; reg_v_f /= 10.0; NPRINT(label); NPRINT(reg_v_f); NPRINTLN("°C")
+#define PRINT_FREQ(label, field) reg_v = get_uint16(q->field); reg_v_f = reg_v; reg_v_f /= 10.0; NPRINT(label); NPRINT(reg_v_f); NPRINTLN("Hz")
 
-		reg_v_f = reg_v;
-		reg_v_f /= 10.0;
+		PRINT_TEMP("Hot water - user setting: ", hot_water_user_setting);
+		PRINT_TEMP("Hot water - hysteresis: ", hot_water_hysteresis);
 
-		NPRINT("Hot water Calculated setting (0xc8): ");
-		NPRINT(reg_v_f);
-		NPRINTLN("°C");
+		for(i = 0; i < STATUS_V250_NB_HW_STEPS; i++)
+		{
+			NPRINT("Hot water - normal step "); NPRINT(i); PRINT_TEMP(": ", hot_water_normal_steps[i]);
+		}
+		for(i = 0; i < STATUS_V250_NB_HW_STEPS; i++)
+		{
+			NPRINT("Hot water - high step "); NPRINT(i); PRINT_TEMP(": ", hot_water_high_steps[i]);
+		}
+		for(i = 0; i < STATUS_V250_NB_HW_STEPS; i++)
+		{
+			NPRINT("Hot water - extra step "); NPRINT(i); PRINT_TEMP(": ", hot_water_extra_steps[i]);
+		}
 
-		// ===
-		dump_unknown("unknown0_xc8", q->unknown0, sizeof(q->unknown0));
+		dump_unknown("unknown5a_xc8", q->unknown5a, sizeof(q->unknown5a));
+
+		NPRINT("Hot water - max runtime: "); NPRINT(q->hot_water_max_runtime); NPRINTLN("min");
+		NPRINT("Hot water - pause time: "); NPRINT(q->hot_water_pause_time); NPRINTLN("min");
+
+		for(i = 0; i < 8; i++)
+		{
+			NPRINT("unknown5b_xc8["); NPRINT(i); PRINT_TEMP("]: ", unknown5b[i]);
+		}
+
+		PRINT_FREQ("Hot water - compressor min freq.: ", hot_water_compressor_min_frequency);
+		PRINT_FREQ("Hot water - compressor max freq.: ", hot_water_compressor_max_frequency);
+
+		dump_unknown("unknown6_xc8", q->unknown6, sizeof(q->unknown6));
+
+		PRINT_TEMP("Hot water - extra setting: ", hot_water_extra_setting);
+		NPRINT("Hot water - extra time: "); NPRINT(get_uint16(q->hot_water_extra_time)); NPRINTLN("min");
+
+		PRINT_TEMP("Legionella - setpoint: ", legionella_setpoint);
+		NPRINT("Legionella - temperature 1: "); NPRINT(q->legionella_temperature_1); NPRINTLN("°C");
+		NPRINT("Legionella - temperature 2: "); NPRINT(q->legionella_temperature_2); NPRINTLN("°C");
+		NPRINT("Legionella - time 1: "); NPRINT(q->legionella_time_1); NPRINTLN("min");
+		PRINT_TEMP("Hot water - overheat alarm: ", hot_water_overheat_alarm);
+
+		dump_unknown("unknown7_xc8", q->unknown7, sizeof(q->unknown7));
+		dump_unknown("unknown7a_xc8", q->unknown7a, sizeof(q->unknown7a));
+
+		reg_v = get_uint16(q->hot_water_min_frequency_time); reg_v_f = reg_v; reg_v_f /= 10.0;
+		NPRINT("Hot water - minimal frequency time: "); NPRINT(reg_v_f); NPRINTLN("min");
+
+		dump_unknown("unknown8_xc8", q->unknown8, sizeof(q->unknown8));
+
+#define PRINT_PCT(label, field) reg_v = get_int16(q->field); reg_v_f = reg_v; reg_v_f /= 10.0; NPRINT(label); NPRINT(reg_v_f); NPRINTLN("%")
+		PRINT_PCT("Fan - normal speed: ", normal_fan_speed);
+		PRINT_PCT("Fan - slow speed: ", reduce_fan_speed);
+		PRINT_PCT("Fan - fast speed: ", fast_fan_speed);
+		PRINT_PCT("Fan - CCM increase when cooling: ", fan_ccm_increase_when_cooling);
+		dump_unknown("unknown9_xc8", q->unknown9, sizeof(q->unknown9));
+		PRINT_PCT("Fan - increase when cooling: ", fan_increase_when_cooling);
+		dump_unknown("unknown10_xc8", q->unknown10, sizeof(q->unknown10));
+		PRINT_PCT("Fan - CCM setting: ", fan_ccm_setting);
+#undef PRINT_PCT
+#undef PRINT_TEMP
+#undef PRINT_FREQ
 
 		NPRINT("crc: ");
 		if(q->crc < 0x10)
@@ -3698,6 +3755,31 @@ void czdec::reply_r_status_v250_x57(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	// ===
 	dump_unknown("unknown_x57_1", q->unknown1, sizeof(q->unknown1));
 
+	// ===
+	reg_v = get_uint16(q->compressor_max_frequency);
+	NPRINT("Compressor - max frequency: ");
+	NPRINT(reg_v / 10.0);
+	NPRINTLN("Hz");
+
+	reg_v = get_uint16(q->night_max_frequency);
+	NPRINT("Compressor - night max frequency: ");
+	NPRINT(reg_v / 10.0);
+	NPRINTLN("Hz");
+
+	dump_unknown("unknown_x57_2", q->unknown2, sizeof(q->unknown2));
+
+	// ===
+	for(int i = 0; i < STATUS_V250_NB_BLOCKED_FREQ; i++)
+	{
+		reg_v = get_uint16(q->blocked_frequency[i]);
+
+		NPRINT("Compressor - blocked frequency ");
+		NPRINT(i + 1);
+		NPRINT(": ");
+		NPRINT(reg_v / 10.0);
+		NPRINTLN("Hz");
+	}
+
 	NPRINT("crc: ");
 	if(q->crc < 0x10)
 		NPRINT("0");
@@ -3729,5 +3811,209 @@ void czdec::reply_r_extra_hot_water_v250(comfortzone_heatpump *czhp, KNOWN_REGIS
 	if(p->crc < 0x10)
 		NPRINT("0");
 	NPRINTLN(p->crc, HEX);
+#endif
+}
+
+// bank 1 addr 0x0004, 0x72 bytes: identical layout to 2.21 (time, date, sensors) plus status flag bits
+// in the 2.21 "unknown0" area. Bits identified on 2026-09-13 by watching them flip against
+// compressor power, the extra hot water toggle and the fan boost toggle:
+//   unknown0[7]  (payload byte 18) bit 0x20: extra hot water active
+//   unknown0[8]  (payload byte 19) bits 0x03: extra hot water active, bit 0x20: fan boost active
+//   unknown0[9]  (payload byte 20) bit 0x20: compressor running, bit 0x04: set once hot water was requested, bit 0x08: cleared during fan boost
+//   unknown0[14] (payload byte 25) bits 0xC0: extra hot water active
+//   unknown0[15] (payload byte 26) bit 0x10: fan boost active
+//   unknown0[17] (payload byte 28) bit 0x08: set once hot water was requested
+void czdec::reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_x88 *q = (R_REPLY_STATUS_V221_x88 *)p;
+
+	// the same register is also read 1 byte at a time (hour) by the panel: the table row for the status frame
+	// catches those replies too, so only decode the full frame
+	if(p->cz_head.packet_size != 0x88)
+	{
+		reply_r_digit(czhp, kr, p);
+		return;
+	}
+
+	reply_r_status_v221_x88(czhp, kr, p);
+
+	czhp->comfortzone_status.compressor_activity = (q->unknown0[9] & 0x20) ? CZCMP_RUNNING : CZCMP_STOPPED;
+	czhp->comfortzone_status.extra_hot_water_setting = ((q->unknown0[7] & 0x20) != 0);
+
+#ifdef DEBUG
+	NPRINT("Flags - compressor: ");
+	NPRINTLN((q->unknown0[9] & 0x20) ? "running" : "stopped");
+
+	NPRINT("Flags - extra hot water: ");
+	NPRINTLN((q->unknown0[7] & 0x20) ? "on" : "off");
+
+	NPRINT("Flags - fan boost: ");
+	NPRINTLN((q->unknown0[15] & 0x10) ? "on" : "off");
+
+	NPRINT("Flags - raw bytes 18..28: ");
+	for(int i = 7; i <= 17; i++)
+	{
+		if(q->unknown0[i] < 0x10)
+			NPRINT("0");
+		NPRINT(q->unknown0[i], HEX);
+		NPRINT(" ");
+	}
+	NPRINTLN("");
+#endif
+}
+
+// bank 1 addr 0x02D1, 0x51 bytes: same layout as the 2.21 frame at 0x02CD (fan speed at byte 3, compressor
+// frequency at offset 33). On a unit whose ventilation is driven by CO2/humidity sensors the fan speed byte
+// changes by itself (1, 2, 3) and reads 0 while the fan boost is active (see PROTOCOL_2_50.md).
+void czdec::reply_r_status_v250_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V221_x51 *q = (R_REPLY_STATUS_V221_x51 *)p;
+
+	if(p->cz_head.packet_size != 0x51)
+		return;
+
+	czhp->comfortzone_status.fan_speed = q->fan_speed;
+	czhp->comfortzone_status.heatpump_current_compressor_frequency = get_uint16(q->heatpump_current_compressor_frequency);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_x51", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	NPRINT("Fan speed (0 while fan boost is active): ");
+	NPRINTLN(q->fan_speed);
+
+	reg_v = get_uint16(q->heatpump_current_compressor_frequency);
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - current compressor frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	reg_v = get_uint16(q->unknown4[7]);		// payload offset 49
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heatpump - requested compressor frequency: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("Hz");
+
+	dump_unknown("unknown_x51_1", q->unknown1[0], sizeof(q->unknown1));
+	dump_unknown("unknown_x51_3", q->unknown3[0], sizeof(q->unknown3));
+	dump_unknown("unknown_x51_4", q->unknown4[0], sizeof(q->unknown4));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 1 addr 0x0550, 0x1C bytes: control panel identity (UI software/hardware version) and heartbeat counter
+void czdec::reply_r_status_v250_ui_versions(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V250_ui_versions *q = (R_REPLY_STATUS_V250_ui_versions *)p;
+	char v[2];
+
+	if(p->cz_head.packet_size != 0x32)
+		return;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_ui_versions", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	NPRINT("UI Software version: ");
+	NPRINT(q->ui_software_major_version);
+	NPRINT(".");
+	NPRINT(q->ui_software_minor_version);
+	NPRINT(".");
+	NPRINTLN(q->ui_software_patch_version);
+
+	v[0] = 'A' + q->ui_hardware_version - 1;
+	v[1] = '\0';
+	NPRINT("UI Hardware version: ");
+	NPRINTLN(v);
+
+	dump_unknown("unknown0_ui", q->unknown0, sizeof(q->unknown0));
+	dump_unknown("unknown1_ui", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("Panel counter: ");
+	NPRINTLN(get_uint32(q->panel_counter));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 0 addr 0x048D, 0x99 bytes: regulator settings (cooling group named, rest unknown)
+void czdec::reply_r_status_v250_xaf(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V250_xAF *q = (R_REPLY_STATUS_V250_xAF *)p;
+	int reg_v;
+	float reg_v_f;
+
+	if(p->cz_head.packet_size != 0xAF)
+		return;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_xAF", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	dump_unknown("unknown0_xaf", q->unknown0, sizeof(q->unknown0));
+
+	reg_v = get_uint16(q->cooling_compressor_max_frequency); reg_v_f = reg_v; reg_v_f /= 10.0;
+	NPRINT("Cooling - compressor max freq.: "); NPRINT(reg_v_f); NPRINTLN("Hz");
+
+	reg_v = get_int16(q->cooling_p_band_1); reg_v_f = reg_v; reg_v_f /= 10.0;
+	NPRINT("Cooling - P-band 1: "); NPRINT(reg_v_f); NPRINTLN("°C");
+
+	NPRINT("Cooling - I-time 1: "); NPRINT(get_uint16(q->cooling_i_time_1)); NPRINTLN("min");
+
+	reg_v = get_int16(q->cooling_p_band_2); reg_v_f = reg_v; reg_v_f /= 10.0;
+	NPRINT("Cooling - P-band 2: "); NPRINT(reg_v_f); NPRINTLN("°C");
+
+	NPRINT("Cooling - I-time 2: "); NPRINT(get_uint16(q->cooling_i_time_2)); NPRINTLN("s");
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 0 addr 0x0550, 0x2C bytes: misc settings (filter interval confirmed)
+void czdec::reply_r_status_v250_x42(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	R_REPLY_STATUS_V250_x42 *q = (R_REPLY_STATUS_V250_x42 *)p;
+
+	if(p->cz_head.packet_size != 0x42)
+		return;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_x42", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	dump_unknown("unknown0_x42", q->unknown0, sizeof(q->unknown0));
+
+	NPRINT("Box version: ");
+	NPRINTLN(q->box_version);
+
+	dump_unknown("unknown1_x42", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("Fan - filter interval: ");
+	NPRINT(get_uint16(q->filter_interval));
+	NPRINTLN(" days");
+
+	dump_unknown("unknown2_x42", q->unknown2, sizeof(q->unknown2));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
 #endif
 }
