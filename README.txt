@@ -195,6 +195,13 @@ comfortzone_heatpump object.
  (disables fan for 5 minutes, runs completely on electricity during that period)
 
 
+ * bool set_fan_boost(bool enable, int timeout = 5);
+
+ Protocol 2.50 only. Enable/disable the control panel's temporary fan high speed
+ toggle (on panels where fan speed is sensor controlled). True = high speed,
+ false = back to normal.
+
+
  Special methods
  ---------------
 

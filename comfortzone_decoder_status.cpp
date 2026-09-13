@@ -3562,3 +3562,172 @@ void czdec::reply_r_status_v221_xb9(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	NPRINTLN(q->crc, HEX);
 #endif
 }
+
+// =====================================
+// == protocol version 2.50
+// =====================================
+
+// bank 0 addr 0x0289, 0xAD bytes: same layout as 2.21 status xC1 with 2 extra bytes in the tail
+void czdec::reply_r_status_v250_xc3(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V250_xC3 *q = (R_REPLY_STATUS_V250_xC3 *)p;
+
+	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
+
+#ifdef DEBUG
+	int reg_v;
+	float reg_v_f;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_xC3", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_xc3_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	reg_v = get_uint16(q->heating_calculated_setting);
+
+	reg_v_f = reg_v;
+	reg_v_f /= 10.0;
+
+	NPRINT("Heating - Calculated setting: ");
+	NPRINT(reg_v_f);
+	NPRINTLN("°C");
+
+	// ===
+	dump_unknown("unknown_xc3_1", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 0 addr 0x0345: a 2-byte read gives the hot water setting, a 0xB2-byte read gives a status frame
+// (2.21 equivalent is addr 0x0341 / 0xAF bytes)
+void czdec::reply_r_temp_or_r_status_v250_xc8(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	if(p->cz_head.packet_size == 0x18)	// reply of a read command with parameter = 0x02
+	{
+#ifdef DEBUG
+		dump_unknown("RAW R_REPLY_STATUS_V250_xc8_0x18", (byte *)p, sizeof(*p));
+		NPRINTLN("");
+
+		int reg_v;
+		float reg_v_f;
+
+		reg_v = get_uint16(p->reg_value);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+
+		NPRINT("crc: ");
+		if(p->crc < 0x10)
+			NPRINT("0");
+		NPRINTLN(p->crc, HEX);
+#endif
+	}
+	else if(p->cz_head.packet_size == 0xC8)	// reply of a read command with parameter = 0xB2
+	{
+		R_REPLY_STATUS_V250_xC8 *q = (R_REPLY_STATUS_V250_xC8 *)p;
+
+		czhp->comfortzone_status.hot_water_calculated_setting = get_uint16(q->hot_water_calculated_setting);
+
+#ifdef DEBUG
+		int reg_v;
+		float reg_v_f;
+
+		dump_unknown("RAW R_REPLY_STATUS_V250_xc8_0xc8", (byte *)q, sizeof(*q));
+		NPRINTLN("");
+
+		// ===
+		reg_v = get_uint16(q->hot_water_calculated_setting);
+
+		reg_v_f = reg_v;
+		reg_v_f /= 10.0;
+
+		NPRINT("Hot water Calculated setting (0xc8): ");
+		NPRINT(reg_v_f);
+		NPRINTLN("°C");
+
+		// ===
+		dump_unknown("unknown0_xc8", q->unknown0, sizeof(q->unknown0));
+
+		NPRINT("crc: ");
+		if(q->crc < 0x10)
+			NPRINT("0");
+		NPRINTLN(q->crc, HEX);
+#endif
+	}
+	else
+	{
+#ifdef DEBUG
+		dump_unknown("RAW R_REPLY_STATUS_V250_xc8_0x??", (byte *)p, (int)(p->cz_head.packet_size));
+		NPRINTLN("");
+#endif
+	}
+}
+
+// bank 0 addr 0x03F7, 0x41 bytes: 2.21 status xF2 content starts 4 bytes into this frame
+void czdec::reply_r_status_v250_x57(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	R_REPLY_STATUS_V250_x57 *q = (R_REPLY_STATUS_V250_x57 *)p;
+
+	czhp->comfortzone_status.fan_time_to_filter_change = get_uint16(q->fan_time_to_filter_change);
+
+#ifdef DEBUG
+	int reg_v;
+
+	dump_unknown("RAW R_REPLY_STATUS_V250_x57", (byte *)q, sizeof(*q));
+	NPRINTLN("");
+
+	// ===
+	dump_unknown("unknown_x57_0", q->unknown0, sizeof(q->unknown0));
+
+	// ===
+	reg_v = get_uint16(q->fan_time_to_filter_change);
+
+	NPRINT("Fan - Time to filter change: ");
+	NPRINT(reg_v);
+	NPRINTLN("d");
+
+	// ===
+	dump_unknown("unknown_x57_1", q->unknown1, sizeof(q->unknown1));
+
+	NPRINT("crc: ");
+	if(q->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 1 addr 0x001D, 2-byte read: flags word, bit 0x0040 = extra hot water enabled
+// (the control panel reads it right after toggling extra hot water: 0x0045 on, 0x0005 off)
+void czdec::reply_r_extra_hot_water_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	uint16_t reg_v;
+
+	if(p->cz_head.packet_size != 0x18)
+		return;
+
+	reg_v = get_uint16(p->reg_value);
+
+	czhp->comfortzone_status.extra_hot_water_setting = ((reg_v & 0x0040) != 0);
+
+#ifdef DEBUG
+	NPRINT("Extra hot water: ");
+	NPRINT(((reg_v & 0x0040) != 0) ? "on" : "off");
+	NPRINT(" (flags 0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+#endif
+}

@@ -205,6 +205,10 @@ void czdec::cmd_w_extra_hot_water(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr
 		NPRINTLN("on");
 	else if(reg_v == 0xFFFE)		// -2 (???)
 		NPRINTLN("off");
+	else if(reg_v == 0x0040)		// 2.50: set bit
+		NPRINTLN("on");
+	else if(reg_v == 0xFFBF)		// 2.50: clear bit
+		NPRINTLN("off");
 	else
 		NPRINTLN(reg_v, HEX);
 
@@ -772,3 +776,31 @@ void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p)
 {
 }
 
+
+// hex dump of a reply payload for registers whose content is not decoded yet
+void czdec::reply_r_raw_dump(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	byte *ptr = (byte *)p;
+	int len = p->cz_head.packet_size;
+	int i;
+
+	NPRINT("payload (");
+	NPRINT(len - (int)sizeof(CZ_PACKET_HEADER) - 1);
+	NPRINT(" bytes): ");
+
+	for(i = sizeof(CZ_PACKET_HEADER); i < len - 1; i++)
+	{
+		if(ptr[i] < 0x10)
+			NPRINT("0");
+		NPRINT(ptr[i], HEX);
+		NPRINT(" ");
+	}
+	NPRINTLN("");
+
+	NPRINT("crc: ");
+	if(ptr[len - 1] < 0x10)
+		NPRINT("0");
+	NPRINTLN(ptr[len - 1], HEX);
+#endif
+}

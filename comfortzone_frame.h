@@ -1033,4 +1033,54 @@ typedef struct __attribute__ ((packed))
 } R_REPLY_STATUS_V221_xb9;
 
 
+// =====================================
+// == status frames (protocol version 2.50)
+// =====================================
+// Register numbers are memory addresses: bytes 6..8 of reg_num are {bank, addr_lo, addr_hi}
+// and the R command parameter is the number of bytes to read. The 2.50 map is the 2.21 map
+// with a few bytes inserted, so most frames keep the 2.21 layout at a slightly shifted address.
+
+// read of 0xAD bytes at bank 0 addr 0x0289 (2.21: 0xAB bytes at 0x0287)
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[9];
+
+	byte heating_calculated_setting[2];	// °C, LSB, 2 bytes, * 10 (same offset as 2.21)
+
+	byte unknown1[162];					// 2.21 has 160 bytes here
+	byte crc;
+} R_REPLY_STATUS_V250_xC3;
+
+// read of 0xB2 bytes at bank 0 addr 0x0345 (2.21: 0xAF bytes at 0x0341)
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte hot_water_calculated_setting[2];	// °C, LSB, 2 bytes, * 10 (same offset as 2.21)
+
+	byte unknown0[176];							// 2.21 has 173 bytes here
+
+	byte crc;
+} R_REPLY_STATUS_V250_xC8;
+
+// read of 0x41 bytes at bank 0 addr 0x03F7 (2.21: 0x3B bytes at 0x03F2)
+// the 2.21 content starts 4 bytes into this frame
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[6];							// 2.21 has 2 bytes here
+
+	byte fan_time_to_filter_change[2];	// days, LSB, 2 bytes
+
+	byte unknown1[57];
+	byte crc;
+} R_REPLY_STATUS_V250_x57;
+
+// read of 0xA4 bytes at bank 1 addr 0x0340 (2.21: 0xA3 bytes at 0x033C)
+// layout is identical to R_REPLY_STATUS_V221_xb9, whose declared size (186 bytes) matches this
+// frame exactly, so that struct and decoder are reused.
+
 #endif

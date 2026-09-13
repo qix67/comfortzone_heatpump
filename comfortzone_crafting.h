@@ -35,6 +35,8 @@ class czcraft
 		KR_TEMP_OFFSET_SENSOR7,	// set sensor 7 temperature offset, parameter => -100 (=-10°) to 100 (=10.0°)
 		KR_FIREPLACE_MODE_ENABLE, // enable temporary mode to start the fireplace (disables fan for 5 minutes, runs completely on electricity during that period)
 		KR_FIREPLACE_MODE_DISABLE, // disable temporary fireplace mode (shouldn't be needed normally as it is called automatically by heatpump after 5 minutes)
+		KR_FAN_BOOST_ON,			// enable temporary fan high speed (2.50), parameter => always 0x0200
+		KR_FAN_BOOST_OFF,			// disable temporary fan high speed (2.50), parameter => always 0xFDFF
 	} KNOWN_REGISTER_CRAFT_NAME;
 
 	// craft a W_CMD packet

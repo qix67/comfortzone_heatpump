@@ -77,6 +77,7 @@ class comfortzone_heatpump
 	bool set_automatic_daylight_saving(bool enable, int timeout = 5);	// true = enable, false = disable
 
 	bool set_fireplace_mode(bool enable, int timeout = 5); // true = enable, false = disable
+	bool set_fan_boost(bool enable, int timeout = 5);	// true = temporary fan high speed, false = back to normal (protocol 2.50 only)
 
 	bool set_sensor_offset(uint16_t sensor_num, float temp_offset, int timeout = 5);	// sensor: [0:7], offset in °C (-10.0° -> 10.0°)
 

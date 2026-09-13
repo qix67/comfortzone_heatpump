@@ -534,14 +534,24 @@ bool comfortzone_heatpump::set_extra_hot_water(bool enable, int timeout)
 	if(enable)
 	{
 		kr = czdec::kr_craft_name_to_index(czcraft::KR_EXTRA_HOT_WATER_ON);
+#if HP_PROTOCOL == HP_PROTOCOL_2_50
+		cmd_value = 0x0040;		// captured from control panel 2.50: set bit, reply 0x00
+		reply_value = 0x00;
+#else
 		cmd_value = 0x0001;
 		reply_value = 0x08;
+#endif
 	}
 	else
 	{
 		kr = czdec::kr_craft_name_to_index(czcraft::KR_EXTRA_HOT_WATER_OFF);
+#if HP_PROTOCOL == HP_PROTOCOL_2_50
+		cmd_value = 0xFFBF;		// captured from control panel 2.50: clear bit, reply 0x00
+		reply_value = 0x00;
+#else
 		cmd_value = 0xFFFE;
 		reply_value = 0x0C;
+#endif
 	}
 
 	if(kr == NULL)
@@ -598,6 +608,41 @@ bool comfortzone_heatpump::set_fireplace_mode(bool enable, int timeout)
 	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
 
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+	return push_result;
+}
+
+// true = enable, false = disable
+// Protocol 2.50 only. Replays what the control panel sends for its temporary "fan high speed" toggle.
+bool comfortzone_heatpump::set_fan_boost(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	bool push_result;
+
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_ON);
+		cmd_value = 0x0200;		// set bit 0x0200
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_OFF);
+		cmd_value = 0xFDFF;		// clear bit 0x0200
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_FAN_BOOST_* not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	// the reply value observed on the bus was 0x43 (on) / 0x41 (off), so only the header is checked
 	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
 	return push_result;
 }

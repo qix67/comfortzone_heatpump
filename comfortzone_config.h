@@ -4,6 +4,7 @@
 #define HP_PROTOCOL_1_6 160
 #define HP_PROTOCOL_1_8 180
 #define HP_PROTOCOL_2_21 221
+#define HP_PROTOCOL_2_50 250
 
 //#define HP_PROTOCOL HP_PROTOCOL_2_21
 
