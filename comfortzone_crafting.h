@@ -37,6 +37,8 @@ class czcraft
 		KR_FIREPLACE_MODE_DISABLE, // disable temporary fireplace mode (shouldn't be needed normally as it is called automatically by heatpump after 5 minutes)
 		KR_FAN_BOOST_ON,			// enable temporary fan high speed (2.50), parameter => always 0x0200
 		KR_FAN_BOOST_OFF,			// disable temporary fan high speed (2.50), parameter => always 0xFDFF
+		KR_COOLING_MODE_ON,		// enable cooling mode (2.50), parameter => always 0x0400
+		KR_COOLING_MODE_OFF,		// disable cooling mode (2.50), parameter => always 0xFBFF
 	} KNOWN_REGISTER_CRAFT_NAME;
 
 	// craft a W_CMD packet

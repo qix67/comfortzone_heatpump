@@ -101,8 +101,9 @@ Supporting headers:
   the identified flag bits, and the open leads; `tools/` holds the capture and analysis
   scripts that produced them. Writes confirmed from
   the panel: hot water setting, extra hot water on/off (bit 0x0040, values differ from the
-  1.6 ones hardcoded in the setter, hence the `#if` there), and a fan boost toggle (bit
-  0x0200 at address 0x0E, exposed as `set_fan_boost()`). Never seen on the bus: the 2.21
+  1.6 ones hardcoded in the setter, hence the `#if` there), a fan boost toggle (bit
+  0x0200 at address 0x0E, exposed as `set_fan_boost()`), and cooling mode (bit 0x0400 at
+  bank 0 address 0x12, exposed as `set_cooling_mode()`). Never seen on the bus: the 2.21
   style fan speed byte write and fireplace mode. Changing the room temperature on the panel
   produced no write, so `00 92 02` (room heating temperature) stays derived, not observed.
 - Bit-toggle registers use bank byte 0x81/0x80 to set and 0x41/0x40 to clear bits of a

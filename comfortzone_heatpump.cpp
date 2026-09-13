@@ -648,6 +648,45 @@ bool comfortzone_heatpump::set_fan_boost(bool enable, int timeout)
 }
 
 // true = enable, false = disable
+// Protocol 2.50 only. Replays what the control panel sends for its cooling mode switch.
+bool comfortzone_heatpump::set_cooling_mode(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	bool push_result;
+
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_COOLING_MODE_ON);
+		cmd_value = 0x0400;		// set bit 0x0400
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_COOLING_MODE_OFF);
+		cmd_value = 0xFBFF;		// clear bit 0x0400
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_COOLING_MODE_* not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	// the reply value observed on the bus was 0x7F (on) / 0x7B (off), so only the header is checked
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+
+	if(push_result == true)
+		comfortzone_status.cooling_enabled = enable;
+
+	return push_result;
+}
+
+// true = enable, false = disable
 bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeout)
 {
 	W_CMD cmd;

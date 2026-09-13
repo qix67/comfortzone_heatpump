@@ -843,11 +843,18 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x80, 0x0E, 0x00}, czcraft::KR_FAN_BOOST_ON, "Fan boost - on", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x40, 0x0E, 0x00}, czcraft::KR_FAN_BOOST_OFF, "Fan boost - off", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
 
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 80 12 00 - 00 04 xx   reply w ... 7F   (cooling mode ON = set bit 0x0400)
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 40 12 00 - FF FB xx   reply w ... 7B   (cooling mode OFF = clear bit 0x0400)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x80, 0x12, 0x00}, czcraft::KR_COOLING_MODE_ON, "Cooling mode - on", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x40, 0x12, 0x00}, czcraft::KR_COOLING_MODE_OFF, "Cooling mode - off", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+
 		// read-backs the panel performs right after each toggle (2-byte reads of the flag words)
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 01 1D 00 - 45 00 xx  (extra hot water on)   05 00 (off)
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 00 0E 00 - 5A 43 xx  (fan boost on)         5A 41 (off)
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x1D, 0x00}, czcraft::KR_UNCRAFTABLE, "Hot water flags (bit 0x0040 = extra hot water)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_extra_hot_water_v250, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Fan flags (bit 0x0200 = fan boost)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 00 12 00 - 40 7F xx  (cooling on)   40 7B (off)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x12, 0x00}, czcraft::KR_UNCRAFTABLE, "Mode flags (bit 0x0400 = cooling mode)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_cooling_v250, czdec::reply_w_generic},
 
 		// --- settings written by the control panel when changed by the user (captured 2026-09-13, change and revert) ---
 		// Write replies carry a value that is not always 0 (0x04, 0x01, 0x00 or the written byte were seen), so a setter for

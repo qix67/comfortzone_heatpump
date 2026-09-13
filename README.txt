@@ -202,6 +202,13 @@ comfortzone_heatpump object.
  false = back to normal.
 
 
+ * bool set_cooling_mode(bool enable, int timeout = 5);
+
+ Protocol 2.50 only. Switch cooling mode on (true) or off (false), as the
+ control panel's cooling switch does. comfortzone_status.cooling_enabled
+ reports the current state.
+
+
  Special methods
  ---------------
 

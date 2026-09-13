@@ -3822,6 +3822,7 @@ void czdec::reply_r_extra_hot_water_v250(comfortzone_heatpump *czhp, KNOWN_REGIS
 //   unknown0[9]  (payload byte 20) bit 0x20: compressor running, bit 0x04: set once hot water was requested, bit 0x08: cleared during fan boost
 //   unknown0[14] (payload byte 25) bits 0xC0: extra hot water active
 //   unknown0[15] (payload byte 26) bit 0x10: fan boost active
+//   unknown0[16] (payload byte 27) bits 0x03: cooling mode on
 //   unknown0[17] (payload byte 28) bit 0x08: set once hot water was requested
 void czdec::reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
@@ -3839,8 +3840,12 @@ void czdec::reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	czhp->comfortzone_status.compressor_activity = (q->unknown0[9] & 0x20) ? CZCMP_RUNNING : CZCMP_STOPPED;
 	czhp->comfortzone_status.extra_hot_water_setting = ((q->unknown0[7] & 0x20) != 0);
+	czhp->comfortzone_status.cooling_enabled = ((q->unknown0[16] & 0x03) != 0);		// payload byte 27: 0x03 while cooling mode is on
 
 #ifdef DEBUG
+	NPRINT("Flags - cooling mode: ");
+	NPRINTLN((q->unknown0[16] & 0x03) ? "on" : "off");
+
 	NPRINT("Flags - compressor: ");
 	NPRINTLN((q->unknown0[9] & 0x20) ? "running" : "stopped");
 
@@ -4015,5 +4020,32 @@ void czdec::reply_r_status_v250_x42(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	if(q->crc < 0x10)
 		NPRINT("0");
 	NPRINTLN(q->crc, HEX);
+#endif
+}
+
+// bank 0 addr 0x0012, 2-byte read: mode flags word, bit 0x0400 = cooling mode enabled
+// (the control panel reads it right after toggling cooling: 0x7F40 on, 0x7B40 off)
+void czdec::reply_r_cooling_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	uint16_t reg_v;
+
+	if(p->cz_head.packet_size != 0x18)
+		return;
+
+	reg_v = get_uint16(p->reg_value);
+
+	czhp->comfortzone_status.cooling_enabled = ((reg_v & 0x0400) != 0);
+
+#ifdef DEBUG
+	NPRINT("Cooling mode: ");
+	NPRINT(((reg_v & 0x0400) != 0) ? "on" : "off");
+	NPRINT(" (flags 0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
 #endif
 }

@@ -43,6 +43,8 @@ by -0x38 and holds byte for byte up to `hot_water_extra_time`.
 | `81/41 1D 00` | write | extra hot water on/off, bit 0x0040 | high, seen from panel |
 | `01 1D 00` | 2 | flag word, bit 0x0040 = extra hot water | high |
 | `80/40 0E 00` | write | fan boost on/off, bit 0x0200 | high, seen from panel |
+| `80/40 12 00` | write | cooling mode on/off, bit 0x0400 (reply 0x7F/0x7B) | high, seen from panel |
+| `00 12 00` | 2 | mode flags word, bit 0x0400 = cooling mode | high |
 | `01 D9 03` | write | panel → compressor frequency request, Hz*10 | high |
 | `01 E1 03` | write | panel → temperature setpoint, °C*10 | medium (which setpoint is unclear) |
 | `00 8D 04` | 0xAF | regulator settings; cooling group at the end: max frequency 50.0 Hz, P-band 1 10.0, I-time 1 180 min, P-band 2 200.0, I-time 2 40 s (bank 0 0x051C..0x0525) | high, confirmed on the panel |
@@ -62,6 +64,7 @@ Payload byte offsets (add 21 for the position in the raw frame):
 | 20 | 0x08 | cleared during fan boost | low |
 | 25 | 0xC0 | extra hot water active | high |
 | 26 | 0x10 | fan boost active | high |
+| 27 | 0x03 | cooling mode on | high |
 | 28 | 0x08 | set once hot water was requested | low |
 
 ### Sensors in the 0x88 frame

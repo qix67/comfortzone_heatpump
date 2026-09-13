@@ -118,6 +118,7 @@ typedef struct
 	Subscribable<int16_t> room_heating_setting;				// °C, * 10 (user selected) (proto: 1.60, 1.80, 2.21)
 	Subscribable<int16_t> hot_water_setting;					// °C, * 10 (user selected) (proto: 1.60, 1.80)
 	Subscribable<bool> extra_hot_water_setting;				// true = on, false = off
+	Subscribable<bool> cooling_enabled;							// true = cooling mode on, false = off (proto: 2.50)
 
 	Subscribable<byte> hot_water_priority_setting;			// 1 = low, 2 = normal, 3 = fast
 
