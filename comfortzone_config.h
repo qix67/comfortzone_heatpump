@@ -6,13 +6,9 @@
 #define HP_PROTOCOL_2_21 221
 #define HP_PROTOCOL_2_50 250
 
-//#define HP_PROTOCOL HP_PROTOCOL_2_21
+//#define HP_PROTOCOL HP_PROTOCOL_1_6
 
-#ifndef HP_PROTOCOL
-// Default protocol version is set to 1.6, but can be overridden
-// here or by a compiler flag, e.g. -D HP_PROTOCOL=180
-#define HP_PROTOCOL HP_PROTOCOL_1_6
-#endif
+#define HP_PROTOCOL HP_PROTOCOL_2_50
 
 #undef DEBUG
 // uncomment to enable debug mode

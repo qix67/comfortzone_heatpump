@@ -3585,6 +3585,7 @@ void czdec::reply_r_status_v250_xc3(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	czhp->comfortzone_status.room_heating_setting = get_uint16(q->heating_calculated_setting);
 	czhp->comfortzone_status.led_luminosity_setting = q->led_mode;
+	czhp->comfortzone_status.heating_curve = q->heating_curve;
 
 #ifdef DEBUG
 	int reg_v;
@@ -4043,12 +4044,14 @@ void czdec::reply_r_status_v250_xaf(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 // bank 0 addr 0x0550, 0x2C bytes: misc settings (filter interval confirmed)
 void czdec::reply_r_status_v250_x42(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
 {
-#ifdef DEBUG
 	R_REPLY_STATUS_V250_x42 *q = (R_REPLY_STATUS_V250_x42 *)p;
 
 	if(p->cz_head.packet_size != 0x42)
 		return;
 
+	czhp->comfortzone_status.filter_interval = get_uint16(q->filter_interval);
+
+#ifdef DEBUG
 	dump_unknown("RAW R_REPLY_STATUS_V250_x42", (byte *)q, sizeof(*q));
 	NPRINTLN("");
 

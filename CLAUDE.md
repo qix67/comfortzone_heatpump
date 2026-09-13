@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 An Arduino/ESP32 library (C++, no build system of its own) that snoops and controls a
-Comfortzone EX50 heat pump over its RS485 bus. Upstream is
+Comfortzone / Inventum heat pump over its RS485 bus. Upstream is
 `https://github.com/qix67/comfortzone_heatpump` (author Eric Prevoteau, GPLv3). The root
 folder *is* the library: sources sit flat at the top level and `library.properties` /
 `library.json` describe it for the Arduino IDE and PlatformIO.
@@ -20,7 +20,9 @@ part of whichever sketch includes it:
   Arduino IDE.
 - Sketches: `examples/heatpump_dump/` (prints decoded status every 5 s),
   `examples/heatpump_frame_dump/` (only calls `process()`; relies on `DEBUG` to print frames),
-  plus untracked scratch sketches `heatpump_dump.ino` and `test.ino/` at the root.
+  `examples/heatpump_mqtt/` (Home Assistant over MQTT with discovery; needs PubSubClient and a
+  gitignored `config.h` made from `config.h.example`; keep `DEBUG` off for it), plus untracked
+  scratch sketches `heatpump_dump.ino`, `test.ino/` and `test_tx/` at the root.
 - Hard dependency: FrankBoesing's FastCRC (`FastCRC.h`), already in `~/Arduino/libraries`.
   Only `CRC8.maxim()` is used.
 
@@ -33,7 +35,7 @@ check `git diff comfortzone_config.h` before assuming defaults:
   160/180/221/250). This is a whole-library `#if` switch, not a runtime option: it changes
   the register table, the status frame layouts, which fields of `COMFORTZONE_STATUS` get
   populated, the enum members available, and setter value ranges. Upstream default is 1.6;
-  this checkout has 2.50 forced on (the owner's EX50 has control panel firmware 2.50).
+  this checkout has 2.50 forced on (the owner has control panel firmware 2.50).
 - `DEBUG` + `OUTSER` turn on very verbose frame dumping via `DPRINT`/`NPRINT` macros. Most
   of `comfortzone_decoder_basic.cpp` and the `dump_unknown` calls compile to nothing
   without `DEBUG`.
@@ -83,6 +85,13 @@ Supporting headers:
 - `push_settings()` sets `disable_cz_buf_clear_on_completion` so it can inspect the reply
   itself. If a code path returns without clearing that flag, every later frame is corrupted
   until the buffer overflows.
+- `push_settings()` has two implementations. The original waits for 40 ms of silence after a
+  reply, which never happens on 2.50: that panel polls back to back (a frame every ~50 ms,
+  next query 5 to 30 ms after each reply, measured). The 2.50 variant sends immediately after
+  a reply completes and keeps decoding the panel's frames until the pump's reply to us shows
+  up, retrying on collision until the timeout. Transmit was verified on 2026-09-13 (fan boost
+  on/off, both answered on the first attempt). The trace in `last_message` uses letters:
+  s sent, r reply matched, x other frame, t no reply, c corrupted frame.
 - Heat pump address defaults to `65 6F DE 02` and may differ per unit; `guess_heatpump_addr()`
   snoops for it but does not apply it, `set_heatpump_addr()` does.
 - Adding a new decoded value means: add the field to `COMFORTZONE_STATUS`, locate its

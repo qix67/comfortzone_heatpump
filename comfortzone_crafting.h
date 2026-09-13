@@ -42,6 +42,7 @@ class czcraft
 		KR_ACKNOWLEDGE_ALARM,	// acknowledge alarms (2.50), parameter => alarm bitmask (0x0002 = filter)
 		KR_FILTER_DAYS_LEFT,		// set the filter change countdown (2.50), parameter => days
 		KR_FILTER_INTERVAL,		// set the filter change interval (2.50), parameter => days
+		KR_HEATING_CURVE,			// set the heating curve (2.50), parameter => curve * 10 (54 = 5.4)
 	} KNOWN_REGISTER_CRAFT_NAME;
 
 	// craft a W_CMD packet

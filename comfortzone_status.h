@@ -125,6 +125,8 @@ typedef struct
 	Subscribable<bool> extra_hot_water_setting;				// true = on, false = off
 	Subscribable<bool> cooling_enabled;							// true = cooling mode on, false = off (proto: 2.50)
 	Subscribable<bool> fireplace_mode_enabled;					// true = temporary fireplace mode active (proto: 2.50)
+	Subscribable<uint16_t> filter_interval;						// days between filter changes (proto: 2.50)
+	Subscribable<byte> heating_curve;								// heating curve * 10 (54 = 5.4) (proto: 2.50)
 	Subscribable<bool> automatic_daylight_saving;				// true = automatic daylight saving on (proto: 2.50)
 
 	Subscribable<byte> hot_water_priority_setting;			// 1 = low, 2 = normal, 3 = fast

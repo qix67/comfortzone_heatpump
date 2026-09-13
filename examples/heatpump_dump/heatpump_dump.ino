@@ -11,10 +11,10 @@
 // heatpump.comfortzone_status variable are not initialized
 
 // Serial connected to RS485 module
-#define RS485SER Serial3
+#define RS485SER Serial2
 
 // pin connected to DE/RE pin of RS485 module
-#define RS485_DE_PIN 2
+#define RS485_DE_PIN 14
 
 comfortzone_heatpump heatpump(new ArduinoRS485Interface(RS485SER, RS485_DE_PIN));
 

@@ -48,6 +48,9 @@ will be printed on the serial console set in OUTSER define.
 4) Using library
 ================
 
+Example heatpump_mqtt (protocol 2.50) publishes everything to Home Assistant
+over MQTT with discovery, and accepts commands; see examples/heatpump_mqtt.
+
 By default, the library only performs bus snooping assuming a control panel
 periodically requests heatpump status (roughly every 5 seconds on mine).
 
@@ -228,6 +231,19 @@ comfortzone_heatpump object.
  Protocol 2.50 only. Filter change countdown and interval, in days. Writing the
  interval to the countdown is how the panel resets the filter alarm after a
  filter change; writing 0 raises it.
+
+
+ * bool set_heating_curve(float curve, int timeout = 5);
+
+ Protocol 2.50 only. Set the heating curve as shown on the control panel
+ (0.0 to 25.5, step 0.1). comfortzone_status.heating_curve holds the current
+ value * 10.
+
+
+ * unsigned long last_frame_age();
+
+ Milliseconds since the last valid frame. The control panel polls every ~3 s,
+ so more than ~30 s means the bus or the wiring is dead.
 
 
  Note for protocol 2.50: set_fireplace_mode(), set_automatic_daylight_saving(),

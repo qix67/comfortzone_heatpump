@@ -83,6 +83,7 @@ class comfortzone_heatpump
 	bool acknowledge_alarm(uint16_t alarm_mask, int timeout = 5);	// alarm bits to acknowledge, e.g. CZ_ALARM_FILTER or comfortzone_status.alarm_pending_mask (protocol 2.50 only)
 	bool set_filter_days_left(uint16_t days, int timeout = 5);		// filter change countdown in days; writing the interval resets the filter alarm (protocol 2.50 only)
 	bool set_filter_interval(uint16_t days, int timeout = 5);			// filter change interval in days (protocol 2.50 only)
+	bool set_heating_curve(float curve, int timeout = 5);				// heating curve, 0.0 to 25.5 in steps of 0.1 (protocol 2.50 only)
 
 	bool set_sensor_offset(uint16_t sensor_num, float temp_offset, int timeout = 5);	// sensor: [0:7], offset in °C (-10.0° -> 10.0°)
 
@@ -93,6 +94,9 @@ class comfortzone_heatpump
 
 	// modify default address of heatpump
 	void set_heatpump_addr(byte new_heatpump_addr[4]);
+
+	// milliseconds since the last valid frame was received (bus health; the control panel polls every ~3 s)
+	unsigned long last_frame_age() { return millis() - last_frame_timestamp; }
 
 	// try to guess heatpump address (if needed, must be called after begin)
 	bool guess_heatpump_addr(byte guessed_addr[4], int timeout = 5);

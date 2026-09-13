@@ -813,6 +813,42 @@ bool comfortzone_heatpump::set_filter_interval(uint16_t days, int timeout)
 	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
 }
 
+// Protocol 2.50 only. Heating curve as shown on the control panel (e.g. 5.4). 1-byte write, reply echoes the value.
+bool comfortzone_heatpump::set_heating_curve(float curve, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	byte int_value;
+	bool push_result;
+
+	if((curve < 0.0) || (curve > 25.5))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 0.0 and 25.5");
+		return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_HEATING_CURVE);
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_HEATING_CURVE not found");
+		return false;
+	}
+
+	int_value = (byte)(curve * 10.0 + 0.5);
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, int_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, int_value);
+
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+		comfortzone_status.heating_curve = int_value;
+
+	return push_result;
+}
+
 // true = enable, false = disable
 bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeout)
 {
@@ -936,6 +972,101 @@ bool comfortzone_heatpump::set_sensor_offset(uint16_t sensor_num, float temp_off
 // send a command to the heatpump and wait for the given reply
 // on error, several retries may occur and the command may take up to "timeout" seconds
 // if reply_header_check_only is false, reply must be exactly equal to expected_reply
+#if HP_PROTOCOL == HP_PROTOCOL_2_50
+// Protocol 2.50: the control panel polls the heat pump continuously (a frame every ~50 ms, next query 5-30 ms after
+// each reply), so the bus is never quiet for 40 ms. Strategy: send right after a reply frame completes, in the gap
+// before the panel's next query, then keep processing frames until our reply shows up (the panel's next query may
+// arrive first). A collision with the panel corrupts both frames; the pump ignores them and the panel re-polls, so
+// the attempt is simply retried until the timeout. Trace letters (debug mode): s = sent, r = reply matched,
+// x = other frame while waiting, t = no reply within the wait, c = corrupted frame while waiting.
+bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout, bool header_check_only)
+{
+	unsigned long start, sent_at, last_reply_seen;
+	unsigned long timeout_ms = (unsigned long)timeout * 1000UL;
+	PROCESSED_FRAME_TYPE pft;
+	int i;
+
+	start = millis();
+
+	last_message[0] = '\0';
+	last_message_size = 0;
+
+	if(debug_mode)
+	{
+		for(i = 0; i < expected_reply_length; i++)
+		{
+			if(last_message_size >= (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 4))
+				break;
+
+			sprintf(last_message + last_message_size, "%02X ", (int)(expected_reply[i]));
+			last_message_size += 3;
+		}
+	}
+
+#define CZ_TRACE(c) if((debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2))) last_message[last_message_size++] = (c)
+
+	last_reply_seen = last_reply_frame_timestamp;
+
+	while(millis() - start < timeout_ms)		// subtraction: safe across the millis() wrap
+	{
+		pft = process();
+
+		// wait for the completion of a reply frame (the panel's turnaround after a reply is the only gap there is)
+		if((pft != PFT_REPLY) || (last_reply_frame_timestamp == last_reply_seen))
+			continue;
+
+		last_reply_seen = last_reply_frame_timestamp;
+
+		if((cz_size != 0) || rs485->available())
+			continue;
+
+		CZ_TRACE('s');
+
+		rs485->enable_sender_mode();
+		rs485->write_bytes(cmd, cmd_length);
+		rs485->flush();
+		rs485->enable_receiver_mode();
+
+		// wait for our reply; other frames (the panel's polling) are decoded and skipped
+		disable_cz_buf_clear_on_completion = true;
+		sent_at = millis();
+
+		while(millis() - sent_at < 300)
+		{
+			pft = process();
+
+			if(pft == PFT_NONE)
+				continue;
+
+			if( (pft == PFT_REPLY)
+				 && (cz_size == expected_reply_length)
+				 && ( ( (header_check_only == false) && (!memcmp(cz_buf, expected_reply, expected_reply_length)) )
+					|| ( (header_check_only == true) && (!memcmp(cz_buf, expected_reply, sizeof(CZ_PACKET_HEADER))) ) ) )
+			{
+				CZ_TRACE('r');
+				disable_cz_buf_clear_on_completion = false;
+				cz_size = 0;
+				last_message[last_message_size] = '\0';
+				return true;
+			}
+
+			CZ_TRACE(pft == PFT_CORRUPTED ? 'c' : 'x');
+			cz_size = 0;		// frame was decoded by process(); drop it and keep waiting
+		}
+
+		CZ_TRACE('t');
+		disable_cz_buf_clear_on_completion = false;
+		cz_size = 0;
+		last_reply_seen = last_reply_frame_timestamp;
+	}
+
+#undef CZ_TRACE
+
+	last_message[last_message_size] = '\0';
+	return false;
+}
+
+#else
 // if reply_header_check_only is true, only reply header (CZ_PACKET_HEADER) must match expected_reply header
 bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout, bool header_check_only)
 {
@@ -989,6 +1120,15 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 			}
 
 			// no new frame or reply frame and incoming frame buffer is empty, we have a go
+			if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
+			{
+				// why not: n = a new frame arrived during the wait, p = partial bytes pending in the input buffer
+				if(pft != comfortzone_heatpump::PFT_NONE)
+					last_message[last_message_size++] = 'n';
+				else if(cz_size != 0)
+					last_message[last_message_size++] = 'p';
+			}
+
 			if(
 				(last_frame_timestamp == last_reply_frame_timestamp)
 				&& (reply_frame_time == last_reply_frame_timestamp)
@@ -1086,6 +1226,7 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 	last_message[last_message_size] = '\0';
 	return false;
 }
+#endif
 
 void comfortzone_heatpump::enable_debug_mode(bool debug_flag)
 {

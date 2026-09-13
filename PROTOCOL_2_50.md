@@ -192,6 +192,16 @@ vary per register, so setters for these need `header_check_only`.
 - `00 00 00`, `00 7F 00`, `00 27 01`, `00 61 06`, `00 8D 04`, `00 50 05`, `01 20 04`,
   `03 FC 0E`: constant during both captures, so settings or identification.
 
+## Bus timing and transmitting
+
+Measured with `test_tx/`: 345 frames in 20 s, a frame every ~56 ms, no idle period between
+polling cycles at all. After a reply the panel's next query follows within 40 ms (mostly
+within 20). The heat pump's reply to a query completes 45 to 165 ms after the query
+(mostly transmission time of the long replies). So the only slot for a second master is the
+few ms right after a reply completes. The library's 2.50 `push_settings()` sends there and
+tolerates the panel's next query arriving before the pump's reply to us. Both test commands
+succeeded on the first attempt with no collision.
+
 ## Not found yet
 
 - 2.21-style fan speed byte write (`KR_FAN_SPEED`). The captured panel has no fan speed
