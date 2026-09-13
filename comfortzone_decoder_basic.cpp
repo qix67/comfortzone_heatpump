@@ -270,14 +270,17 @@ void czdec::cmd_w_sanitary_priority(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0x0001)
-		NPRINTLN("low");
-	else if(reg_v == 0x0002)
-		NPRINTLN("normal");
-	else if(reg_v == 0x0003)
-		NPRINTLN("high");
-	else
-		NPRINTLN(reg_v, HEX);
+	// 1.6 writes 1/2/3 as a set-bit frame; 2.50 rewrites the whole flags word, so only the low 2 bits matter
+	switch(reg_v & 0x0003)
+	{
+		case 1: NPRINT("low"); break;
+		case 2: NPRINT("normal"); break;
+		case 3: NPRINT("high"); break;
+		default: NPRINT("?"); break;
+	}
+	NPRINT(" (0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
 
 	NPRINT("crc: ");
 	if(p->crc < 0x10)

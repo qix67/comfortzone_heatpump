@@ -686,6 +686,55 @@ bool comfortzone_heatpump::set_cooling_mode(bool enable, int timeout)
 	return push_result;
 }
 
+// 1 = low, 2 = normal, 3 = high
+// Protocol 2.50 only. Priority is the low 2 bits of the flags word at bank 0 addr 0x0E (the word that also holds
+// the fan boost bit). The panel rewrites the whole word after reading it; the library has no read command, so it
+// uses the set-bits / clear-bits registers instead: at most two writes.
+bool comfortzone_heatpump::set_hot_water_priority(uint8_t priority, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr_set, *kr_clear;
+	uint16_t clear_mask;
+
+	if((priority < 1) || (priority > 3))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 1 and 3");
+		return false;
+	}
+
+	kr_set = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_ON);		// set-bits register of the flags word
+	kr_clear = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_OFF);	// clear-bits register of the flags word
+
+	if((kr_set == NULL) || (kr_clear == NULL))
+	{
+		RETURN_MESSAGE("flags word registers not found");
+		return false;
+	}
+
+	// set the wanted bits (reply value varies, header check only)
+	czcraft::craft_w_cmd(this, &cmd, kr_set->reg_num, priority);
+	czcraft::craft_w_reply(this, &expected_reply, kr_set->reg_num, 0);
+
+	if(!push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true))
+		return false;
+
+	// clear the bit(s) of the 2-bit field that must be 0 (none for priority 3)
+	clear_mask = (~priority) & 0x0003;
+
+	if(clear_mask != 0)
+	{
+		czcraft::craft_w_cmd(this, &cmd, kr_clear->reg_num, (uint16_t)(~clear_mask));
+		czcraft::craft_w_reply(this, &expected_reply, kr_clear->reg_num, 0);
+
+		if(!push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true))
+			return false;
+	}
+
+	comfortzone_status.hot_water_priority_setting = priority;
+	return true;
+}
+
 // true = enable, false = disable
 bool comfortzone_heatpump::set_automatic_daylight_saving(bool enable, int timeout)
 {

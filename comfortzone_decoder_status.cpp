@@ -4049,3 +4049,42 @@ void czdec::reply_r_cooling_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr,
 	NPRINTLN(p->crc, HEX);
 #endif
 }
+
+// bank 0 addr 0x000E, 2-byte read: fan / hot water flags word.
+//   bits 0x0003 = hot water priority (1 = low, 2 = normal, 3 = high; same encoding as 1.6, which read the same address)
+//   bit  0x0200 = fan boost active
+// The panel reads it, writes the whole word back with the priority bits changed, and reads it again.
+void czdec::reply_r_fan_flags_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+	uint16_t reg_v;
+
+	if(p->cz_head.packet_size != 0x18)
+		return;
+
+	reg_v = get_uint16(p->reg_value);
+
+	if((reg_v & 0x0003) != 0)
+		czhp->comfortzone_status.hot_water_priority_setting = reg_v & 0x0003;
+
+#ifdef DEBUG
+	NPRINT("Hot water priority: ");
+	switch(reg_v & 0x0003)
+	{
+		case 1: NPRINTLN("low"); break;
+		case 2: NPRINTLN("normal"); break;
+		case 3: NPRINTLN("high"); break;
+		default: NPRINTLN("?"); break;
+	}
+
+	NPRINT("Fan boost: ");
+	NPRINT((reg_v & 0x0200) ? "on" : "off");
+	NPRINT(" (flags 0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
+
+	NPRINT("crc: ");
+	if(p->crc < 0x10)
+		NPRINT("0");
+	NPRINTLN(p->crc, HEX);
+#endif
+}

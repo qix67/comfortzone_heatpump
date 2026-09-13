@@ -79,6 +79,7 @@ class comfortzone_heatpump
 	bool set_fireplace_mode(bool enable, int timeout = 5); // true = enable, false = disable
 	bool set_fan_boost(bool enable, int timeout = 5);	// true = temporary fan high speed, false = back to normal (protocol 2.50 only)
 	bool set_cooling_mode(bool enable, int timeout = 5);	// true = cooling mode on, false = off (protocol 2.50 only)
+	bool set_hot_water_priority(uint8_t priority, int timeout = 5);	// 1 = low, 2 = normal, 3 = high (protocol 2.50 only)
 
 	bool set_sensor_offset(uint16_t sensor_num, float temp_offset, int timeout = 5);	// sensor: [0:7], offset in °C (-10.0° -> 10.0°)
 

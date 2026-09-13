@@ -209,6 +209,12 @@ comfortzone_heatpump object.
  reports the current state.
 
 
+ * bool set_hot_water_priority(uint8_t priority, int timeout = 5);
+
+ Protocol 2.50 only. Set hot water priority: 1 = low, 2 = normal, 3 = high.
+ Sends up to two writes (set bits, clear bits) to the flags word.
+
+
  Special methods
  ---------------
 

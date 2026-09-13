@@ -839,9 +839,10 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 
 		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 80 0E 00 - 00 02 xx   reply w ... 43   (panel "fan high speed" ON = set bit 0x0200)
 		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 40 0E 00 - FF FD xx   reply w ... 41   (back to normal = clear bit 0x0200)
-		// on this panel the fan speed is sensor controlled; the user-facing control is a temporary high speed toggle
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x80, 0x0E, 0x00}, czcraft::KR_FAN_BOOST_ON, "Fan boost - on", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x40, 0x0E, 0x00}, czcraft::KR_FAN_BOOST_OFF, "Fan boost - off", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		// on this panel the fan speed is sensor controlled; the user-facing control is a temporary high speed toggle.
+		// The same word holds the hot water priority in bits 0x0003, so set_hot_water_priority() uses these two registers as well.
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x80, 0x0E, 0x00}, czcraft::KR_FAN_BOOST_ON, "Fan / hot water flags - set bits", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x40, 0x0E, 0x00}, czcraft::KR_FAN_BOOST_OFF, "Fan / hot water flags - clear bits", czdec::cmd_r_generic, czdec::cmd_w_generic_2byte, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
 
 		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 80 12 00 - 00 04 xx   reply w ... 7F   (cooling mode ON = set bit 0x0400)
 		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 40 12 00 - FF FB xx   reply w ... 7B   (cooling mode OFF = clear bit 0x0400)
@@ -852,7 +853,8 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 01 1D 00 - 45 00 xx  (extra hot water on)   05 00 (off)
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 00 0E 00 - 5A 43 xx  (fan boost on)         5A 41 (off)
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x01, 0x1D, 0x00}, czcraft::KR_UNCRAFTABLE, "Hot water flags (bit 0x0040 = extra hot water)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_extra_hot_water_v250, czdec::reply_w_generic},
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Fan flags (bit 0x0200 = fan boost)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_generic_2byte, czdec::reply_w_generic},
+		// 65 6F DE 02 D3 5E 41 44 44 52 18 57 01 02 03 04 0B 10 00 0E 00 - 5B 41 xx  (panel sets hot water priority high: whole word rewritten, low 2 bits 2 -> 3)
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x0E, 0x00}, czcraft::KR_UNCRAFTABLE, "Fan / hot water flags (bits 0x0003 = priority, 0x0200 = fan boost)", czdec::cmd_r_generic, czdec::cmd_w_sanitary_priority, czdec::reply_r_fan_flags_v250, czdec::reply_w_generic},
 		// 41 44 44 52 07 8A 65 6F DE 02 18 72 01 02 03 04 0B 10 00 12 00 - 40 7F xx  (cooling on)   40 7B (off)
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x12, 0x00}, czcraft::KR_UNCRAFTABLE, "Mode flags (bit 0x0400 = cooling mode)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_cooling_v250, czdec::reply_w_generic},
 

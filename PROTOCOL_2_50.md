@@ -45,6 +45,8 @@ by -0x38 and holds byte for byte up to `hot_water_extra_time`.
 | `80/40 0E 00` | write | fan boost on/off, bit 0x0200 | high, seen from panel |
 | `80/40 12 00` | write | cooling mode on/off, bit 0x0400 (reply 0x7F/0x7B) | high, seen from panel |
 | `00 12 00` | 2 | mode flags word, bit 0x0400 = cooling mode | high |
+| `00 0E 00` | 2 / write | flags word: bits 0x0003 = hot water priority (1 low, 2 normal, 3 high, as in 1.6), bit 0x0200 = fan boost. The panel rewrites the whole word to change priority | high, seen from panel |
+| `01 40 03` | 0xBA | additional (electric heater) power confirmed: 6000 W while the heater ran, total = compressor + additional to the watt | high |
 | `01 D9 03` | write | panel → compressor frequency request, Hz*10 | high |
 | `01 E1 03` | write | panel → temperature setpoint, °C*10 | medium (which setpoint is unclear) |
 | `00 8D 04` | 0xAF | regulator settings; cooling group at the end: max frequency 50.0 Hz, P-band 1 10.0, I-time 1 180 min, P-band 2 200.0, I-time 2 40 s (bank 0 0x051C..0x0525) | high, confirmed on the panel |
@@ -103,6 +105,8 @@ advanced menu to name. Offsets are payload offsets.
 - off 16: after compressor stop counts down from 298 in seconds. Restart delay (5 min).
 - off 20: from compressor start counts down from 899 in seconds (15 min).
 - off 26: 60 → 47 → 60 and off 59: 45 → 0 → 45: start-up countdowns.
+- off 24: 15 before the electric heater started, 3855 (0x0F0F) while it ran, 0 after it
+  stopped. Heater stage or request/active mask?
 - off 82 (0 → 273), off 84 (0 → -382), off 88 (0 → 154): compressor-run-only values.
 - off 93: 30 → 0 countdown at start.
 - off 98 (4103 → 4406) and off 100 (750 → 902): rise with the compressor and freeze at

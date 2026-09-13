@@ -136,6 +136,7 @@ class czdec
 	static void reply_r_status_v250_x57(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_extra_hot_water_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_cooling_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_fan_flags_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v250_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v250_ui_versions(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
