@@ -4180,6 +4180,11 @@ void czdec::reply_r_status_v250_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	czhp->comfortzone_status.automatic_daylight_saving = ((reg_v & 0x0040) != 0);
 
+	// the same words the panel reads back after toggling priority / cooling, polled here every cycle
+	if((get_uint16(q->fan_flags) & 0x0003) != 0)
+		czhp->comfortzone_status.hot_water_priority_setting = get_uint16(q->fan_flags) & 0x0003;
+	czhp->comfortzone_status.cooling_enabled = ((get_uint16(q->mode_flags) & 0x0400) != 0);
+
 #ifdef DEBUG
 	dump_unknown("RAW R_REPLY_STATUS_V250_x2E", (byte *)q, sizeof(*q));
 	NPRINTLN("");
@@ -4191,6 +4196,14 @@ void czdec::reply_r_status_v250_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 	NPRINTLN(")");
 
 	dump_unknown("unknown0_x2e", q->unknown0, sizeof(q->unknown0));
+
+	NPRINT("Hot water priority: ");
+	NPRINTLN(get_uint16(q->fan_flags) & 0x0003);
+	NPRINT("Cooling mode: ");
+	NPRINTLN((get_uint16(q->mode_flags) & 0x0400) ? "on" : "off");
+
+	dump_unknown("unknown1_x2e", q->unknown1, sizeof(q->unknown1));
+	dump_unknown("unknown2_x2e", q->unknown2, sizeof(q->unknown2));
 
 	NPRINT("crc: ");
 	if(q->crc < 0x10)

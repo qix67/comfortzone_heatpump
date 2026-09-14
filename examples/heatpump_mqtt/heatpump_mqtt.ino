@@ -23,6 +23,7 @@
 
 #define FULL_REFRESH_MS      300000UL	// republish everything every 5 minutes
 #define BUS_DEAD_MS          30000UL	// no frame for this long = heat pump offline
+#define WARMUP_MS            10000UL	// after the first frame, wait for a few polling cycles so every value is real before publishing
 #define WIFI_RETRY_MS        15000UL
 #define MQTT_RETRY_MS        5000UL
 
@@ -214,6 +215,8 @@ static void publish_result(const char *id, bool ok)
 	Serial.println(result_text);
 }
 
+static bool bus_online = false;
+
 static void on_message(char *t, byte *payload, unsigned int length)
 {
 	char p[32];
@@ -238,6 +241,13 @@ static void on_message(char *t, byte *payload, unsigned int length)
 
 		Serial.print("command "); Serial.print(id); Serial.print(" = "); Serial.println(p);
 
+		if(!bus_online)
+		{
+			strncpy(heatpump.last_message, "heat pump not online", sizeof(heatpump.last_message));
+			publish_result(id, false);
+			return;
+		}
+
 		bool ok = e.command(p);		// blocks for up to 5 s while waiting for a bus slot and the reply
 		publish_result(id, ok);
 		publish_state(e, true);		// setters update the status cache on success
@@ -245,7 +255,26 @@ static void on_message(char *t, byte *payload, unsigned int length)
 	}
 }
 
-static bool bus_online = false;
+static unsigned long first_frame_at = 0;
+static bool warmup_started = false;
+
+// true once frames are arriving and the status struct has had time to fill (the status starts at zero, and a
+// zero followed by the real value would look like a meter reset to the energy dashboard)
+static bool data_ready()
+{
+	unsigned long age = heatpump.last_frame_age();
+
+	if(age >= BUS_DEAD_MS)		// also covers "no frame received yet": age is ULONG_MAX until the first one
+		return false;
+
+	if(!warmup_started)
+	{
+		warmup_started = true;
+		first_frame_at = millis() - age;
+	}
+
+	return (millis() - first_frame_at) >= WARMUP_MS;
+}
 
 static void set_availability(bool online, bool force = false)
 {
@@ -253,7 +282,7 @@ static void set_availability(bool online, bool force = false)
 		return;
 	bus_online = online;
 	mqtt.publish(MQTT_PREFIX "/availability", online ? "online" : "offline", true);
-	Serial.println(online ? "heat pump online" : "heat pump offline (no frames)");
+	Serial.println(online ? "heat pump online" : "heat pump offline");
 }
 
 static bool mqtt_connect()
@@ -277,7 +306,7 @@ static bool mqtt_connect()
 		mqtt.loop();
 	}
 
-	set_availability(heatpump.last_frame_age() < BUS_DEAD_MS, true);
+	set_availability(data_ready(), true);
 	return true;
 }
 
@@ -362,8 +391,11 @@ void loop()
 
 	mqtt.loop();
 
-	// --- availability follows the bus
-	set_availability(heatpump.last_frame_age() < BUS_DEAD_MS);
+	// --- availability follows the bus; nothing is published until the status is populated
+	set_availability(data_ready());
+
+	if(!bus_online)
+		return;
 
 	// --- states: on change every second, everything every FULL_REFRESH_MS
 	if(now - last_publish >= 1000)

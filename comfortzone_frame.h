@@ -1198,7 +1198,11 @@ typedef struct __attribute__ ((packed))
 	CZ_PACKET_HEADER cz_head;
 
 	byte flags[2];								// LSB. bit 0x0040 = automatic daylight saving (set/cleared through 80 00 00 / 40 00 00, as in 1.6)
-	byte unknown0[22];						// 72 42 AE 34 86 1F BF 00 00 1D 0A C7 5A 41 2B 49 40 7B 50 80 0F 00 (constant, identification?)
+	byte unknown0[12];						// 72 42 AE 34 86 1F BF 00 00 1D 0A C7
+	byte fan_flags[2];						// addr 0x000E: bits 0x0003 = hot water priority (1 low, 2 normal, 3 high), bit 0x0200 = fan boost
+	byte unknown1[2];							// 2B 49
+	byte mode_flags[2];						// addr 0x0012: bit 0x0400 = cooling mode
+	byte unknown2[4];							// 50 80 0F 00
 	byte crc;
 } R_REPLY_STATUS_V250_x2E;
 

@@ -909,7 +909,7 @@ reply 41 44 44 52 07 8A 65 6F DE 02 17 77 01 02 03 04 0B 09 81 17 00 6C C0  => 1
 		// No write appeared either when the room temperature was changed on the panel, so KR_ROOM_HEATING_TEMP above stays derived.
 
 		// --- frames polled by the control panel every cycle, content not decoded (hex dumped in DEBUG mode) ---
-		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "System flags (bit 0x0040 = automatic daylight saving)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x2e, czdec::reply_w_generic},	// 0x2e bytes
+		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x00, 0x00}, czcraft::KR_UNCRAFTABLE, "System flags (daylight saving, hot water priority, cooling mode)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x2e, czdec::reply_w_generic},	// 0x2e bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x7F, 0x00}, czcraft::KR_UNCRAFTABLE, "Sensor offsets TE0..TE9", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_x20, czdec::reply_w_generic},	// 0x20 bytes
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x27, 0x01}, czcraft::KR_UNCRAFTABLE, "Unknown 0x000127 (0x1a bytes)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_raw_dump, czdec::reply_w_generic},
 		{ {0x01, 0x02, 0x03, 0x04, 0x0B, 0x10, 0x00, 0x8D, 0x04}, czcraft::KR_UNCRAFTABLE, "Regulator settings (0xaf bytes long frame)", czdec::cmd_r_generic, czdec::empty, czdec::reply_r_status_v250_xaf, czdec::reply_w_generic},	// cooling group at the end confirmed

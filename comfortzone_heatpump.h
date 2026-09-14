@@ -95,8 +95,9 @@ class comfortzone_heatpump
 	// modify default address of heatpump
 	void set_heatpump_addr(byte new_heatpump_addr[4]);
 
-	// milliseconds since the last valid frame was received (bus health; the control panel polls every ~3 s)
-	unsigned long last_frame_age() { return millis() - last_frame_timestamp; }
+	// milliseconds since the last valid frame was received, or ULONG_MAX when no frame has been received yet
+	// (bus health; the control panel polls every ~3 s)
+	unsigned long last_frame_age() { return frame_received ? (millis() - last_frame_timestamp) : (unsigned long)-1; }
 
 	// try to guess heatpump address (if needed, must be called after begin)
 	bool guess_heatpump_addr(byte guessed_addr[4], int timeout = 5);
@@ -123,6 +124,7 @@ class comfortzone_heatpump
 	uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
 
 	// frame timestamp
+	bool frame_received = false;			// false until the first valid frame, so last_frame_age() cannot read as "fresh" at boot
 	unsigned long last_frame_timestamp = 0;
 	unsigned long last_reply_frame_timestamp = 0;
 

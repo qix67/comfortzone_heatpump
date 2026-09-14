@@ -118,6 +118,7 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 		cz_size = 0;
 
 	last_frame_timestamp = millis();
+	frame_received = true;
 
 	if(pft == comfortzone_heatpump::PFT_REPLY)
 		last_reply_frame_timestamp = last_frame_timestamp;
