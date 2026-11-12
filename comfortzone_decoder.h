@@ -63,6 +63,9 @@ class czdec
 	static void reply_r_clr_alarm(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_w_generic(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p);
 
+	// debug helper: hex dump of the reply payload (bytes between header and crc). Does nothing unless DEBUG is set
+	static void reply_r_raw_dump(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+
 	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_CMD *p);
 	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_SMALL_CMD *p);
 	static void empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_CMD *p);
@@ -126,6 +129,23 @@ class czdec
 	static void reply_r_status_v221_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v221_xf2(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 	static void reply_r_status_v221_xb9(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+
+	// protocol version 2.50
+	static void reply_r_status_v250_xc3(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_temp_or_r_status_v250_xc8(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_x57(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_extra_hot_water_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_cooling_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_fan_flags_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_fireplace_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_x2e(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_x20(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_alarm_log_v250(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_x88(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_x51(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_ui_versions(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_xaf(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
+	static void reply_r_status_v250_x42(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p);
 };
 
 #endif

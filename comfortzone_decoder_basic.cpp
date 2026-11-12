@@ -205,6 +205,10 @@ void czdec::cmd_w_extra_hot_water(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr
 		NPRINTLN("on");
 	else if(reg_v == 0xFFFE)		// -2 (???)
 		NPRINTLN("off");
+	else if(reg_v == 0x0040)		// 2.50: set bit
+		NPRINTLN("on");
+	else if(reg_v == 0xFFBF)		// 2.50: clear bit
+		NPRINTLN("off");
 	else
 		NPRINTLN(reg_v, HEX);
 
@@ -244,9 +248,9 @@ void czdec::cmd_w_daylight_saving(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0xFFBF)		// == ~0x0040
+	if(reg_v == 0x0040)		// set bit: what set_automatic_daylight_saving(true) sends; confirmed on a 2.50 panel
 		NPRINTLN("on");
-	else if(reg_v == 0x0040)
+	else if(reg_v == 0xFFBF)	// clear bit
 		NPRINTLN("off");
 	else
 		NPRINTLN(reg_v, HEX);
@@ -266,14 +270,17 @@ void czdec::cmd_w_sanitary_priority(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0x0001)
-		NPRINTLN("low");
-	else if(reg_v == 0x0002)
-		NPRINTLN("normal");
-	else if(reg_v == 0x0003)
-		NPRINTLN("high");
-	else
-		NPRINTLN(reg_v, HEX);
+	// 1.6 writes 1/2/3 as a set-bit frame; 2.50 rewrites the whole flags word, so only the low 2 bits matter
+	switch(reg_v & 0x0003)
+	{
+		case 1: NPRINT("low"); break;
+		case 2: NPRINT("normal"); break;
+		case 3: NPRINT("high"); break;
+		default: NPRINT("?"); break;
+	}
+	NPRINT(" (0x");
+	NPRINT(reg_v, HEX);
+	NPRINTLN(")");
 
 	NPRINT("crc: ");
 	if(p->crc < 0x10)
@@ -583,9 +590,9 @@ void czdec::reply_r_daylight_saving(comfortzone_heatpump *czhp, KNOWN_REGISTER *
 
 	reg_v = get_uint16(p->reg_value);
 
-	if(reg_v == 0xFFBF)		// == ~0x0040
+	if(reg_v == 0x0040)		// set bit: what set_automatic_daylight_saving(true) sends; confirmed on a 2.50 panel
 		NPRINTLN("on");
-	else if(reg_v == 0x0040)
+	else if(reg_v == 0xFFBF)	// clear bit
 		NPRINTLN("off");
 	else
 		NPRINTLN(reg_v, HEX);
@@ -772,3 +779,31 @@ void czdec::empty(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, W_REPLY *p)
 {
 }
 
+
+// hex dump of a reply payload for registers whose content is not decoded yet
+void czdec::reply_r_raw_dump(comfortzone_heatpump *czhp, KNOWN_REGISTER *kr, R_REPLY *p)
+{
+#ifdef DEBUG
+	byte *ptr = (byte *)p;
+	int len = p->cz_head.packet_size;
+	int i;
+
+	NPRINT("payload (");
+	NPRINT(len - (int)sizeof(CZ_PACKET_HEADER) - 1);
+	NPRINT(" bytes): ");
+
+	for(i = sizeof(CZ_PACKET_HEADER); i < len - 1; i++)
+	{
+		if(ptr[i] < 0x10)
+			NPRINT("0");
+		NPRINT(ptr[i], HEX);
+		NPRINT(" ");
+	}
+	NPRINTLN("");
+
+	NPRINT("crc: ");
+	if(ptr[len - 1] < 0x10)
+		NPRINT("0");
+	NPRINTLN(ptr[len - 1], HEX);
+#endif
+}

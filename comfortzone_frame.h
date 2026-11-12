@@ -1033,4 +1033,191 @@ typedef struct __attribute__ ((packed))
 } R_REPLY_STATUS_V221_xb9;
 
 
+// =====================================
+// == status frames (protocol version 2.50)
+// =====================================
+// Register numbers are memory addresses: bytes 6..8 of reg_num are {bank, addr_lo, addr_hi}
+// and the R command parameter is the number of bytes to read. The 2.50 map is the 2.21 map
+// with a few bytes inserted, so most frames keep the 2.21 layout at a slightly shifted address.
+
+// read of 0xAD bytes at bank 0 addr 0x0289 (2.21: 0xAB bytes at 0x0287)
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte led_mode;								// "LED mode" on the panel (0 and 3 seen), confirmed by a write from the control panel (bank 0 0x0289)
+
+	byte unknown0[7];
+
+	byte heating_curve;						// * 10 (5.4 => 54), confirmed by a write from the control panel (bank 0 0x0291)
+
+	byte heating_calculated_setting[2];	// °C, LSB, 2 bytes, * 10 (same offset as 2.21). The panel has no room setpoint; this is the
+													// value computed from the curve, so writing it (set_room_temperature) is probably overridden
+
+	byte unknown1[162];					// 2.21 has 160 bytes here
+	byte crc;
+} R_REPLY_STATUS_V250_xC3;
+
+// read of 0xB2 bytes at bank 0 addr 0x0345 (2.21: 0xAF bytes at 0x0341)
+// This is the 1.6 "Status 01" hot water settings block (1.6 reads it at 0x037A, 3 bytes earlier):
+// the layout of R_REPLY_STATUS_01 holds from hot_water_user_setting up to hot_water_extra_time.
+// Confirmed on 2026-09-13 against the control panel: setpoint 50.0, hysteresis 1.5, compressor
+// 15.0/73.0 Hz, extra 65.0 °C for 180 min. After extra_time a byte is inserted and the 1.6 names no longer fit.
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte hot_water_user_setting[2];			// °C, LSB, 2 bytes, * 10 (written by the panel when the user changes it)
+	byte hot_water_hysteresis[2];				// °C, LSB, 2 bytes, * 10
+
+#define STATUS_V250_NB_HW_STEPS 15
+	byte hot_water_normal_steps[STATUS_V250_NB_HW_STEPS][2];	// °C, LSB, 2 bytes, signed, * 10
+	byte hot_water_high_steps[STATUS_V250_NB_HW_STEPS][2];	// °C, LSB, 2 bytes, signed, * 10
+	byte hot_water_extra_steps[STATUS_V250_NB_HW_STEPS][2];	// °C, LSB, 2 bytes, signed, * 10
+
+	byte unknown5a[1];
+	byte hot_water_max_runtime;				// minute
+	byte hot_water_pause_time;					// minute
+
+	byte unknown5b[8][2];						// 8 signed int16, * 10
+
+	byte hot_water_compressor_min_frequency[2];	// Hz, LSB, 2 bytes, * 10
+	byte hot_water_compressor_max_frequency[2];	// Hz, LSB, 2 bytes, * 10
+
+	byte unknown6[4];
+
+	byte hot_water_extra_setting[2];			// °C, LSB, 2 bytes, * 10
+	byte hot_water_extra_time[2];				// minute, LSB, 2 bytes
+
+	// from here on 2.50 differs from 1.6. Confirmed on the panel 2026-09-13:
+	byte legionella_setpoint[2];				// °C, LSB, 2 bytes, * 10 (65.0)
+	byte legionella_temperature_1;			// °C (60)
+	byte legionella_temperature_2;			// °C (65)
+	byte legionella_time_1;						// minute (60)
+	byte hot_water_overheat_alarm[2];		// °C, LSB, 2 bytes, * 10 (73.0)
+	byte unknown7[3];								// 10, 50, 30
+	byte unknown7a[2];							// 500 = 50.0 ?
+	byte hot_water_min_frequency_time[2];	// minute, LSB, 2 bytes, * 10 (5.0 min "WW minimal frequency time")
+
+	byte unknown8[13];							// 550, 360, 400, 730, 600, 600 (int16 * 10?), then one byte = 2
+
+	// fan settings, confirmed on the panel 2026-09-13 (same order as 1.6 Status 01)
+	byte normal_fan_speed[2];					// %, LSB, 2 bytes, * 10 (50.0)
+	byte reduce_fan_speed[2];					// %, LSB, 2 bytes, * 10, signed (-53.0, "fan speed slow")
+	byte fast_fan_speed[2];						// %, LSB, 2 bytes, * 10 (133.0, "fan speed fast")
+	byte fan_ccm_increase_when_cooling[2];	// %, LSB, 2 bytes, * 10 (0.0) - position inferred, value 0 in the capture
+
+	byte unknown9[6];								// 15, 100 (bytes), 150, 1000
+
+	byte fan_increase_when_cooling[2];		// %, LSB, 2 bytes, * 10 (65.0)
+
+	byte unknown10[8];							// 750, 1000, 950, 1000
+
+	byte fan_ccm_setting[2];					// %, LSB, 2 bytes, * 10, signed (-5.0)
+
+	byte crc;
+} R_REPLY_STATUS_V250_xC8;
+
+// read of 0x41 bytes at bank 0 addr 0x03F7 (2.21: 0x3B bytes at 0x03F2)
+// the 2.21 content starts 4 bytes into this frame
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[6];							// 2.21 has 2 bytes here
+
+	byte fan_time_to_filter_change[2];	// days, LSB, 2 bytes
+
+	byte unknown1[30];
+
+	// confirmed by writes from the control panel 2026-09-13
+	byte compressor_max_frequency[2];		// Hz, LSB, 2 bytes, * 10 (bank 0 0x041D)
+	byte night_max_frequency[2];				// Hz, LSB, 2 bytes, * 10 (bank 0 0x041F)
+
+	byte unknown2[13];						// 25.0, 20 (byte), 55.0, 70.0, 105.0, 102.0, 105.0
+
+	// confirmed on the panel 2026-09-13: "Blocked frequency 1..5" (40.4, 85.5, 87.8, 83.3, 0.0 Hz)
+#define STATUS_V250_NB_BLOCKED_FREQ 5
+	byte blocked_frequency[STATUS_V250_NB_BLOCKED_FREQ][2];	// Hz, LSB, 2 bytes, * 10, 0 = unused
+	byte crc;
+} R_REPLY_STATUS_V250_x57;
+
+// read of 0x1C bytes at bank 1 addr 0x0550: the control panel's own identity, written by the panel
+// (its 10-byte heartbeat write goes to 0x0568 = offset 24). First 10 bytes = 1.8 "UI versions" layout.
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte ui_software_major_version;		// 2
+	byte ui_software_minor_version;		// 28
+	byte ui_software_patch_version;		// 1
+	byte ui_hardware_version;				// 1 => 'A' (6 => 'F')
+	byte unknown0[6];							// 06 00 05 05 0f 0f
+	byte unknown1[14];						// zeros
+	byte panel_counter[4];					// LSB, increments every cycle. The panel's 10-byte heartbeat write to 0x0568
+													// is this counter followed by 2 unknown bytes and "!!!!"
+	byte crc;
+} R_REPLY_STATUS_V250_ui_versions;
+
+// read of 0x99 bytes at bank 0 addr 0x048D: regulator settings. The cooling group at the end was confirmed
+// on the control panel 2026-09-13 (cooling max frequency 50 Hz, P-band 1 10.0 °C, I-time 1 180 min,
+// P-band 2 200.0 °C, I-time 2 40 s).
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[143];
+
+	byte cooling_compressor_max_frequency[2];	// Hz, LSB, 2 bytes, * 10
+	byte cooling_p_band_1[2];						// °C, LSB, 2 bytes, * 10
+	byte cooling_i_time_1[2];						// minute, LSB, 2 bytes
+	byte cooling_p_band_2[2];						// °C, LSB, 2 bytes, * 10
+	byte cooling_i_time_2[2];						// second, LSB, 2 bytes
+
+	byte crc;
+} R_REPLY_STATUS_V250_xAF;
+
+// read of 0x2C bytes at bank 0 addr 0x0550: misc settings. The regulator version (2.50) sits just before it at 0x054C.
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte unknown0[5];							// 1298, -150, 0
+	byte box_version;							// 3 ("WP box version" on the panel; tentative, matched by value only)
+	byte unknown1[32];						// 8, 7, 500, 2000, 2000, 600, -230, 300, 730, 5, 80, 120, 1200, 120, 1000, 1000, 20, 1800, 1800, 90, 120
+
+	byte filter_interval[2];					// days, LSB, 2 bytes (bank 0 0x0576, confirmed by a write from the control panel)
+
+	byte unknown2[4];							// 120, 90
+	byte crc;
+} R_REPLY_STATUS_V250_x42;
+
+// read of 0x18 bytes at bank 0 addr 0x0000: system flags, polled every cycle
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte flags[2];								// LSB. bit 0x0040 = automatic daylight saving (set/cleared through 80 00 00 / 40 00 00, as in 1.6)
+	byte unknown0[12];						// 72 42 AE 34 86 1F BF 00 00 1D 0A C7
+	byte fan_flags[2];						// addr 0x000E: bits 0x0003 = hot water priority (1 low, 2 normal, 3 high), bit 0x0200 = fan boost
+	byte unknown1[2];							// 2B 49
+	byte mode_flags[2];						// addr 0x0012: bit 0x0400 = cooling mode
+	byte unknown2[4];							// 50 80 0F 00
+	byte crc;
+} R_REPLY_STATUS_V250_x2E;
+
+// read of 0x0A bytes at bank 0 addr 0x007F: sensor offsets, polled every cycle
+#define STATUS_V250_NB_SENSOR_OFFSETS 10
+typedef struct __attribute__ ((packed))
+{
+	CZ_PACKET_HEADER cz_head;
+
+	byte sensor_offset[STATUS_V250_NB_SENSOR_OFFSETS];	// °C * 10, signed, one byte per sensor TE0..TE9 (TE3 confirmed by a write from the panel)
+	byte crc;
+} R_REPLY_STATUS_V250_x20;
+
+// read of 0xA4 bytes at bank 1 addr 0x0340 (2.21: 0xA3 bytes at 0x033C)
+// layout is identical to R_REPLY_STATUS_V221_xb9, whose declared size (186 bytes) matches this
+// frame exactly, so that struct and decoder are reused.
+
 #endif

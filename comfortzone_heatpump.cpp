@@ -118,6 +118,7 @@ comfortzone_heatpump::PROCESSED_FRAME_TYPE comfortzone_heatpump::process()
 		cz_size = 0;
 
 	last_frame_timestamp = millis();
+	frame_received = true;
 
 	if(pft == comfortzone_heatpump::PFT_REPLY)
 		last_reply_frame_timestamp = last_frame_timestamp;
@@ -534,14 +535,24 @@ bool comfortzone_heatpump::set_extra_hot_water(bool enable, int timeout)
 	if(enable)
 	{
 		kr = czdec::kr_craft_name_to_index(czcraft::KR_EXTRA_HOT_WATER_ON);
+#if HP_PROTOCOL == HP_PROTOCOL_2_50
+		cmd_value = 0x0040;		// captured from control panel 2.50: set bit, reply 0x00
+		reply_value = 0x00;
+#else
 		cmd_value = 0x0001;
 		reply_value = 0x08;
+#endif
 	}
 	else
 	{
 		kr = czdec::kr_craft_name_to_index(czcraft::KR_EXTRA_HOT_WATER_OFF);
+#if HP_PROTOCOL == HP_PROTOCOL_2_50
+		cmd_value = 0xFFBF;		// captured from control panel 2.50: clear bit, reply 0x00
+		reply_value = 0x00;
+#else
 		cmd_value = 0xFFFE;
 		reply_value = 0x0C;
+#endif
 	}
 
 	if(kr == NULL)
@@ -599,6 +610,243 @@ bool comfortzone_heatpump::set_fireplace_mode(bool enable, int timeout)
 	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, reply_value);
 
 	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+	return push_result;
+}
+
+// true = enable, false = disable
+// Protocol 2.50 only. Replays what the control panel sends for its temporary "fan high speed" toggle.
+bool comfortzone_heatpump::set_fan_boost(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	bool push_result;
+
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_ON);
+		cmd_value = 0x0200;		// set bit 0x0200
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_OFF);
+		cmd_value = 0xFDFF;		// clear bit 0x0200
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_FAN_BOOST_* not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	// the reply value observed on the bus was 0x43 (on) / 0x41 (off), so only the header is checked
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+	return push_result;
+}
+
+// true = enable, false = disable
+// Protocol 2.50 only. Replays what the control panel sends for its cooling mode switch.
+bool comfortzone_heatpump::set_cooling_mode(bool enable, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	uint16_t cmd_value;
+	bool push_result;
+
+	if(enable)
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_COOLING_MODE_ON);
+		cmd_value = 0x0400;		// set bit 0x0400
+	}
+	else
+	{
+		kr = czdec::kr_craft_name_to_index(czcraft::KR_COOLING_MODE_OFF);
+		cmd_value = 0xFBFF;		// clear bit 0x0400
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_COOLING_MODE_* not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, cmd_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	// the reply value observed on the bus was 0x7F (on) / 0x7B (off), so only the header is checked
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+
+	if(push_result == true)
+		comfortzone_status.cooling_enabled = enable;
+
+	return push_result;
+}
+
+// 1 = low, 2 = normal, 3 = high
+// Protocol 2.50 only. Priority is the low 2 bits of the flags word at bank 0 addr 0x0E (the word that also holds
+// the fan boost bit). The panel rewrites the whole word after reading it; the library has no read command, so it
+// uses the set-bits / clear-bits registers instead: at most two writes.
+bool comfortzone_heatpump::set_hot_water_priority(uint8_t priority, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr_set, *kr_clear;
+	uint16_t clear_mask;
+
+	if((priority < 1) || (priority > 3))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 1 and 3");
+		return false;
+	}
+
+	kr_set = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_ON);		// set-bits register of the flags word
+	kr_clear = czdec::kr_craft_name_to_index(czcraft::KR_FAN_BOOST_OFF);	// clear-bits register of the flags word
+
+	if((kr_set == NULL) || (kr_clear == NULL))
+	{
+		RETURN_MESSAGE("flags word registers not found");
+		return false;
+	}
+
+	// set the wanted bits (reply value varies, header check only)
+	czcraft::craft_w_cmd(this, &cmd, kr_set->reg_num, priority);
+	czcraft::craft_w_reply(this, &expected_reply, kr_set->reg_num, 0);
+
+	if(!push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true))
+		return false;
+
+	// clear the bit(s) of the 2-bit field that must be 0 (none for priority 3)
+	clear_mask = (~priority) & 0x0003;
+
+	if(clear_mask != 0)
+	{
+		czcraft::craft_w_cmd(this, &cmd, kr_clear->reg_num, (uint16_t)(~clear_mask));
+		czcraft::craft_w_reply(this, &expected_reply, kr_clear->reg_num, 0);
+
+		if(!push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true))
+			return false;
+	}
+
+	comfortzone_status.hot_water_priority_setting = priority;
+	return true;
+}
+
+// Protocol 2.50 only. Acknowledge the alarms in alarm_mask (set-bit write of the mask to the acknowledged-alarms word,
+// what the control panel sends when the user acknowledges). The alarm stays pending until its cause is gone; for the
+// filter alarm that means set_filter_days_left(interval).
+bool comfortzone_heatpump::acknowledge_alarm(uint16_t alarm_mask, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+
+	if(alarm_mask == 0)
+	{
+		RETURN_MESSAGE("Empty alarm mask");
+		return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_ACKNOWLEDGE_ALARM);
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_ACKNOWLEDGE_ALARM not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, alarm_mask);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);		// reply value observed: 0x00
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+}
+
+// Protocol 2.50 only. 2-byte day counters, reply value 0x00 on both.
+bool comfortzone_heatpump::set_filter_days_left(uint16_t days, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr = czdec::kr_craft_name_to_index(czcraft::KR_FILTER_DAYS_LEFT);
+	bool push_result;
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_FILTER_DAYS_LEFT not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, days);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+
+	if(push_result == true)
+		comfortzone_status.fan_time_to_filter_change = days;
+
+	return push_result;
+}
+
+bool comfortzone_heatpump::set_filter_interval(uint16_t days, int timeout)
+{
+	W_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr = czdec::kr_craft_name_to_index(czcraft::KR_FILTER_INTERVAL);
+
+	if((days < 1) || (days > 365))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 1 and 365");
+		return false;
+	}
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_FILTER_INTERVAL not found");
+		return false;
+	}
+
+	czcraft::craft_w_cmd(this, &cmd, kr->reg_num, days);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, 0);
+
+	return push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout, true);
+}
+
+// Protocol 2.50 only. Heating curve as shown on the control panel (e.g. 5.4). 1-byte write, reply echoes the value.
+bool comfortzone_heatpump::set_heating_curve(float curve, int timeout)
+{
+	W_SMALL_CMD cmd;
+	W_REPLY expected_reply;
+	czdec::KNOWN_REGISTER *kr;
+	byte int_value;
+	bool push_result;
+
+	if((curve < 0.0) || (curve > 25.5))
+	{
+		RETURN_MESSAGE("Invalid value, must be between 0.0 and 25.5");
+		return false;
+	}
+
+	kr = czdec::kr_craft_name_to_index(czcraft::KR_HEATING_CURVE);
+
+	if(kr == NULL)
+	{
+		RETURN_MESSAGE("czcraft::KR_HEATING_CURVE not found");
+		return false;
+	}
+
+	int_value = (byte)(curve * 10.0 + 0.5);
+
+	czcraft::craft_w_small_cmd(this, &cmd, kr->reg_num, int_value);
+	czcraft::craft_w_reply(this, &expected_reply, kr->reg_num, int_value);
+
+	push_result = push_settings((byte*)&cmd, sizeof(cmd), (byte*)&expected_reply, sizeof(expected_reply), timeout);
+
+	if(push_result == true)
+		comfortzone_status.heating_curve = int_value;
+
 	return push_result;
 }
 
@@ -725,6 +973,101 @@ bool comfortzone_heatpump::set_sensor_offset(uint16_t sensor_num, float temp_off
 // send a command to the heatpump and wait for the given reply
 // on error, several retries may occur and the command may take up to "timeout" seconds
 // if reply_header_check_only is false, reply must be exactly equal to expected_reply
+#if HP_PROTOCOL == HP_PROTOCOL_2_50
+// Protocol 2.50: the control panel polls the heat pump continuously (a frame every ~50 ms, next query 5-30 ms after
+// each reply), so the bus is never quiet for 40 ms. Strategy: send right after a reply frame completes, in the gap
+// before the panel's next query, then keep processing frames until our reply shows up (the panel's next query may
+// arrive first). A collision with the panel corrupts both frames; the pump ignores them and the panel re-polls, so
+// the attempt is simply retried until the timeout. Trace letters (debug mode): s = sent, r = reply matched,
+// x = other frame while waiting, t = no reply within the wait, c = corrupted frame while waiting.
+bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout, bool header_check_only)
+{
+	unsigned long start, sent_at, last_reply_seen;
+	unsigned long timeout_ms = (unsigned long)timeout * 1000UL;
+	PROCESSED_FRAME_TYPE pft;
+	int i;
+
+	start = millis();
+
+	last_message[0] = '\0';
+	last_message_size = 0;
+
+	if(debug_mode)
+	{
+		for(i = 0; i < expected_reply_length; i++)
+		{
+			if(last_message_size >= (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 4))
+				break;
+
+			sprintf(last_message + last_message_size, "%02X ", (int)(expected_reply[i]));
+			last_message_size += 3;
+		}
+	}
+
+#define CZ_TRACE(c) if((debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2))) last_message[last_message_size++] = (c)
+
+	last_reply_seen = last_reply_frame_timestamp;
+
+	while(millis() - start < timeout_ms)		// subtraction: safe across the millis() wrap
+	{
+		pft = process();
+
+		// wait for the completion of a reply frame (the panel's turnaround after a reply is the only gap there is)
+		if((pft != PFT_REPLY) || (last_reply_frame_timestamp == last_reply_seen))
+			continue;
+
+		last_reply_seen = last_reply_frame_timestamp;
+
+		if((cz_size != 0) || rs485->available())
+			continue;
+
+		CZ_TRACE('s');
+
+		rs485->enable_sender_mode();
+		rs485->write_bytes(cmd, cmd_length);
+		rs485->flush();
+		rs485->enable_receiver_mode();
+
+		// wait for our reply; other frames (the panel's polling) are decoded and skipped
+		disable_cz_buf_clear_on_completion = true;
+		sent_at = millis();
+
+		while(millis() - sent_at < 300)
+		{
+			pft = process();
+
+			if(pft == PFT_NONE)
+				continue;
+
+			if( (pft == PFT_REPLY)
+				 && (cz_size == expected_reply_length)
+				 && ( ( (header_check_only == false) && (!memcmp(cz_buf, expected_reply, expected_reply_length)) )
+					|| ( (header_check_only == true) && (!memcmp(cz_buf, expected_reply, sizeof(CZ_PACKET_HEADER))) ) ) )
+			{
+				CZ_TRACE('r');
+				disable_cz_buf_clear_on_completion = false;
+				cz_size = 0;
+				last_message[last_message_size] = '\0';
+				return true;
+			}
+
+			CZ_TRACE(pft == PFT_CORRUPTED ? 'c' : 'x');
+			cz_size = 0;		// frame was decoded by process(); drop it and keep waiting
+		}
+
+		CZ_TRACE('t');
+		disable_cz_buf_clear_on_completion = false;
+		cz_size = 0;
+		last_reply_seen = last_reply_frame_timestamp;
+	}
+
+#undef CZ_TRACE
+
+	last_message[last_message_size] = '\0';
+	return false;
+}
+
+#else
 // if reply_header_check_only is true, only reply header (CZ_PACKET_HEADER) must match expected_reply header
 bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expected_reply, int expected_reply_length, int timeout, bool header_check_only)
 {
@@ -778,6 +1121,15 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 			}
 
 			// no new frame or reply frame and incoming frame buffer is empty, we have a go
+			if( (debug_mode) && (last_message_size < (COMFORTZONE_HEATPUMP_LAST_MESSAGE_BUFFER_SIZE - 2)) )
+			{
+				// why not: n = a new frame arrived during the wait, p = partial bytes pending in the input buffer
+				if(pft != comfortzone_heatpump::PFT_NONE)
+					last_message[last_message_size++] = 'n';
+				else if(cz_size != 0)
+					last_message[last_message_size++] = 'p';
+			}
+
 			if(
 				(last_frame_timestamp == last_reply_frame_timestamp)
 				&& (reply_frame_time == last_reply_frame_timestamp)
@@ -875,6 +1227,7 @@ bool comfortzone_heatpump::push_settings(byte *cmd, int cmd_length, byte *expect
 	last_message[last_message_size] = '\0';
 	return false;
 }
+#endif
 
 void comfortzone_heatpump::enable_debug_mode(bool debug_flag)
 {

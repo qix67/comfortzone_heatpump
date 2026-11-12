@@ -48,6 +48,9 @@ will be printed on the serial console set in OUTSER define.
 4) Using library
 ================
 
+Example heatpump_mqtt (protocol 2.50) publishes everything to Home Assistant
+over MQTT with discovery, and accepts commands; see examples/heatpump_mqtt.
+
 By default, the library only performs bus snooping assuming a control panel
 periodically requests heatpump status (roughly every 5 seconds on mine).
 
@@ -195,6 +198,59 @@ comfortzone_heatpump object.
  (disables fan for 5 minutes, runs completely on electricity during that period)
 
 
+ * bool set_fan_boost(bool enable, int timeout = 5);
+
+ Protocol 2.50 only. Enable/disable the control panel's temporary fan high speed
+ toggle (on panels where fan speed is sensor controlled). True = high speed,
+ false = back to normal.
+
+
+ * bool set_cooling_mode(bool enable, int timeout = 5);
+
+ Protocol 2.50 only. Switch cooling mode on (true) or off (false), as the
+ control panel's cooling switch does. comfortzone_status.cooling_enabled
+ reports the current state.
+
+
+ * bool set_hot_water_priority(uint8_t priority, int timeout = 5);
+
+ Protocol 2.50 only. Set hot water priority: 1 = low, 2 = normal, 3 = high.
+ Sends up to two writes (set bits, clear bits) to the flags word.
+
+ * bool acknowledge_alarm(uint16_t alarm_mask, int timeout = 5);
+
+ Protocol 2.50 only. Acknowledge the alarms whose bits are set in alarm_mask
+ (CZ_ALARM_FILTER = 0x0002, or comfortzone_status.alarm_pending_mask for all).
+ This is what the control panel sends when the user acknowledges an alarm. The
+ alarm stays pending until its cause is gone.
+
+
+ * bool set_filter_days_left(uint16_t days, int timeout = 5);
+ * bool set_filter_interval(uint16_t days, int timeout = 5);
+
+ Protocol 2.50 only. Filter change countdown and interval, in days. Writing the
+ interval to the countdown is how the panel resets the filter alarm after a
+ filter change; writing 0 raises it.
+
+
+ * bool set_heating_curve(float curve, int timeout = 5);
+
+ Protocol 2.50 only. Set the heating curve as shown on the control panel
+ (0.0 to 25.5, step 0.1). comfortzone_status.heating_curve holds the current
+ value * 10.
+
+
+ * unsigned long last_frame_age();
+
+ Milliseconds since the last valid frame. The control panel polls every ~3 s,
+ so more than ~30 s means the bus or the wiring is dead.
+
+
+ Note for protocol 2.50: set_fireplace_mode(), set_automatic_daylight_saving(),
+ set_sensor_offset() and set_led_luminosity() (which sets the panel's "LED mode")
+ use the same registers as the older protocols and work unchanged.
+
+
  Special methods
  ---------------
 
@@ -227,6 +283,9 @@ comfortzone_heatpump object.
  * COMFORTZONE_STATUS comfortzone_status;
 
  Last status heatpump. Updated automatically when a STATUS frame is received.
+ On protocol 2.50, filter_alarm / general_alarm follow the pending and
+ acknowledged alarm masks (also exposed raw as alarm_pending_mask and
+ alarm_acknowledged_mask).
 
  See comfortzone_status.h for more information.
 

@@ -77,6 +77,13 @@ class comfortzone_heatpump
 	bool set_automatic_daylight_saving(bool enable, int timeout = 5);	// true = enable, false = disable
 
 	bool set_fireplace_mode(bool enable, int timeout = 5); // true = enable, false = disable
+	bool set_fan_boost(bool enable, int timeout = 5);	// true = temporary fan high speed, false = back to normal (protocol 2.50 only)
+	bool set_cooling_mode(bool enable, int timeout = 5);	// true = cooling mode on, false = off (protocol 2.50 only)
+	bool set_hot_water_priority(uint8_t priority, int timeout = 5);	// 1 = low, 2 = normal, 3 = high (protocol 2.50 only)
+	bool acknowledge_alarm(uint16_t alarm_mask, int timeout = 5);	// alarm bits to acknowledge, e.g. CZ_ALARM_FILTER or comfortzone_status.alarm_pending_mask (protocol 2.50 only)
+	bool set_filter_days_left(uint16_t days, int timeout = 5);		// filter change countdown in days; writing the interval resets the filter alarm (protocol 2.50 only)
+	bool set_filter_interval(uint16_t days, int timeout = 5);			// filter change interval in days (protocol 2.50 only)
+	bool set_heating_curve(float curve, int timeout = 5);				// heating curve, 0.0 to 25.5 in steps of 0.1 (protocol 2.50 only)
 
 	bool set_sensor_offset(uint16_t sensor_num, float temp_offset, int timeout = 5);	// sensor: [0:7], offset in °C (-10.0° -> 10.0°)
 
@@ -87,6 +94,10 @@ class comfortzone_heatpump
 
 	// modify default address of heatpump
 	void set_heatpump_addr(byte new_heatpump_addr[4]);
+
+	// milliseconds since the last valid frame was received, or ULONG_MAX when no frame has been received yet
+	// (bus health; the control panel polls every ~3 s)
+	unsigned long last_frame_age() { return frame_received ? (millis() - last_frame_timestamp) : (unsigned long)-1; }
 
 	// try to guess heatpump address (if needed, must be called after begin)
 	bool guess_heatpump_addr(byte guessed_addr[4], int timeout = 5);
@@ -113,6 +124,7 @@ class comfortzone_heatpump
 	uint16_t cz_full_frame_size = -1;	// #bytes in the current frame
 
 	// frame timestamp
+	bool frame_received = false;			// false until the first valid frame, so last_frame_age() cannot read as "fresh" at boot
 	unsigned long last_frame_timestamp = 0;
 	unsigned long last_reply_frame_timestamp = 0;
 

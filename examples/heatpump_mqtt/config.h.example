@@ -1,0 +1,24 @@
+// Copy to config.h (gitignored) and fill in.
+#pragma once
+
+#define WIFI_SSID        "MyWifi"
+#define WIFI_PASSWORD    "..."
+
+#define MQTT_HOST        "192.168.1.xx"
+#define MQTT_PORT        1883
+#define MQTT_USER        "..."
+#define MQTT_PASSWORD    "..."
+
+// OTA (over the air update) password; leave empty to disable OTA
+#define OTA_PASSWORD     ""
+
+// MQTT topic prefix and Home Assistant device identity
+#define MQTT_PREFIX      "comfortzone"
+#define DEVICE_ID        "comfortzone_ex50"
+#define DEVICE_NAME      "Comfortzone EX50"
+
+// RS485 wiring
+#define RS485SER         Serial2
+#define RS485_RX_PIN     16
+#define RS485_TX_PIN     17
+#define RS485_DE_PIN     14
